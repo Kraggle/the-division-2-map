@@ -5,7 +5,7 @@
 	"default": {
 
 		"host": "kragglesites.com",
-		"username": "thedivis2@the-division-2-map.com",  // or null for anonymous login
+		"username": "thedivis2@kragglesites.com",  // or null for anonymous login
 		"password": "m8g5h2SZGVQ6",
 		"path": "/",
 

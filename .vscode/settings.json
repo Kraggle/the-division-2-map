@@ -1,0 +1,48 @@
+{
+    "cSpell.words": [
+        "GSAP's",
+        "ckeditor",
+        "dropdown",
+        "gsap",
+        "truetype",
+        "woff"
+    ],
+    "cSpell.enabledLanguageIds": [
+        "asciidoc",
+        "c",
+        "cpp",
+        "csharp",
+        "css",
+        "go",
+        "handlebars",
+        "html",
+        "jade",
+        "javascript",
+        "javascriptreact",
+        "json",
+        "latex",
+        "less",
+        "markdown",
+        "php",
+        "plaintext",
+        "pub",
+        "python",
+        "restructuredtext",
+        "rust",
+        "scss",
+        "text",
+        "todo",
+        "typescript",
+        "typescriptreact",
+        "yml"
+    ],
+    "spellright.language": [
+        "en"
+    ],
+    "spellright.documentTypes": [
+        "markdown",
+        "latex",
+        "plaintext",
+        "todo"
+    ]
+}

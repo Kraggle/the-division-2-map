@@ -12,7 +12,3 @@ $return['usertype'] = (isset($_SESSION['usertype']) ? $_SESSION['usertype'] : 0)
 $return['donate'] = is_donator($mysqli);
 
 echo json_encode($return);
-
-            
-
-?>

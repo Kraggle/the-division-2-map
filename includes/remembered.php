@@ -12,12 +12,12 @@ if (!login_check($mysqli) && isset($_COOKIE['validator'])) {
 	if (isset($_COOKIE['token'])) {
 	
 		$token = $_COOKIE['token'];
-    
+
 		$stmt = $mysqli->prepare("SELECT `user_id`, `expires` FROM `auth_tokens` WHERE `selector` = ? AND `token` = ?");
 		$stmt->bind_param('ss', $selector, $token); 
 		$stmt->execute(); 
 		$stmt->store_result();
- 	
+
 		// get variables from result.
 		$stmt->bind_result($user_id, $expires);
 		$stmt->fetch();
@@ -48,5 +48,3 @@ if (!login_check($mysqli) && isset($_COOKIE['validator'])) {
 			setcookie('token', null, -1000, "/");
 	}
 }
-
-?>

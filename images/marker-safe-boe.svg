@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 21.0.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 64 64" style="enable-background:new 0 0 64 64;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:#6F4512;}
+	.st1{fill:#CE8508;}
+</style>
+<g>
+	<circle class="st0" cx="32" cy="32" r="28.9"/>
+</g>
+<g>
+	<rect x="18.613" y="50.217" class="st1" width="29.231" height="3.317"/>
+	<rect x="19.262" y="26.947" class="st1" width="4.087" height="22.068"/>
+	<rect x="27.211" y="26.947" class="st1" width="4.087" height="22.068"/>
+	<rect x="43.108" y="26.947" class="st1" width="4.087" height="22.068"/>
+	<rect x="35.16" y="26.947" class="st1" width="4.087" height="22.068"/>
+	<rect x="18.613" y="22.428" class="st1" width="29.231" height="3.317"/>
+	<polygon class="st1" points="47.195,21.226 33.998,14.23 33.998,10.841 40.704,10.841 40.704,6.466 33.998,6.466 33.228,6.466 
+		32.459,6.466 32.459,14.23 19.262,21.226 	"/>
+	<polygon class="st1" points="20.592,19.303 20.592,15.216 27.868,15.216 	"/>
+	<polygon class="st1" points="46.057,15.216 46.057,19.303 38.781,15.216 	"/>
+	<path class="st1" d="M2.867,30.264V47.38H17.05V30.264H2.867z M8.637,45.024H6.233v-6.01h2.404V45.024z M8.637,36.13H6.233v-3.846
+		h2.404V36.13z M14.791,45.024h-2.404v-6.01h2.404V45.024z M14.791,36.13h-2.404v-3.846h2.404V36.13z"/>
+	<rect x="2.05" y="48.641" class="st1" width="15" height="3.317"/>
+	<polygon class="st1" points="14.166,26.528 14.166,24.316 9.069,24.316 9.069,26.528 2.05,26.528 2.05,28.884 17.05,28.884 
+		17.05,26.528 	"/>
+	<path class="st1" d="M51.613,32.284v3.846h-2.115v2.885h2.115v6.01h-2.115v2.356h11.635V30.264H49.498v2.019H51.613z
+		 M55.363,32.284h2.404v3.846h-2.404V32.284z M55.363,39.015h2.404v6.01h-2.404V39.015z"/>
+	<rect x="49.498" y="48.641" class="st1" width="12.452" height="3.317"/>
+	<polygon class="st1" points="61.95,28.884 61.95,26.528 54.931,26.528 54.931,24.316 49.834,24.316 49.834,26.528 49.498,26.528 
+		49.498,28.884 	"/>
+</g>
+</svg>

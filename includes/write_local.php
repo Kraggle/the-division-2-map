@@ -46,15 +46,15 @@ if (isset($_POST['data'])) {
 	
 	// Create the path if it does not exist
 	if (!file_exists($path)) {
-	    mkdir($path, 0777, true);
+		mkdir($path, 0777, true);
 	}
 	
 	$path = $path.$file;
 	
 	// Create the file if it does not exist
 	if (!file_exists($path)) {
-	    $myfile = fopen($path, "w") or die("Unable to create file!");
-	    fclose($myfile);
+		$myfile = fopen($path, "w") or die("Unable to create file!");
+		fclose($myfile);
 	}
 	
 	// open and read local file
@@ -99,4 +99,3 @@ if (isset($_POST['data'])) {
 	fwrite($myfile, json_encode(false));
 	fclose($myfile);
 }
-?>

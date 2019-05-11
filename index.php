@@ -20,7 +20,7 @@ include_once 'includes/functions.php';
 	<meta property="og:title" content="The Division 2 Interactive Map">
 	<meta property="og:type" content="website">
 	<meta property="og:url" content="https://the-division-2-map.com/">
-	<meta property="og:description" content="Tom Clancy's The Division 2 Interactive Map. Shows entire map including the 1.8 content and includes a Survival Map mode. Has a Gear Set Collection Tool. NEW: Now includes a Last Stand Map Mode.">
+	<meta property="og:description" content="Tom Clancy's The Division 2 Interactive Map.">
 
 	<link rel="stylesheet" href="css/leaflet.css" />
 	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">

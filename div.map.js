@@ -1,4 +1,5 @@
-K.mapVersion = '0.1.28';
+K.currentUpdate = "11/05/2019";
+K.expires = { expires: 28 };
 
 /*========================================
 =            LEAFLET INCLUDES            =
@@ -321,8 +322,7 @@ L.Layer.include({
             html += list.title;
 
         $.each(list.subs, function(i, v) {
-            var cls = v.color ? ' class="desc"' : '';
-            if (v.value) html += `<p${cls}>${v.value}</p>`;
+            if (v.value) html += `<p class="${v.color ? 'desc' : ''} ${v.note ? 'note' : ''}">${v.value}</p>${v.line ? '<hr>' : ''}`;
         });
 
         if (list.list && list.list[0] && list.list[0].item) {
@@ -601,7 +601,6 @@ L.control.button = function(options) {
 Cookies.json = true;
 
 K.extend({
-    currentUpdate: "17/01/2018",
     bar: {
         b: {
             save: false,
@@ -1073,7 +1072,7 @@ K.tool.marker = {
                     width: $(this).width(),
                     height: $(this).height()
                 });
-                Cookies.set('toolPos', this.position);
+                Cookies.set('toolPos', this.position, K.expires);
             }
         }).resizable({
             containment: "#mapid",
@@ -1089,7 +1088,7 @@ K.tool.marker = {
                     width: $(this).width(),
                     height: $(this).height()
                 });
-                Cookies.set('toolPos', this.position);
+                Cookies.set('toolPos', this.position, K.expires);
             }
         });
 
@@ -1165,7 +1164,7 @@ K.tool.marker = {
 
             $(this).siblings('a').removeClass('enabled');
             $(this).addClass('enabled');
-            Cookies.set('markerToolIcon', typ);
+            Cookies.set('markerToolIcon', typ, K.expires);
 
             K.updateMarker($(this).data('properties'));
 
@@ -1339,7 +1338,7 @@ K.tool.layer = {
                 this.position = $.extend({}, $(this).position(), {
                     transform: 'translate(0, 0)'
                 });
-                Cookies.set('menuPos', this.position);
+                Cookies.set('menuPos', this.position, K.expires);
             }
         });
 
@@ -1622,8 +1621,14 @@ K.tool.layer = {
 
             if (!val.subs) val.subs = [{
                 value: '',
-                class: 'white'
+                color: false,
+                note: false,
+                line: false
             }];
+
+            var box = $('<div />', {
+                "class": "setting-container"
+            });
 
             var input = $('<input />', {
                 type: "text",
@@ -1631,26 +1636,57 @@ K.tool.layer = {
                 which: "popup"
             });
 
-            var toggle = $(`<label class="switch"> 
+            var toggle = $(`<label class="switch">
+                    <span class="label"></span>
+                    <span class="back"></span>
                     <input type="checkbox" class="settings-item input list check">
                     <span class="slider"></span>
                 </label>`);
 
             $.each(val.subs, function(i, itm) {
 
+                var bx = box.clone().appendTo('.section.subs'),
+                    tg;
+
                 var inpt = input.clone().attr({
                     name: 'list-sub',
                     value: itm.value,
                     num: i,
                     placeholder: "Paragraph"
-                }).appendTo('.section.subs');
+                }).appendTo(bx);
 
                 if (itm.color) inpt.addClass('gray');
 
-                toggle.clone().appendTo('.section.subs').find('input').attr({
+                $('<br>').appendTo(bx);
+
+                // color button
+                tg = toggle.clone().appendTo(bx);
+                tg.find('input').attr({
                     name: 'list-sub-class',
+                    cat: 'color',
                     num: i
                 }).prop('checked', itm.color);
+                tg.find('.label').text('Color:');
+
+                // underline button
+                tg = toggle.clone().appendTo(bx);
+                tg.find('input').attr({
+                    name: 'list-sub-class',
+                    cat: 'line',
+                    num: i
+                }).prop('checked', itm.line);
+                tg.find('.label').text('Line:');
+                tg.find('.slider').addClass("note");
+
+                // note button
+                tg = toggle.clone().appendTo(bx);
+                tg.find('input').attr({
+                    name: 'list-sub-class',
+                    cat: 'note',
+                    num: i
+                }).prop('checked', itm.note);
+                tg.find('.label').text('Note:');
+                tg.find('.slider').addClass("note");
 
                 $('<br>').appendTo('.section.subs');
             });
@@ -1687,24 +1723,52 @@ K.tool.layer = {
 
             $('a.add').on('click', function() {
                 var focus = false,
-                    name, i;
+                    name, i, tg;
 
                 if ($(this).hasClass('subs')) {
 
                     name = 'input[name="list-sub"]';
                     i = $(name).length;
 
+                    var bx = box.clone().appendTo('.section.subs');
+
                     input.clone().attr({
                         name: 'list-sub',
                         setting: 'list-sub',
                         num: i,
                         placeholder: "Paragraph"
-                    }).appendTo('.section.subs');
+                    }).appendTo(bx);
 
-                    toggle.clone().appendTo('.section.subs').find('input').attr({
+                    $('<br>').appendTo(bx);
+
+                    // color button
+                    tg = toggle.clone().appendTo(bx);
+                    tg.find('input').attr({
                         name: 'list-sub-class',
+                        cat: 'color',
                         num: i
                     });
+                    tg.find('.label').text('Color:');
+
+                    // line button
+                    tg = toggle.clone().appendTo(bx);
+                    tg.find('input').attr({
+                        name: 'list-sub-class',
+                        cat: 'line',
+                        num: i
+                    });
+                    tg.find('.label').text('Line:');
+                    tg.find('.slider').addClass("note");
+
+                    // note button
+                    tg = toggle.clone().appendTo(bx);
+                    tg.find('input').attr({
+                        name: 'list-sub-class',
+                        cat: 'note',
+                        num: i
+                    });
+                    tg.find('.label').text('Note:');
+                    tg.find('.slider').addClass("note");
 
                     $('<br>').appendTo('.section.subs');
 
@@ -1779,11 +1843,17 @@ K.tool.layer = {
 
                     var t = $(this).val();
                     if (!t) return true;
-                    var c = $(this).next('label').find('input').is(':checked');
-                    value.subs.push({
-                        value: t,
-                        color: c
-                    });
+                    var p = $(this).parent(),
+                        c = p.find('[cat=color]').is(':checked'),
+                        l = p.find('[cat=line]').is(':checked'),
+                        n = p.find('[cat=note]').is(':checked');
+
+                    var r = { value: t };
+                    c && (r.color = c);
+                    l && (r.line = l);
+                    n && (r.note = n);
+
+                    value.subs.push(r);
                 });
 
                 value.list = [];
@@ -1972,7 +2042,7 @@ K.tool.layer = {
             }
         } : {};
 
-        Cookies.set('copy', copy);
+        Cookies.set('copy', copy, K.expires);
 
         delete layer.backup;
 
@@ -2056,7 +2126,7 @@ K.tool.layer = {
         } : {};
 
 
-        Cookies.set('copy', copy);
+        Cookies.set('copy', copy, K.expires);
 
         K.msg.show({
             msg: 'Settings copied!',
@@ -2088,7 +2158,7 @@ K.tool.layer = {
         if (pop) copy.options.popup[set] = val;
         else copy.options[set] = val;
 
-        Cookies.set("copy", copy);
+        Cookies.set("copy", copy, K.expires);
 
         K.msg.show({
             msg: 'Setting copied!',
@@ -2170,7 +2240,11 @@ K.tool.layer = {
                         if (!input.length) $('a.add.subs').trigger('click');
 
                         input.val(list.subs[i].value);
-                        input.next('label').find('input').prop('checked', list.subs[i].color);
+                        var p = input.parent();
+
+                        p.find('[cat=color]').prop('checked', list.subs[i].color);
+                        p.find('[cat=line]').prop('checked', list.subs[i].line);
+                        p.find('[cat=note]').prop('checked', list.subs[i].note);
                     }
                 }
 
@@ -2627,8 +2701,8 @@ $(function() {
         zoom = e.target._zoom;
         onZoomEnd();
 
-        Cookies.set("zoom", K.myMap.getZoom());
-        Cookies.set("pan", K.myMap.getCenter());
+        Cookies.set("zoom", K.myMap.getZoom(), K.expires);
+        Cookies.set("pan", K.myMap.getCenter(), K.expires);
 
         polyHoverAnimation();
     });
@@ -2637,7 +2711,7 @@ $(function() {
     $('.side-menu-toggle.mode').on('click', function() {
         var $t = $(this);
         K.mode.get = $t.hasClass('one') ? K.mode.not('survival', 'normal') : K.mode.not('last stand', 'normal');
-        Cookies.set('mode', K.mode.get);
+        Cookies.set('mode', K.mode.get, K.expires);
         K.group.mode = K.group.feature[K.mode.get];
         K.bar.b.power && !K.bar.b.power.enabled() ? K.check.doOnce = true : true;
         pageLoad();
@@ -2651,8 +2725,8 @@ $(function() {
             a = $(this).attr('button'),
             o = Cookies.get('sideMenu'),
             setCookies = function() {
-                Cookies.set('sideBar', sb.hasClass(c));
-                Cookies.set('sideMenu', a);
+                Cookies.set('sideBar', sb.hasClass(c), K.expires);
+                Cookies.set('sideMenu', a, K.expires);
             };
 
         if ($(this).hasClass(c)) {
@@ -2690,9 +2764,9 @@ $(function() {
 
     // Set change log if they have not seen it before
     if (!K.urlParam('overwolf') && Cookies.get('currentUpdate') != K.currentUpdate) {
-        Cookies.set('sideMenu', 'changes');
-        Cookies.set('sideBar', true);
-        Cookies.set('currentUpdate', K.currentUpdate);
+        Cookies.set('sideMenu', 'changes', K.expires);
+        Cookies.set('sideBar', true, K.expires);
+        Cookies.set('currentUpdate', K.currentUpdate, K.expires);
     }
 
     // console.log(navigator.language);
@@ -2865,7 +2939,7 @@ $(function() {
     // 	K.oldLng = $('.language-button.active').attr('code');
 
     // 	K.lng = $(this).attr('code');
-    // 	Cookies.set("lang", K.lng);
+    // 	Cookies.set("lang", K.lng, K.expires);
     // 	$('.language-button').removeClass('active');
     // 	$(this).addClass('active');
     // 	translator();
@@ -3114,7 +3188,7 @@ $(function() {
     // $('#email-check').on('click', function(e) {
     // 	var l = K.local;
     // 	l.email = !l.email;
-    // 	Cookies.set('email-check', l.email);
+    // 	Cookies.set('email-check', l.email, K.expires);
     // 	$(this).children('a').toggleClass('checked');
     // });
 
@@ -3141,10 +3215,10 @@ function pageLoad() {
 
     // Check for clean map params and cookies and hide everything
     if (K.urlParam("noIcon") == "true")
-        Cookies.set('hideIcon', true);
+        Cookies.set('hideIcon', true, K.expires);
 
     if (K.urlParam("clean") == "true")
-        Cookies.set('cleanMenu', true);
+        Cookies.set('cleanMenu', true, K.expires);
 
     if (!Cookies.get('hideIcon'))
         $('#survival-logo').fadeIn(500);
@@ -3299,7 +3373,7 @@ function pageLoad() {
                         switchLayerGroups();
                     }
 
-                    Cookies.set('powered', this.enabled());
+                    Cookies.set('powered', this.enabled(), K.expires);
                     K.check.doOnce = false;
                 }
             });
@@ -3334,7 +3408,7 @@ function pageLoad() {
                         var t = $(this).attr('type');
                         $(this).toggleClass('active');
                         K.map.active[t] = !K.map.active[t];
-                        Cookies.set('activeMap', $.extend({}, K.map.active));
+                        Cookies.set('activeMap', $.extend({}, K.map.active), K.expires);
                         switchLayerGroups();
                     });
 
@@ -3377,12 +3451,12 @@ function pageLoad() {
                             },
                             slide: function(e, ui) {
                                 $('.handle-' + type).text((type == "rotate" ? ui.value + " deg" : (type == "x-pos" ? "X: " + ui.value : "Y: " + ui.value)));
-                                Cookies.set("grid-" + type, ui.value);
+                                Cookies.set("grid-" + type, ui.value, K.expires);
                                 setGridRotate();
                             },
                             change: function(e, ui) {
                                 $('.handle-' + type).text((type == "rotate" ? ui.value + " deg" : (type == "x-pos" ? "X: " + ui.value : "Y: " + ui.value)));
-                                Cookies.set("grid-" + type, ui.value);
+                                Cookies.set("grid-" + type, ui.value, K.expires);
                                 setGridRotate();
                             }
                         });
@@ -3789,70 +3863,80 @@ function pageLoad() {
                     //////////////////////////////////////////////////////
                     var sb = '#side-bar .filters .side-content';
                     $(sb).html('');
-                    $(sb).append('<a class="hide-all">Hide All</a><span href="#" class="title">' + K.mode.get.titleCase() + ' Filters</span>');
+                    $(sb).append(`<a class="hide-all" title="Show/Hide all!"></a>
+                        <span href="#" class="title">${K.mode.get.titleCase()} Filters</span>`);
 
                     var list = K.map.type[K.mode.get];
                     list = sortObjByKeys(list);
+                    var filters = Cookies.get('filters') || {};
 
-                    $.each(list, function(t, a) {
+                    $.each(list, function(category, types) {
 
-                        a = sortObjByKeys(a);
+                        if (Object.keys(types).length) {
 
-                        var f = Cookies.get('filters') || {};
+                            types = sortObjByKeys(types);
 
-                        $(sb).append('<span class="sub title">' + (Object.keys(a).length ? t.firstToUpper() : '') + '</span>');
-                        $.each(a, function(n, i) {
+                            $(sb).append(`<div class="sub title buttons">
+                                <a class="collapse">
+                                    <span class="text">${category.firstToUpper()}</span>
+                                    <span class="control icon" title="Collapse/Expand ${category}"></span>
+                                </a>
+                                <a class="control hide-some" category="${category}" title="Show/Hide all ${category}"></a>
+                            </div>`);
 
-                            var c = f[n] || false;
+                            $.each(types, function(type, i) {
 
-                            var el = $('<a />', {
-                                "class": "side-bar-button " + (c ? 'inactive' : ''),
-                                set: t,
-                                label: n,
-                                html: $('<span />', {
-                                    html: n.space().replace(/Dz/, 'DZ').replace(/ (Survival|Complete)/, '').replace(' Of ', ' of ')
-                                }),
+                                var active = filters[type] || false;
 
-                            }).appendTo(sb);
+                                var el = $('<a />', {
+                                    "class": "side-bar-button " + (active ? 'inactive' : ''),
+                                    set: category,
+                                    label: type,
+                                    html: $('<span />', {
+                                        html: type.space().replace(/Dz/, 'DZ').replace(/ (Survival|Complete)/, '').replace(' Of ', ' of ')
+                                    }),
 
-                            $('<span />', {
-                                html: '[ x' + K.map.type.counts[n] + ' ]',
-                                "class": "quantity"
-                            }).appendTo(el);
+                                }).appendTo(sb);
 
-                            if (i[0].contains('.svg')) {
+                                $('<span />', {
+                                    html: '[ x' + K.map.type.counts[type] + ' ]',
+                                    "class": "quantity"
+                                }).appendTo(el);
 
-                                $('<img />', {
-                                    src: i[Math.floor(Math.random() * i.length)]
-                                }).prependTo(el);
+                                if (i[0].contains('.svg')) {
 
-                            } else if (t == "polyline") {
+                                    $('<img />', {
+                                        src: i[Math.floor(Math.random() * i.length)]
+                                    }).prependTo(el);
 
-                                $('<div />', {
-                                    "class": "polyline"
-                                }).css({
-                                    backgroundColor: i[0]
-                                }).prependTo(el);
+                                } else if (category == "polyline") {
 
-                            } else {
+                                    $('<div />', {
+                                        "class": "polyline"
+                                    }).css({
+                                        backgroundColor: i[0]
+                                    }).prependTo(el);
 
-                                $('<div />', {
-                                    "class": "polygon"
-                                }).css({
-                                    borderColor: i[1],
-                                    backgroundColor: i[0]
-                                }).prependTo(el);
-                            }
+                                } else {
 
-                            // Hide the layers that were hidden on the last load
-                            c && showHideLayers(t, n, true);
-                        });
+                                    $('<div />', {
+                                        "class": "polygon"
+                                    }).css({
+                                        borderColor: i[1],
+                                        backgroundColor: i[0]
+                                    }).prependTo(el);
+                                }
+
+                                // Hide the layers that were hidden on the last load
+                                active && showHideLayers(category, type, true);
+                            });
+                        }
                     });
 
                     // Filter button events
                     $('#side-bar .side-bar-button').off('click').on('click', function() {
                         $(this).toggleClass('inactive');
-                        togglehideAll();
+                        toggleHideIcons();
                         var t = $(this).attr('label'),
                             g = false,
                             ia = $(this).hasClass('inactive');
@@ -3861,18 +3945,43 @@ function pageLoad() {
 
                         var filters = Cookies.get('filters') || {};
                         filters[t] = ia;
-                        Cookies.set('filters', filters);
+                        Cookies.set('filters', filters, K.expires);
 
                         // Add the layers to the shown or hidden groups
                         showHideLayers($(this).attr('set'), t, ia);
                     });
 
                     $('#side-bar .hide-all').off('click').on('click', function() {
-                        showhideAllLayers(!$(this).hasClass('hidden'));
-                        togglehideAll();
+                        showHideAllLayers(!$(this).hasClass('hidden'));
+                        toggleHideIcons();
                     });
 
-                    togglehideAll();
+                    $('#side-bar .hide-some').off('click').on('click', function() {
+                        showHideCategory($(this).attr('category'), !$(this).hasClass('hidden'));
+                        toggleHideIcons();
+                    });
+
+                    toggleHideIcons();
+
+                    $('#side-bar .collapse').off('click').on('click', function() {
+                        var icon = $('.icon', this),
+                            list = $(this).parent().nextUntil('.sub.title');
+
+                        if (icon.hasClass('hidden')) {
+                            list.each(function(i, el) {
+                                $(this).show(400);
+                            });
+
+                            icon.removeClass('hidden');
+
+                        } else {
+                            list.each(function(i, el) {
+                                $(this).hide(400);
+                            });
+
+                            icon.addClass('hidden');
+                        }
+                    });
 
                     // Credits
                     $(sb).append(K.credits);
@@ -4476,8 +4585,8 @@ function updateSetCounter() {
             delete setData2[key];
         }
 
-        Cookies.set('setData1', setData1);
-        Cookies.set('setData2', setData2);
+        Cookies.set('setData1', setData1, K.expires);
+        Cookies.set('setData2', setData2, K.expires);
 
     } else {
 
@@ -4628,11 +4737,24 @@ function setGridRotate(reset) {
     });
 }
 
-function togglehideAll() {
+function toggleHideIcons() {
     if (!$('#side-bar .side-bar-button:not(.inactive)').length)
-        $('#side-bar .hide-all').addClass('hidden').html('Show All');
+        $('#side-bar .hide-all').addClass('hidden');
     else
-        $('#side-bar .hide-all').removeClass('hidden').html('Hide All');
+        $('#side-bar .hide-all').removeClass('hidden');
+
+    $('#side-bar .filters .side-content').children().each(function(i, el) {
+        if ($(this).hasClass('sub')) {
+            var group = $(this).nextUntil('.sub'),
+                count = 0;
+            group.each(function() {
+                $(this).hasClass('inactive') && count++;
+            });
+
+            $('.hide-some', this).removeClass('hidden');
+            count == group.length && $('.hide-some', this).addClass('hidden');
+        }
+    });
 }
 
 //////////////////////////////////////////////////////
@@ -4666,7 +4788,7 @@ function createMarker(p) {
     });
 }
 
-function showhideAllLayers(show) {
+function showHideAllLayers(show) {
     $.each(K.map.type[K.mode.get], function(category, array) {
         $.each(array, function(type, i) {
             var btn = $('[set="' + category + '"][label="' + type + '"]');
@@ -4676,10 +4798,25 @@ function showhideAllLayers(show) {
 
             var filters = Cookies.get('filters') || {};
             filters[type] = show;
-            Cookies.set('filters', filters);
+            Cookies.set('filters', filters, K.expires);
 
             showHideLayers(category, type, show);
         });
+    });
+}
+
+function showHideCategory(category, show) {
+    $.each(K.map.type[K.mode.get][category], function(type, i) {
+        var btn = $('[set="' + category + '"][label="' + type + '"]');
+
+        btn.removeClass('inactive');
+        show && btn.addClass('inactive');
+
+        var filters = Cookies.get('filters') || {};
+        filters[type] = show;
+        Cookies.set('filters', filters, K.expires);
+
+        showHideLayers(category, type, show);
     });
 }
 

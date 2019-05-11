@@ -78,7 +78,7 @@ $font-5: Helvetica;
 ///
 @mixin responsive-font($responsive, $min, $max: false, $fallback: false) {
     $responsive-unitless: $responsive / ($responsive - $responsive + 1);
-    $dimension: if(unit($responsive) == "vh", "height", "width");
+    $dimension: if(unit($responsive)=="vh", "height", "width");
     $min-breakpoint: $min / $responsive-unitless * 100;
 
     @media (max-#{$dimension}: #{$min-breakpoint}) {
@@ -401,6 +401,11 @@ body {
     }
 }
 
+hr {
+    margin: 4px 30% 4px 5px;
+    border-style: inset hidden hidden hidden;
+}
+
 .leaflet-interactive {
     // &:not([stroke='#f06eaa']) {
     //     @extend %extend-cursor-grab;
@@ -550,7 +555,7 @@ body {
         width: max-content;
 
         // width: auto !important;
-   
+
     }
 }
 
@@ -591,7 +596,32 @@ body {
             color: $gray;
 
             // padding-left: 6px;
-       
+
+        }
+
+        &.note {
+            position: relative;
+            font-size: 7pt;
+            padding-left: 15px;
+            min-height: initial;
+            margin-top: 3px;
+
+            &::before {
+                content: '*';
+                position: absolute;
+                left: 0;
+                top: 3px;
+                font-size: 14pt;
+            }
+
+            &::after {
+                content: '';
+                position: absolute;
+                left: 10px;
+                top: 1px;
+                border-left: 1px solid $text;
+                bottom: 1px;
+            }
         }
     }
 
@@ -872,19 +902,19 @@ body {
             border-bottom: 0;
             border-top-color: $border-hmm;
 
-            &:last-child:not(.icon):not(.slider) {
+            &:last-child:not(.icon):not(.slider):not(.back):not(.label) {
                 border-radius: 0 0 4px 4px;
                 border-bottom: 1px solid $border;
             }
 
-            &:only-child:not(.icon):not(.slider) {
+            &:only-child:not(.icon):not(.slider):not(.back):not(.label) {
                 border-radius: 4px;
             }
         }
 
-        > span,
-        > a {
-            &:first-child:not(.icon):not(.slider) {
+        >span,
+        >a {
+            &:first-child:not(.icon):not(.slider):not(.back):not(.label) {
                 border-radius: 4px 4px 0 0;
             }
         }
@@ -1135,7 +1165,7 @@ body {
         position: relative;
         margin: 0;
 
-        > span {
+        >span {
             border-radius: 0 !important;
             display: inline-block;
             width: 100%;
@@ -1152,6 +1182,7 @@ body {
         }
 
         .list {
+
             &[name='list-item'],
             &[name='list-qty'] {
                 &:nth-last-child(3) {
@@ -1169,7 +1200,6 @@ body {
         &.list {
             width: 100%;
 
-            &[name='list-sub'],
             &[name='list-item'] {
                 width: 158px;
             }
@@ -1220,56 +1250,102 @@ body {
         color: $attribute;
     }
 
+    .setting-container {
+        position: relative;
+        display: flex;
+        flex-wrap: wrap;
+
+        span {
+            border: 0;
+            background: transparent;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+
+        .label {
+            line-height: 20px;
+            text-align: left;
+            padding-left: 5px;
+            font-size: 7pt;
+        }
+
+        .back {
+            box-shadow: inset 0 0 15px 2px $box-shadow;
+            width: 30px;
+            height: 14px;
+            top: 2px;
+            right: 2px;
+            left: initial;
+        }
+    }
+
     .switch {
         position: relative;
-        display: inline-block;
-        width: 43px;
-        height: 30px;
-        top: -7px;
-        margin-left: -1px;
-        margin-bottom: -7px;
+        width: 33.333%;
+        height: 20px;
+        top: -1px;
+        margin-bottom: -16px;
+        background: $background;
+        border: $border 1px solid;
+        box-sizing: border-box;
 
         input {
             opacity: 0;
             width: 0 !important;
             height: 0;
         }
+
+        &:last-of-type {
+            border-left: 0;
+        }
+
+        &:nth-last-of-type(2) {
+            border-left: 0;
+        }
     }
 
     span.slider {
-        position: absolute;
         cursor: pointer;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
         transition: .4s;
         height: initial;
 
-        &:before {
+        &::before {
             position: absolute;
             content: "";
-            height: 22px;
-            width: 18px;
-            left: 4px;
-            bottom: 4px;
+            height: 12px;
+            width: 20px;
+            right: 10px;
+            bottom: 3px;
             background-color: $text;
             transition: .4s;
+            font-size: 5pt;
+            line-height: 12px;
+        }
+
+        &.note {
+            &::before {
+                background-color: $power-red-hover;
+                content: 'No';
+            }
         }
     }
 
-    input:checked + .slider {
-        // background-color: #2196F3;
+    input:checked+.slider {
 
         &::before {
             background-color: $gray;
-            transform: translateX(15px);
+            transform: translateX(7px);
         }
-    }
 
-    input:focus + .slider {
-        // box-shadow: 0 0 1px #2196F3;
-   
+        &.note {
+            &::before {
+                background-color: $power-green-hover;
+                content: 'Yes';
+            }
+        }
     }
 }
 
@@ -1473,7 +1549,7 @@ body {
         }
     }
 
-    > div {
+    >div {
         position: fixed;
         top: 5px;
         width: 210px;
@@ -1621,6 +1697,7 @@ body {
     }
 
     div {
+
         &.login,
         &.todo,
         &.changes {
@@ -1670,18 +1747,18 @@ body {
     }
 
     &.active {
-        &.filters > * {
+        &.filters>* {
             transform: translateX(-212px);
         }
 
-        &.shorts > *,
-        &.language > * {
+        &.shorts>*,
+        &.language>* {
             transform: translateX(-172px);
         }
 
-        &.login > *,
-        &.todo > *,
-        &.changes > * {
+        &.login>*,
+        &.todo>*,
+        &.changes>* {
             @media (max-width: 346px) {
                 transform: translateX(calc(-100vw + 38px));
             }
@@ -1689,7 +1766,7 @@ body {
             transform: translateX(-302px);
         }
 
-        &.gear > * {
+        &.gear>* {
             @media (max-width: 500px) {
                 transform: translateX(calc(-100vw + 38px));
             }
@@ -1705,7 +1782,7 @@ body {
     .item {
         padding: 3px 0;
 
-        > div {
+        >div {
             display: inline-block;
             width: 20px;
             text-align: center;
@@ -1815,6 +1892,7 @@ body {
         }
     }
 
+    div,
     span {
         &.title {
             font-size: 20px;
@@ -1828,6 +1906,49 @@ body {
 
             span {
                 font-size: 16px;
+            }
+        }
+    }
+
+    div.sub.title {
+        display: flex;
+    }
+
+    .control {
+        position: relative;
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        padding: 4px;
+    }
+
+    .collapse .icon {
+        width: 10px;
+        padding: 4px;
+
+        &::before {
+            content: url(../images/menu-collapse.svg);
+        }
+
+        &.hidden {
+            &::before {
+                content: url(../images/menu-expand.svg);
+            }
+        }
+    }
+
+    .hide-some {
+        margin-left: auto;
+        margin-right: -4px;
+        top: 2px;
+
+        &::before {
+            content: url(../images/menu-hide.svg);
+        }
+
+        &.hidden {
+            &::before {
+                content: url(../images/menu-show.svg);
             }
         }
     }
@@ -1870,7 +1991,7 @@ body {
         }
     }
 
-    > *:not(.active) {
+    >*:not(.active) {
         z-index: -1;
     }
 
@@ -2132,7 +2253,7 @@ input {
 
         .check {
             // flex-grow: 1;
-       
+
         }
 
         label,
@@ -2206,7 +2327,7 @@ input {
 
         .checks {
             // top: -12px;
-       
+
         }
     }
 }
@@ -2233,9 +2354,10 @@ input {
 
         .hover-icon,
         .anim-icon {
-            &:hover >,
-            &:focus >,
-            &:active > {
+
+            &:hover>,
+            &:focus>,
+            &:active> {
                 .icon {
                     transform: scale(1.4);
                 }
@@ -2265,7 +2387,7 @@ input {
         // position: unset;
         // transform: unset;
         // }
-   
+
     }
 
     .garden-name {
@@ -2283,6 +2405,7 @@ input {
 
 .leaflet-marker-icon {
     &.underground {
+
         // margin-top: 0px !important;
         &::before {
             position: absolute;
@@ -2298,6 +2421,7 @@ input {
     }
 
     &.overground {
+
         // margin-top: -20px !important;
         &::before {
             position: absolute;
@@ -2399,9 +2523,25 @@ img.leaflet-marker-icon {
 }
 
 .hide-all {
-    padding-right: 10px;
-    font-size: 10px;
-    text-align: right;
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    right: 10px;
+    top: 15px;
+
+    &::before {
+        content: url(../images/menu-hide.svg);
+        position: absolute;
+        right: 0;
+        width: 16px;
+        height: 16px;
+    }
+
+    &.hidden {
+        &::before {
+            content: url(../images/menu-show.svg);
+        }
+    }
 }
 
 .leaflet-editing-icon {
@@ -2578,7 +2718,7 @@ path {
         &.inputs {
             min-width: 95px;
 
-            > div {
+            >div {
                 position: absolute;
                 top: 50%;
                 transform: translateY(-50%);
@@ -2905,7 +3045,7 @@ $dragger: rgb(195, 200, 212);
 }
 
 .mCSB_inside {
-    > .mCSB_container {
+    >.mCSB_container {
         margin-right: 15px;
     }
 }
@@ -3419,7 +3559,9 @@ $selectric-font-size: 14px; // Font size
         color: $selectric-secondary-color;
         text-align: center;
         font: 0/0 a;
-        *font: 20px /#{$selectric-inner-height} Lucida Sans Unicode, Arial Unicode MS, Arial;
+        *font: 20px /#{$selectric-inner-height} Lucida Sans Unicode,
+        Arial Unicode MS,
+        Arial;
 
         &::after {
             content: ' ';
@@ -3467,7 +3609,7 @@ $selectric-font-size: 14px; // Font size
 }
 
 .selectric-disabled {
-    filter: alpha(opacity = 50);
+    filter: alpha(opacity=50);
     opacity: 0.5;
     cursor: default;
     user-select: none;
@@ -3581,7 +3723,7 @@ $selectric-font-size: 14px; // Font size
     }
 
     .disabled {
-        filter: alpha(opacity = 50);
+        filter: alpha(opacity=50);
         opacity: 0.5;
         cursor: default !important;
         background: none !important;
@@ -3600,7 +3742,7 @@ $selectric-font-size: 14px; // Font size
         }
 
         &.disabled li {
-            filter: alpha(opacity = 100);
+            filter: alpha(opacity=100);
             opacity: 1;
         }
 

@@ -1,5 +1,6 @@
 {
     "cSpell.words": [
+        "Comms",
         "GSAP's",
         "ckeditor",
         "dropdown",
@@ -43,6 +44,7 @@
         "markdown",
         "latex",
         "plaintext",
-        "todo"
+        "todo",
+        "php"
     ]
 }

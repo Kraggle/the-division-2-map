@@ -397,6 +397,14 @@
 
         isInArray: function() {
             return $.inArray(arguments[0], arguments[1]) == -1 ? false : true;
+        },
+
+        local: function(key, value) {
+            if (K.Util.type(value) === 'undefined') {
+                return JSON.parse(localStorage.getItem(key));
+            } else {
+                localStorage.setItem(key, JSON.stringify(value));
+            }
         }
     };
 
@@ -408,6 +416,7 @@
     K.bind = K.Util.bind;
     K.stamp = K.Util.stamp;
     K.setOptions = K.Util.setOptions;
+    K.local = K.Util.local;
 
     // @class Class
     // @aka K.Class
@@ -985,5 +994,19 @@ if (!String.prototype.firstToUpper) {
     String.prototype.firstToUpper = function() {
         var s = this.toString();
         return s.substr(0, 1).toUpperCase() + s.substr(1);
+    }
+}
+
+if (!Date.prototype.addHours) {
+    Date.prototype.addHours = function(h) {
+        this.setTime(this.getTime() + (h * 60 * 60 * 1000));
+        return this;
+    }
+}
+
+if (!Date.prototype.addMinutes) {
+    Date.prototype.addMinutes = function(h) {
+        this.setTime(this.getTime() + (h * 60 * 1000));
+        return this;
     }
 }

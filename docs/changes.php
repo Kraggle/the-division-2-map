@@ -1,7 +1,24 @@
 <? ?>
 <span class="title">Change Log</span>
 
-<span class="sub title date">11<sup>th</sup> <span class="dnt"> May </span> 2019</span>
+<span class="sub title date">14<sup>th</sup> <span class="dnt">May</span> 2019</span>
+<ul>
+	<li class="dnt">Improved load times by caching the bulk of the data and only downloading if it has changed.</li>
+	<li class="dnt">Added descriptions to the settings in the tools.</li>
+	<li class="dnt">You can now mark certain layers as complete by right clicking. With this you can...
+		<ul>
+			<li class="dnt">show and hide any that are complete.</li>
+			<li class="dnt">complete some temporarily, as in the caches you can collect repeatedly.</li>
+			<li class="dnt">the timed ones have a preset time which matches the in-game respawn.</li>
+			<li class="dnt">some have linked layers, like the Resource Nodes which will mark all associated Resources.</li>
+			<li class="dnt">the linked layers include the areas, which will show and hide along with the markers.</li>
+		</ul>
+	</li>
+	<li class="dnt">Not all layers have been set up to mark as complete as of yet and will take time.</li>
+	<li class="dnt">Thanks to Engeloki more markers have been added to the map and he has improved a lot of the popups.</li>
+</ul>
+
+<span class="sub title date">11<sup>th</sup> <span class="dnt">May</span> 2019</span>
 <ul>
 	<li class="dnt">By request you can now collapse and hide by Category in the Filters menu.</li>
 	<li class="dnt">A few improvements to the marker tools.</li>

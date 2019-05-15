@@ -20,6 +20,10 @@
         return -1;
     };
 
+    var isWindow = function isWindow(obj) {
+        return obj != null && obj === obj.window;
+    };
+
     function expose() {
         var oldL = window.K;
 
@@ -417,6 +421,7 @@
     K.stamp = K.Util.stamp;
     K.setOptions = K.Util.setOptions;
     K.local = K.Util.local;
+    K.each = K.Util.each;
 
     // @class Class
     // @aka K.Class
@@ -865,6 +870,7 @@
         // Called when the handler is disabled, should remove the event hooks added previously.
     });
 
+    K.isWindow = isWindow;
 
 }(window, document));
 
@@ -873,7 +879,7 @@ var class2type = {},
     hasOwn = class2type.hasOwnProperty;
 
 // Populate the class2type map
-jQuery.each("Boolean Number String Function Array Date RegExp Object Error Symbol".split(" "),
+K.each("Boolean Number String Function Array Date RegExp Object Error Symbol".split(" "),
     function(i, name) {
         class2type["[object " + name + "]"] = name.toLowerCase();
     });
@@ -885,9 +891,9 @@ function isArrayLike(obj) {
     // hasOwn isn't used here due to false negatives
     // regarding Nodelist length in IE
     var length = !!obj && "length" in obj && obj.length,
-        type = jQuery.type(obj);
+        type = K.Util.type(obj);
 
-    if (type === "function" || jQuery.isWindow(obj)) {
+    if (type === "function" || K.isWindow(obj)) {
         return false;
     }
 

@@ -1,8 +1,8 @@
 <?
 // session_start();
-include_once 'includes/session_start.php';
-include_once 'includes/db_connect.php';
-include_once 'includes/functions.php';
+include_once '../includes/session_start.php';
+include_once '../includes/db_connect.php';
+include_once '../includes/functions.php';
 
 ?>
 <!DOCTYPE html>
@@ -22,82 +22,7 @@ include_once 'includes/functions.php';
 	<meta property="og:url" content="https://the-division-2-map.com/">
 	<meta property="og:description" content="Tom Clancy's The Division 2 Interactive Map.">
 
-	<link rel="stylesheet" href="css/leaflet1.5.1.css" />
-	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-	<link rel="stylesheet" href="css/huebee.min.css" />
-	<link rel="stylesheet" href="css/leaflet.draw.css" />
-	<link rel="stylesheet" href="css/jquery.mCustomScrollbar.min.css" />
-	<link rel="stylesheet" href="css/jquery.qtip.min.css" />
-	<link rel="stylesheet" href="css/codemirror.css" />
-
-	<!-- Essential scripts -->
-	<? if ($_SERVER['HTTP_HOST'] == "localhost") {
-		// echo '<script src="http://localhost:35729/livereload.js?snipver=1"></script>';
-	} ?>
-	<script src="https://code.jquery.com/jquery-3.4.1.js" integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU=" crossorigin="anonymous"></script>
-	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script>
-
-	<script src="js/K.js?v=<? echo filemtime('js/K.js') ?>"></script>
-
-	<script src="js/Leaflet/leaflet-src1.5.1.js"></script>
-
-	<script src="js/Utility/forms.js?v=1"></script>
-	<script src="js/Utility/sha512.js"></script>
-	<script src="js/Utility/js.cookie.js"></script>
-	<!-- <script src="js/Utility/jquery.translate.js"></script> -->
-	<!-- <script src="js/Utility/jquery.mCustomScrollbar.concat.min.js"></script> -->
-	<script src="js/Utility/jquery.qtip.min.js"></script>
-	<script src="js/Utility/huebee.pkgd.min.js"></script>
-	<script src="js/Utility/tinysort.js"></script>
-	<script src="js/Utility/jquery.selectric.js"></script>
-
-	<script src="js/Leaflet/Draw/Leaflet.draw0.4.2.js"></script>
-	<script src="js/Leaflet/Draw/Leaflet.Draw.Event0.4.2.js"></script>
-
-	<script src="js/Leaflet/Draw/Toolbar0.4.2.js"></script>
-	<script src="js/Leaflet/Draw/Tooltip0.4.2.js"></script>
-
-	<script src="js/Leaflet/Draw/ext/GeometryUtil0.4.2.js"></script>
-	<script src="js/Leaflet/Draw/ext/LatLngUtil0.4.2.js"></script>
-	<script src="js/Leaflet/Draw/ext/LineUtil.Intersect0.4.2.js"></script>
-	<script src="js/Leaflet/Draw/ext/Polygon.Intersect0.4.2.js"></script>
-	<script src="js/Leaflet/Draw/ext/Polyline.Intersect0.4.2.js"></script>
-	<script src="js/Leaflet/Draw/ext/TouchEvents0.4.2.js"></script>
-
-	<script src="js/Leaflet/Draw/draw/DrawToolbar0.4.2.js"></script>
-	<script src="js/Leaflet/Draw/draw/handler/Draw.Feature0.4.2.js?v=1.01"></script>
-	<script src="js/Leaflet/Draw/draw/handler/Draw.SimpleShape0.4.2.js"></script>
-	<script src="js/Leaflet/Draw/draw/handler/Draw.Marker0.4.2.js"></script>
-	<script src="js/Leaflet/Draw/draw/handler/Draw.Polyline0.4.2.js"></script>
-	<script src="js/Leaflet/Draw/draw/handler/Draw.CircleMarker0.4.2.js"></script>
-	<script src="js/Leaflet/Draw/draw/handler/Draw.Circle0.4.2.js"></script>
-	<script src="js/Leaflet/Draw/draw/handler/Draw.Polygon0.4.2.js"></script>
-	<script src="js/Leaflet/Draw/draw/handler/Draw.Rectangle0.4.2.js"></script>
-
-	<script src="js/Leaflet/Draw/edit/EditToolbar0.4.2.js"></script>
-	<script src="js/Leaflet/Draw/edit/handler/EditToolbar.Edit0.4.2.js"></script>
-	<script src="js/Leaflet/Draw/edit/handler/EditToolbar.Delete0.4.2.js"></script>
-
-	<script src="js/Leaflet/Draw/Control.Draw0.4.2.js"></script>
-
-	<script src="js/Leaflet/Draw/edit/handler/Edit.Poly0.4.2.js"></script>
-	<script src="js/Leaflet/Draw/edit/handler/Edit.SimpleShape0.4.2.js"></script>
-	<script src="js/Leaflet/Draw/edit/handler/Edit.CircleMarker0.4.2.js"></script>
-	<script src="js/Leaflet/Draw/edit/handler/Edit.Circle0.4.2.js"></script>
-	<script src="js/Leaflet/Draw/edit/handler/Edit.Rectangle0.4.2.js"></script>
-	<script src="js/Leaflet/Draw/edit/handler/Edit.Marker0.4.2.js"></script>
-
-	<script src="js/Leaflet/Path.Drag/Path.Drag.js"></script>
-	<script src="js/Leaflet/Path.Drag/Canvas.js"></script>
-	<script src="js/Leaflet/Path.Drag/Path.Transform.js"></script>
-	<script src="js/Leaflet/Path.Drag/SVG.js"></script>
-	<script src="js/Leaflet/Path.Drag/SVG.VML.js"></script>
-
-	<script src="js/Leaflet/Bounds/Leaflet.Bounds.Aware.LayerGroup.js"></script>
-
-	<!-- <script src="js/Utility/codemirror.js"></script> -->
-
-	<link rel="stylesheet" href="sass/div.map.css?v=<? echo filemtime('sass/div.map.css') ?>" />
+	<link rel="stylesheet" href="../sass/div.map.css?v=<? echo filemtime('../sass/div.map.css') ?>" />
 </head>
 
 <body>
@@ -111,9 +36,9 @@ include_once 'includes/functions.php';
 		<div class="login">
 			<div class="side-content">
 				<? if (isset($_GET['token'], $_GET['forgot']) && token_check($mysqli, $_GET['token'])) {
-					include 'includes/reset.php'; 
+					include '../includes/reset.php'; 
 				} else {
-					include 'includes/login.php'; 
+					include '../includes/login.php'; 
 				} ?>
 			</div>
 		</div>
@@ -124,7 +49,7 @@ include_once 'includes/functions.php';
 		<a href='#' class="side-menu-toggle changes" button="changes">Recent Changes</a>
 		<div class="changes">
 			<div class="side-content">
-				<? include 'docs/changes.php'; ?>
+				<? include '../docs/changes.php'; ?>
 			</div>
 		</div>
 		<!-- <a href='#' class="side-menu-toggle todo" button="todo">Upcoming Changes</a>
@@ -194,6 +119,6 @@ include_once 'includes/functions.php';
 
 </body>
 
-<script src="div.map.js?v=<? echo filemtime('div.map.js') ?>"></script>
+<script type="module" src="div.map.js?v=<? echo filemtime('div.map.js') ?>"></script>
 
 </html>

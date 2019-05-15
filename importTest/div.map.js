@@ -1,4 +1,8 @@
-K.currentUpdate = '15/05/2019';
+import '../js/K.js';
+import '../js/jquery-3.4.1.js';
+import '../js/Leaflet/leaflet-src1.5.1.js';
+
+K.currentUpdate = '14/05/2019';
 
 /*========================================
 =            LEAFLET INCLUDES            =
@@ -378,7 +382,7 @@ L.Layer.include({
         if (!this.options.complete) return;
 
         // a startup check to see if this needs changing
-        var done = this.complete = K.complete.is(this);
+        var done = this.complete = K.complete.is(this.options.id);
         if (!this.init && !done) {
             this.init = true;
             return;
@@ -388,13 +392,13 @@ L.Layer.include({
         // when timed, check it still needs the overlay 
         var time = this.options.time;
         if (time && done) {
-            if (K.complete.time(this)) {
+            if (K.complete.time(this.options.id)) {
                 K.timed.add(this);
             } else {
                 K.complete.set(false, this);
                 K.timed.remove(this.options.id);
 
-                done = this.complete = K.complete.is(this);
+                done = this.complete = K.complete.is(this.options.id);
             }
         }
 
@@ -406,8 +410,8 @@ L.Layer.include({
                 size: i.iconSize,
                 html: !i.iconUrl ? i.html : '',
                 className: i.className,
-                done: K.complete.is(this),
-                time: K.complete.time(this)
+                done: K.complete.is(this.options.id),
+                time: K.complete.time(this.options.id)
             }));
         }
 
@@ -678,6 +682,16 @@ L.Control.Button = L.Control.extend({
 L.control.button = function(options) {
     return new L.Control.Button(options);
 };
+
+// L.FeatureGroup.include({
+//     addClass: function(value) {
+//         return this.invoke('addClass', value);
+//     },
+
+//     removeClass: function(value) {
+//         return this.invoke('removeClass', value);
+//     }
+// });
 /*=====  End of LEAFLET INCLUDES  ======*/
 
 Cookies.json = true;
@@ -730,17 +744,15 @@ K.extend({
 
             if ($.type(index) === 'number') K.complete.layers.splice(index, 1);
         },
-        is: function(layer) {
-            var uD = K.user.data,
-                id = layer.options.id;
+        is: function(id) {
+            var uD = K.user.data;
             if (!uD && !('complete' in localStorage)) K.local('complete', {});
             if (uD) return id in uD;
             return id in K.local('complete');
         },
-        time: function(layer) {
-            if (!K.complete.is(layer)) return false;
+        time: function(id) {
+            if (!K.complete.is(id)) return false;
             var uD = K.user.data,
-                id = layer.options.id,
                 time = uD ? uD[id] : K.local('complete')[id];
 
             if ($.type(time) === 'string') {
@@ -750,11 +762,12 @@ K.extend({
                     hrs = Math.ceil((gap % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
                     min = Math.ceil((gap % (1000 * 60 * 60)) / (1000 * 60));
 
-                if (gap < 0) {
-                    K.complete.set(false, layer);
-                    time = false;
-                } else if (hrs) time = hrs + 'h';
+                if (hrs) time = hrs + 'h';
                 else if (min) time = min + 'm';
+                else {
+                    K.complete.toggle(id, true);
+                    time = false;
+                }
 
             } else time = false;
 
@@ -2553,12 +2566,12 @@ K.tool.layer = {
                 url: i.iconUrl,
                 size: i.iconSize,
                 className: i.className,
-                done: K.complete.is(layer),
-                time: K.complete.time(layer)
+                done: K.complete.is(o.id),
+                time: K.complete.time(o.id)
             }));
             layer.setOpacity(o.opacity);
 
-            K.complete.is(layer) && K.complete.add(layer);
+            K.complete.is(o.id) && K.complete.add(layer);
 
             // Create a polyline with the new settings
         } else if (K.isInArray(o.shape, ['polyline', 'polygon'])) {
@@ -3053,11 +3066,11 @@ L.Layer.include({
                         size: p.iconSize,
                         html: !p.iconUrl ? p.html : '',
                         className: p.className,
-                        done: K.complete.is(layer),
-                        time: K.complete.time(layer)
+                        done: K.complete.is(layer.options.id),
+                        time: K.complete.time(layer.options.id)
                     }));
 
-                    K.complete.is(layer) && K.complete.add(layer);
+                    K.complete.is(layer.options.id) && K.complete.add(layer);
                     // layer.saved(false);
                 }
             });
@@ -4915,11 +4928,10 @@ function toggleHideIcons() {
     else
         $('#side-bar .hide-all').removeClass('hidden');
 
-    $('#side-bar .filters .side-content').children('').each(function() {
+    $('#side-bar .filters .side-content').children().each(function(i, el) {
         if ($(this).hasClass('sub')) {
-            var group = $(this).nextUntil('.sub, div'),
+            var group = $(this).nextUntil('.sub'),
                 count = 0;
-
             group.each(function() {
                 $(this).hasClass('inactive') && count++;
             });
@@ -4945,7 +4957,9 @@ function createMarker(p) {
             url: p.iconUrl,
             size: p.iconSize,
             html: p.html,
-            className: p.className
+            className: p.className,
+            done: K.complete.is(p.id),
+            time: K.complete.time(p.id)
         }),
         creator: p.creator,
         category: p.category || 'default',
@@ -5005,7 +5019,7 @@ function showHideAllLayers(show) {
 }
 
 function showHideCategory(category, show) {
-    $.each(K.map.type[K.mode.get][category], function(type) {
+    $.each(K.map.type[K.mode.get][category], function(type, i) {
         var btn = $(`[set="${category}"][label="${type}"]`);
 
         btn.removeClass('inactive');

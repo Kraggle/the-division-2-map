@@ -6,8 +6,8 @@ $error = 'none';
 
 function sec_session_start() {
 	$session_name = 'sec_session_id';   // Set a custom session name
-	/*Sets the session name. 
-	 *This must come before session_set_cookie_params due to an undocumented bug/feature in PHP. 
+	/*Sets the session name.
+	 *This must come before session_set_cookie_params due to an undocumented bug/feature in PHP.
 	 */
 	session_name($session_name);
  
@@ -15,24 +15,26 @@ function sec_session_start() {
 	// This stops JavaScript being able to access the session id.
 	$httponly = true;
 	// Forces sessions to only use cookies.
-	if (ini_set('session.use_only_cookies', 1) === FALSE) {
+	if (ini_set('session.use_only_cookies', 1) === false) {
 		header("Location: error.php?err=Could not initiate a safe session (ini_set)");
 		exit();
 	}
 	// Gets current cookies params.
 	$cookieParams = session_get_cookie_params();
-	session_set_cookie_params($cookieParams["lifetime"],
-		$cookieParams["path"], 
-		$cookieParams["domain"], 
+	session_set_cookie_params(
+		$cookieParams["lifetime"],
+		$cookieParams["path"],
+		$cookieParams["domain"],
 		$secure,
-		$httponly);
+		$httponly
+	);
  
-	session_start();            // Start the PHP session 
-	session_regenerate_id(true);    // regenerated the session, delete the old one. 
+	session_start();            // Start the PHP session
+	session_regenerate_id(true);    // regenerated the session, delete the old one.
 }
 
 function login($email, $password, $mysqli) {
-	// Using prepared statements means that SQL injection is not possible. 
+	// Using prepared statements means that SQL injection is not possible.
 	if ($stmt = $mysqli->prepare("SELECT id, username, password, type, donate
 								FROM members
 							   WHERE email = ?
@@ -47,10 +49,10 @@ function login($email, $password, $mysqli) {
  
 		if ($stmt->num_rows == 1) {
 			// If the user exists we check if the account is locked
-			// from too many login attempts 
+			// from too many login attempts
  
 			if (checkbrute($user_id, $mysqli) == true) {
-				// Account is locked 
+				// Account is locked
 				// Send an email to user saying their account is locked
 				$_GET['error'] = "Account locked due to failed login attempts, you can request an unlock or wait upto 2 hours.";
 				return false;
@@ -107,9 +109,7 @@ function login($email, $password, $mysqli) {
 }
 
 function type_name() {
-	
 	if (isset($_SESSION['usertype'])) {
-		
 		switch ($_SESSION['usertype']) {
 			case 5:
 				return "Admin";
@@ -135,7 +135,7 @@ function type_name() {
 }
 
 function remember($user_id, $mysqli) {
-	// Using prepared statements means that SQL injection is not possible. 
+	// Using prepared statements means that SQL injection is not possible.
 	if ($stmt = $mysqli->prepare("SELECT id, username, password, type, donate 
 								FROM members
 							   WHERE id = ?
@@ -150,10 +150,10 @@ function remember($user_id, $mysqli) {
 		
 		if ($stmt->num_rows == 1) {
 			// If the user exists we check if the account is locked
-			// from too many login attempts 
+			// from too many login attempts
 			
 			if (checkbrute($user_id, $mysqli) == true) {
-				// Account is locked 
+				// Account is locked
 				// Send an email to user saying their account is locked
 				$_GET['error'] = "Account locked due to failed login attempts, check your email to unlock or wait upto 2 hours.";
 				return false;
@@ -187,10 +187,10 @@ function remember($user_id, $mysqli) {
 }
 
 function checkbrute($user_id, $mysqli) {
-	// Get timestamp of current time 
+	// Get timestamp of current time
 	$now = time();
  
-	// All login attempts are counted from the past 2 hours. 
+	// All login attempts are counted from the past 2 hours.
 	$valid_attempts = $now - (2 * 60 * 60);
  
 	if ($stmt = $mysqli->prepare("SELECT time 
@@ -199,11 +199,11 @@ function checkbrute($user_id, $mysqli) {
 							AND time > '$valid_attempts'")) {
 		$stmt->bind_param('i', $user_id);
  
-		// Execute the prepared query. 
+		// Execute the prepared query.
 		$stmt->execute();
 		$stmt->store_result();
  
-		// If there have been more than 5 failed logins 
+		// If there have been more than 5 failed logins
 		if ($stmt->num_rows > 5) {
 			return true;
 		} else {
@@ -213,11 +213,8 @@ function checkbrute($user_id, $mysqli) {
 }
 
 function login_check($mysqli) {
-	// Check if all session variables are set 
-	if (isset($_SESSION['user_id'], 
-			  $_SESSION['username'], 
-			  $_SESSION['login_string'])) {
- 
+	// Check if all session variables are set
+	if (isset($_SESSION['user_id'], $_SESSION['username'], $_SESSION['login_string'])) {
 		$user_id = $_SESSION['user_id'];
 		$login_string = $_SESSION['login_string'];
 		$username = $_SESSION['username'];
@@ -228,7 +225,7 @@ function login_check($mysqli) {
 		if ($stmt = $mysqli->prepare("SELECT password, donate
 									  FROM members 
 									  WHERE id = ? LIMIT 1")) {
-			// Bind "$user_id" to parameter. 
+			// Bind "$user_id" to parameter.
 			$stmt->bind_param('i', $user_id);
 			$stmt->execute();   // Execute the prepared query.
 			$stmt->store_result();
@@ -239,18 +236,17 @@ function login_check($mysqli) {
 				$stmt->fetch();
 				$login_check = hash('sha512', $password . $user_browser);
 				
-				if (hash_equals($login_check, $login_string) ){
-					// Logged In!!!! 
+				if (hash_equals($login_check, $login_string)) {
+					// Logged In!!!!
 					return true;
 				}
 			}
-		} 
-	} 
+		}
+	}
 	return false;
 }
 
 function token_check($mysqli, $token) {
-
 	if ($stmt = $mysqli->prepare("SELECT token 
 								  FROM tokens 
 								  WHERE token = ? LIMIT 1")) {
@@ -260,15 +256,14 @@ function token_check($mysqli, $token) {
 
 		if ($stmt->num_rows == 1) {
 			return true;
-		} 
+		}
 	}
 	return false;
 }
 
 function type_check($mysqli) {
-	// Check if all session variables are set 
+	// Check if all session variables are set
 	if (isset($_SESSION['user_id'], $_SESSION['username'], $_SESSION['login_string'])) {
- 
 		$user_id = $_SESSION['user_id'];
 		$login_string = $_SESSION['login_string'];
 		$username = $_SESSION['username'];
@@ -279,7 +274,7 @@ function type_check($mysqli) {
 		if ($stmt = $mysqli->prepare("SELECT password, type, donate
 									  FROM members 
 									  WHERE id = ? LIMIT 1")) {
-			// Bind "$user_id" to parameter. 
+			// Bind "$user_id" to parameter.
 			$stmt->bind_param('i', $user_id);
 			$stmt->execute();   // Execute the prepared query.
 			$stmt->store_result();
@@ -291,18 +286,17 @@ function type_check($mysqli) {
 				$login_check = hash('sha512', $password . $user_browser);
  
 				if (hash_equals($login_check, $login_string)) {
-					
 					$month = time() + (86400 * 30);
 					
-					// Login success 
+					// Login success
 					setcookie('username', $_SESSION['username'], $month, '/');
 					setcookie('usertype', $type, $month, '/');
-					// Logged In!!!! 
+					// Logged In!!!!
 					return true;
-				} 
+				}
 			}
 		}
-	} 
+	}
 	
 	setcookie('username', null, -1000, '/');
 	setcookie('usertype', null, -1000, '/');
@@ -310,15 +304,14 @@ function type_check($mysqli) {
 }
 
 function is_donator($mysqli) {
-	// Check if all session variables are set 
+	// Check if all session variables are set
 	if (isset($_SESSION['user_id'], $_SESSION['username'])) {
- 
 		$user_id = $_SESSION['user_id'];
  
 		if ($stmt = $mysqli->prepare("SELECT donate
 									  FROM members 
 									  WHERE id = ? LIMIT 1")) {
-			// Bind "$user_id" to parameter. 
+			// Bind "$user_id" to parameter.
 			$stmt->bind_param('i', $user_id);
 			$stmt->execute();   // Execute the prepared query.
 			$stmt->store_result();
@@ -330,15 +323,14 @@ function is_donator($mysqli) {
  
 				if ($donate) {
 					return true;
-				} 
+				}
 			}
 		}
-	} 
+	}
 	return false;
 }
 
 function esc_url($url) {
- 
 	if ('' == $url) {
 		return $url;
 	}
@@ -373,7 +365,6 @@ function generateToken($length = 20) {
 }
 
 function getRandomString($length = 10) {
-
 	$validCharacters = "ABCDEFGHIJKLMNPQRSTUXYVWZ123456789";
 	$validCharNumber = strlen($validCharacters);
 	$result = "";
@@ -385,4 +376,16 @@ function getRandomString($length = 10) {
 	return $result;
 }
 
-?>
+function array_merge_recursive_distinct(array &$array1, array &$array2) {
+	$merged = $array1;
+
+	foreach ($array2 as $key => &$value) {
+		if (is_array($value) && isset($merged [$key]) && is_array($merged [$key])) {
+			$merged [$key] = array_merge_recursive_distinct($merged [$key], $value);
+		} else {
+			$merged [$key] = $value;
+		}
+	}
+
+	return $merged;
+}

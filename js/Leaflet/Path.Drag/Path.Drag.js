@@ -1,22 +1,3 @@
-var END = {
-  mousedown:     'mouseup',
-  touchstart:    'touchend',
-  pointerdown:   'touchend',
-  MSPointerDown: 'touchend'
-};
-
-var MOVE = {
-  mousedown:     'mousemove',
-  touchstart:    'touchmove',
-  pointerdown:   'touchmove',
-  MSPointerDown: 'touchmove'
-};
-
-function distance(a, b) {
-  var dx = a.x - b.x, dy = a.y - b.y;
-  return Math.sqrt(dx * dx + dy * dy);
-}
-
 /**
  * Drag handler
  * @class L.Path.Drag
@@ -112,8 +93,8 @@ L.Handler.PathDrag = L.Handler.extend( /** @lends  L.Path.Drag.prototype */ {
 
     L.DomUtil.addClass(this._path._renderer._container, 'leaflet-interactive');
     L.DomEvent
-      .on(document, MOVE[eventType], this._onDrag,    this)
-      .on(document, END[eventType],  this._onDragEnd, this);
+      .on(document, L.Draggable.MOVE[eventType], this._onDrag,    this)
+      .on(document, L.Draggable.END[eventType],  this._onDragEnd, this);
 
     if (this._path._map.dragging.enabled()) {
       // I guess it's required because mousdown gets simulated with a delay
@@ -123,8 +104,8 @@ L.Handler.PathDrag = L.Handler.extend( /** @lends  L.Path.Drag.prototype */ {
       this._mapDraggingWasEnabled = true;
     }
     this._path._dragMoved = false;
-
-    if (this._path._popup) { // that might be a case on touch devices as well
+    
+    if (this._path._popup && this._path._popup._content) { // that might be a case on touch devices as well
       this._path._popup._close();
     }
 
@@ -195,22 +176,25 @@ L.Handler.PathDrag = L.Handler.extend( /** @lends  L.Path.Drag.prototype */ {
     }
 
 
-    L.DomEvent.off(document, 'mousemove touchmove', this._onDrag,    this);
-    L.DomEvent.off(document, 'mouseup touchend',    this._onDragEnd, this);
+    L.DomEvent
+      .off(document, 'mousemove touchmove', this._onDrag, this)
+      .off(document, 'mouseup touchend',    this._onDragEnd, this);
 
     this._restoreCoordGetters();
 
     // consistency
     if (moved) {
       this._path.fire('dragend', {
-        distance: distance(this._dragStartPoint, containerPoint)
+        distance: Math.sqrt(
+          L.LineUtil._sqDist(this._dragStartPoint, containerPoint)
+        )
       });
 
       // hack for skipping the click in canvas-rendered layers
       var contains = this._path._containsPoint;
       this._path._containsPoint = L.Util.falseFn;
       L.Util.requestAnimFrame(function() {
-        L.DomEvent.skipped({ type: 'click' });
+        L.DomEvent._skipped({ type: 'click' });
         this._path._containsPoint = contains;
       }, this);
     }
@@ -221,7 +205,7 @@ L.Handler.PathDrag = L.Handler.extend( /** @lends  L.Path.Drag.prototype */ {
     this._path._dragMoved = false;
 
     if (this._mapDraggingWasEnabled) {
-      if (moved) L.DomEvent.fakeStop({ type: 'click' });
+      if (moved) L.DomEvent._fakeStop({ type: 'click' });
       this._path._map.dragging.enable();
     }
   },
@@ -344,17 +328,28 @@ L.Path.prototype.makeDraggable = function() {
 
 
 L.Path.addInitHook(function() {
-  if (this.options.draggable) {
-    // ensure interactive
-    this.options.interactive = true;
+  // if (this.options.draggable) {
+  //   // ensure interactive
+  //   this.options.interactive = true;
 
-    if (this.dragging) {
+  //   if (this.dragging) {
+  //     this.dragging.enable();
+  //   } else {
+  //     L.Handler.PathDrag.makeDraggable(this);
+  //     this.dragging.enable();
+  //   }
+  // } else if (this.dragging) {
+  //   this.dragging.disable();
+  // }
+  
+  this.dragging = new L.Handler.PathDrag(this);
+  
+  if (this.options.draggable) {
+    
+    this.options.interactive = true;
+    
+    this.once('add', function () {
       this.dragging.enable();
-    } else {
-      L.Handler.PathDrag.makeDraggable(this);
-      this.dragging.enable();
-    }
-  } else if (this.dragging) {
-    this.dragging.disable();
+    });
   }
 });

@@ -33,6 +33,7 @@
         <exclude name="Generic.Formatting.NoSpaceAfterCast.SpaceFound"/>
         <exclude name="Generic.Arrays.DisallowShortArraySyntax.Found"/>
         <exclude name="Generic.CodeAnalysis.AssignmentInCondition.FoundInWhileCondition"/>
+        <exclude name="Generic.NamingConventions.CamelCapsFunctionName.NotCamelCaps"/>
     </rule>
 
     <rule ref="Generic.WhiteSpace.DisallowSpaceIndent"/>

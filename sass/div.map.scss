@@ -1,4 +1,5 @@
 //colors
+$apple: #4B8E3D;
 $astral: #338498;
 $bird-flower: #b8b12e;
 $blue-bell: #8c96c1;
@@ -13,6 +14,7 @@ $pirate-gold: #8f7824;
 $purple: #9d60b3;
 $red: #9f2828;
 $silver: #bbb;
+$stiletto: #A03C3C;
 $well-read: #b13034;
 $woodland: #326629;
 $black: #000;
@@ -2537,6 +2539,12 @@ input {
             }
         }
 
+        .apple {
+            path {
+                fill: $apple;
+            }
+        }
+
         .blue-bell {
             path {
                 fill: $blue-bell;
@@ -2585,6 +2593,12 @@ input {
             }
         }
 
+        .stiletto {
+            path {
+                fill: $stiletto;
+            }
+        }
+
         .bird-flower {
             path {
                 fill: $bird-flower;
@@ -2602,6 +2616,37 @@ input {
                 fill: $elm;
             }
         }
+    }
+}
+
+.cursor-display {
+    position: absolute;
+    z-index: 1;
+    width: 70px;
+    height: 70px;
+    border: 2px solid $orange-roughy;
+    border-radius: 70px;
+    margin-left: -35px;
+    margin-top: -35px;
+    box-sizing: border-box;
+    pointer-events: none;
+    opacity: .4;
+    
+    span {
+        position: absolute;
+        display: block;
+        color: $text;
+    }
+    
+    .lat {
+        left: 10px;
+        top: -20px;
+        text-align: center;
+    }
+    
+    .lng {
+        left: 75px;
+        top: calc(50% - 7px);
     }
 }
 
@@ -3025,6 +3070,10 @@ label {
         color: $astral;
     }
 
+    &.apple {
+        color: $apple;
+    }
+
     &.blue-bell {
         color: $blue-bell;
     }
@@ -3055,6 +3104,10 @@ label {
 
     &.well-read {
         color: $well-read;
+    }
+
+    &.stiletto {
+        color: $stiletto;
     }
 
     &.bird-flower {
@@ -3090,6 +3143,10 @@ label {
     color: $astral;
 }
 
+.apple .leaflet-popup-content-wrapper {
+    color: $apple;
+}
+
 .blue-bell .leaflet-popup-content-wrapper {
     color: $blue-bell;
 }
@@ -3120,6 +3177,10 @@ label {
 
 .well-read .leaflet-popup-content-wrapper {
     color: $well-read;
+}
+
+.stiletto .leaflet-popup-content-wrapper {
+    color: $stiletto;
 }
 
 .bird-flower .leaflet-popup-content-wrapper {

@@ -46,22 +46,22 @@ if (login_check($mysqli) && isset($_POST['data'])) {
 			SORT_DESC,
 			$files
 		);
-		while (count($files) > 25) {
+		while (count($files) > 100) {
 			unlink(array_pop($files));
 		}
 	}
 	
 	// Create the path if it does not exist
 	if (!file_exists($path)) {
-	    mkdir($path, 0777, true);
+		mkdir($path, 0777, true);
 	}
 	
 	$path = $path.$file;
 	
 	// Create the file if it does not exist
 	if (!file_exists($path)) {
-	    $myfile = fopen($path, "w") or die("Unable to create file!");
-	    fclose($myfile);
+		$myfile = fopen($path, "w") or die("Unable to create file!");
+		fclose($myfile);
 	}
 	
 	// open and read GeoJSON file
@@ -76,7 +76,7 @@ if (login_check($mysqli) && isset($_POST['data'])) {
 	// decode the information from the site and file
 	$fileJSON = json_decode($fileRead, true);
 	$postJSON = json_decode($_POST['data'], true);
-
+		
 	// add/overwrite the new stuff
 	foreach ($postJSON['features'] as $key => $value) {
 		$fileJSON['features'][$key] = $value;
@@ -85,14 +85,11 @@ if (login_check($mysqli) && isset($_POST['data'])) {
 	// Find any duplicates that may have snuck in and add them to the delete array
 	$temp = [];
 	foreach ($fileJSON['features'] as $key => $value) { 
-		$latlngs = $value['geometry']['coordinates'];
-		if (!in_array($latlngs, $temp)) { 
-			$temp[] = $latlngs; 
-		} else {
-			$postJSON['deleted'][] = $key;
-		}
+		$latlngs = $value['g']['c'];
+		if (!in_array($latlngs, $temp)) $temp[] = $latlngs; 
+		else $postJSON['deleted'][] = $key;
 	} 
-
+	
 	// remove the deleted stuff
 	foreach ($postJSON['deleted'] as $id) {
 		unset($fileJSON['features'][$id]);
@@ -100,10 +97,26 @@ if (login_check($mysqli) && isset($_POST['data'])) {
 
 	$count = count($fileJSON['features']);
 	
-	if (($usertype == 1 && $count >= 25) || ($usertype == 2 && $count >= 250)) {
+	if (($usertype == 1 && $count >= 500) || ($usertype == 2 && $count >= 2000)) {
 		echo json_encode(['message' => 'Account limit reached!']);
 		return;
 	}
+	
+	// add the new settings
+	foreach ($postJSON['settings'] as $key => $value) {
+		if (!array_key_exists('settings', $fileJSON)) $fileJSON['settings'] = [];
+		if (!array_key_exists($key, $fileJSON['settings'])) $fileJSON['settings'][$key] = [];
+		$fileJSON['settings'][$key] = $value;
+	}
+	
+	// Get the counts of used settings, and remove any that are not used
+	$counts = [];
+	foreach ($fileJSON['settings'] as $key => $value)
+		$counts[$key] = 0;
+	foreach ($fileJSON['features'] as $value)
+		if (array_key_exists('t', $value)) $counts[$value['t']] += 1;
+	foreach ($counts as $key => $value)
+		if ($value == 0) unset($fileJSON['settings'][$key]);
 	
 	// encode and save to GeoJSON
 	$myfile = fopen($path, "w") or die("Unable to open file!");
@@ -118,4 +131,3 @@ if (login_check($mysqli) && isset($_POST['data'])) {
 		fclose($myfile);
 	}
 }
-?>

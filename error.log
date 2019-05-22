@@ -3,3 +3,4 @@
 [26-Apr-2019 14:04:19 Europe/London] PHP Warning:  filemtime(): stat failed for K.js in D:\Dropbox\laragon\www\the-division-2-map\index.php on line 39
 [29-Apr-2019 18:11:04 Europe/London] PHP Warning:  session_destroy(): Session object destruction failed in D:\Dropbox\laragon\www\the-division-2-map\includes\session_start.php on line 8
 [12-May-2019 09:20:45 Europe/London] PHP Warning:  session_destroy(): Session object destruction failed in D:\Dropbox\laragon\www\the-division-2-map\includes\session_start.php on line 8
+[19-May-2019 09:16:25 Europe/London] PHP Warning:  session_destroy(): Session object destruction failed in D:\Dropbox\laragon\www\the-division-2-map\includes\session_start.php on line 8

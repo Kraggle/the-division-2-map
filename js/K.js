@@ -373,7 +373,8 @@
             return a[name] || a;
         },
 
-        // Delete keys from an object (send {} as first argument to make new object)
+        // Delete keys from object that exist in array 
+        // (send {} as first argument to make new object)
         curtail: function() {
             var a = arguments[0],
                 e = arguments[1];
@@ -387,9 +388,28 @@
                 e = [e];
 
             K.Util.each(e, function(i, v) {
-                if (v in a) {
-                    delete a[v];
-                }
+                if (v in a) delete a[v];
+            });
+
+            return a;
+        },
+
+        // Delete keys from object that don't exist in array 
+        // (send {} as first argument to make new object)
+        reduce: function() {
+            var a = arguments[0],
+                e = arguments[1];
+
+            if (!Object.keys(a).length && Object.keys(e).length) {
+                a = K.Util.extend({}, arguments[1]);
+                e = arguments[2];
+            }
+
+            if (e && typeof e != "object")
+                e = [e];
+
+            K.Util.each(a, function(k, v) {
+                !K.Util.isInArray(k, e) && delete a[k];
             });
 
             return a;
@@ -409,6 +429,73 @@
             } else {
                 localStorage.setItem(key, JSON.stringify(value));
             }
+        },
+
+        isIterable: function(obj) {
+            // checks for null and undefined
+            if (obj == null) return false;
+            return typeof obj[Symbol.iterator] === 'function';
+        },
+
+        // checks if both passed variables match exactly
+        equals: function(obj1, obj2) {
+
+            // check if these are both object and iterable
+            if (K.Util.isIterable(obj1) && K.Util.isIterable(obj2)) {
+
+                for (let p in obj1) {
+                    // Check property exists on both objects
+                    if (obj1.hasOwnProperty(p) !== obj2.hasOwnProperty(p)) return false;
+
+                    switch (typeof(obj1[p])) {
+                        // Deep compare objects
+                        case 'object':
+                            if (!Object.compare(obj1[p], obj2[p])) return false;
+                            break;
+                            // Compare function code
+                        case 'function':
+                            if (typeof(obj2[p]) == 'undefined' || (p != 'compare' && obj1[p].toString() != obj2[p].toString())) return false;
+                            break;
+                            // Compare values
+                        default:
+                            if (obj1[p] != obj2[p]) return false;
+                    }
+                }
+
+                //Check object 2 for any extra properties
+                for (var p in obj2) {
+                    if (typeof(obj1[p]) == 'undefined') return false;
+                }
+
+            } else if (obj1 != obj2) return false;
+
+            return true;
+        },
+
+        length: function(item) {
+            const type = K.Util.type(item);
+            if (type == 'object') return Object.keys(item).length;
+            else if (type == 'array') return item.length;
+            return 0;
+        },
+
+        empty: function(obj) {
+            let type = K.Util.type(obj);
+
+            switch (type) {
+                case 'object':
+                    for (let name in obj)
+                        return false;
+                    return true;
+                case 'array':
+                    return !obj.length;
+                case 'number':
+                case 'boolean':
+                    return false;
+                default:
+                    return !obj;
+            }
+
         }
     };
 
@@ -416,12 +503,18 @@
     K.extend = K.Util.extend;
     K.isInArray = K.Util.isInArray;
     K.curtail = K.Util.curtail;
+    K.reduce = K.Util.reduce;
     K.urlParam = K.Util.urlParam;
     K.bind = K.Util.bind;
     K.stamp = K.Util.stamp;
     K.setOptions = K.Util.setOptions;
     K.local = K.Util.local;
     K.each = K.Util.each;
+    K.equals = K.Util.equals;
+    K.isIterable = K.Util.isIterable;
+    K.type = K.Util.type;
+    K.length = K.Util.length;
+    K.empty = K.Util.empty;
 
     // @class Class
     // @aka K.Class
@@ -879,10 +972,9 @@ var class2type = {},
     hasOwn = class2type.hasOwnProperty;
 
 // Populate the class2type map
-K.each("Boolean Number String Function Array Date RegExp Object Error Symbol".split(" "),
-    function(i, name) {
-        class2type["[object " + name + "]"] = name.toLowerCase();
-    });
+K.each("Boolean Number String Function Array Date RegExp Object Error Symbol".split(" "), function(i, name) {
+    class2type["[object " + name + "]"] = name.toLowerCase();
+});
 
 function isArrayLike(obj) {
 
@@ -899,6 +991,23 @@ function isArrayLike(obj) {
 
     return type === "array" || length === 0 ||
         typeof length === "number" && length > 0 && (length - 1) in obj;
+}
+
+let rnothtmlwhite = (/[^\x20\t\r\n\f]+/g);
+
+function classesToArray(value) {
+    if (Array.isArray(value)) {
+        return value;
+    }
+    if (typeof value === "string") {
+        return value.match(rnothtmlwhite) || [];
+    }
+    return [];
+}
+
+function stripAndCollapse(value) {
+    let tokens = value.match(rnothtmlwhite) || [];
+    return tokens.join(" ");
 }
 
 //////////////////////////////////////////////////////
@@ -976,7 +1085,7 @@ if (!String.prototype.contains) {
     }
 }
 
-// Adds a space before each uppercase letter
+// Adds a space before each uppercase letter but not when they are grouped [e.g. FBI] 
 if (!String.prototype.space) {
     String.prototype.space = function() {
         var s = this.toString();
@@ -1000,6 +1109,63 @@ if (!String.prototype.firstToUpper) {
     String.prototype.firstToUpper = function() {
         var s = this.toString();
         return s.substr(0, 1).toUpperCase() + s.substr(1);
+    }
+}
+
+// Change the first character in a string to uppercase
+if (!String.prototype.add) {
+    String.prototype.add = function(value) {
+
+        let classes = classesToArray(value),
+            cur, curValue, clazz, j,
+            string = this.toString();
+
+        if (classes.length) {
+            curValue = string || '';
+            cur = ` ${stripAndCollapse(curValue)} `;
+
+            if (cur) {
+                j = 0;
+                while ((clazz = classes[j++])) {
+                    if (cur.indexOf(` ${clazz} `) < 0)
+                        cur += clazz + " ";
+                }
+
+                return stripAndCollapse(cur);
+            }
+        }
+
+        return string;
+    }
+}
+
+// Change the first character in a string to uppercase
+if (!String.prototype.remove) {
+    String.prototype.remove = function(value) {
+
+        let classes = classesToArray(value),
+            cur, curValue, clazz, j, finalValue,
+            string = this.toString();
+
+        if (classes.length) {
+            curValue = string || '';
+            cur = ` ${stripAndCollapse(curValue)} `;
+
+            if (cur) {
+                j = 0;
+                while ((clazz = classes[j++])) {
+
+                    // Remove *all* instances
+                    while (cur.indexOf(` ${clazz} `) > -1) {
+                        cur = cur.replace(` ${clazz} `, " ");
+                    }
+                }
+
+                return stripAndCollapse(cur);
+            }
+        }
+
+        return string;
     }
 }
 

@@ -26,76 +26,65 @@ include_once 'includes/functions.php';
 	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 	<link rel="stylesheet" href="css/huebee.min.css" />
 	<link rel="stylesheet" href="css/leaflet.draw.css" />
-	<link rel="stylesheet" href="css/jquery.mCustomScrollbar.min.css" />
 	<link rel="stylesheet" href="css/jquery.qtip.min.css" />
 	<link rel="stylesheet" href="css/codemirror.css" />
 
-	<!-- Essential scripts -->
-	<? if ($_SERVER['HTTP_HOST'] == "localhost") {
-		// echo '<script src="http://localhost:35729/livereload.js?snipver=1"></script>';
-	} ?>
 	<script src="https://code.jquery.com/jquery-3.4.1.js" integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU=" crossorigin="anonymous"></script>
 	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script>
 
 	<script src="js/K.js?v=<? echo filemtime('js/K.js') ?>"></script>
 
-	<script src="js/Leaflet/leaflet-src1.5.1.js"></script>
+	<script src="js/Leaflet/leaflet-src1.0.3.js?v=1.0.3"></script>
 
-	<script src="js/Utility/forms.js?v=1"></script>
-	<script src="js/Utility/sha512.js"></script>
-	<script src="js/Utility/js.cookie.js"></script>
-	<!-- <script src="js/Utility/jquery.translate.js"></script> -->
-	<!-- <script src="js/Utility/jquery.mCustomScrollbar.concat.min.js"></script> -->
-	<script src="js/Utility/jquery.qtip.min.js"></script>
-	<script src="js/Utility/huebee.pkgd.min.js"></script>
-	<script src="js/Utility/tinysort.js"></script>
-	<script src="js/Utility/jquery.selectric.js"></script>
+	<script src="js/Utility/forms.js?v=1.0.3"></script>
+	<script src="js/Utility/sha512.js?v=1.0.3"></script>
+	<script src="js/Utility/js.cookie.js?v=1.0.3"></script>
+	<script src="js/Utility/jquery.qtip.min.js?v=1.0.3"></script>
+	<script src="js/Utility/huebee.pkgd.min.js?v=1.0.3"></script>
+	<script src="js/Utility/tinysort.js?v=1.0.3"></script>
+	<script src="js/Utility/jquery.selectric.js?v=1.0.3"></script>
 
-	<script src="js/Leaflet/Draw/Leaflet.draw0.4.2.js"></script>
-	<script src="js/Leaflet/Draw/Leaflet.Draw.Event0.4.2.js"></script>
+	<script src="js/Leaflet/Draw/Leaflet.draw.js?v=1.0.3"></script>
+	<script src="js/Leaflet/Draw/Leaflet.Draw.Event.js?v=1.0.3"></script>
 
-	<script src="js/Leaflet/Draw/Toolbar0.4.2.js"></script>
-	<script src="js/Leaflet/Draw/Tooltip0.4.2.js"></script>
+	<script src="js/Leaflet/Draw/Toolbar.js?v=1.0.3"></script>
+	<script src="js/Leaflet/Draw/Tooltip.js?v=1.0.3"></script>
 
-	<script src="js/Leaflet/Draw/ext/GeometryUtil0.4.2.js"></script>
-	<script src="js/Leaflet/Draw/ext/LatLngUtil0.4.2.js"></script>
-	<script src="js/Leaflet/Draw/ext/LineUtil.Intersect0.4.2.js"></script>
-	<script src="js/Leaflet/Draw/ext/Polygon.Intersect0.4.2.js"></script>
-	<script src="js/Leaflet/Draw/ext/Polyline.Intersect0.4.2.js"></script>
-	<script src="js/Leaflet/Draw/ext/TouchEvents0.4.2.js"></script>
+	<script src="js/Leaflet/Draw/ext/GeometryUtil.js?v=1.0.3"></script>
+	<script src="js/Leaflet/Draw/ext/LatLngUtil.js?v=1.0.3"></script>
+	<script src="js/Leaflet/Draw/ext/LineUtil.Intersect.js?v=1.0.3"></script>
+	<script src="js/Leaflet/Draw/ext/Polygon.Intersect.js?v=1.0.3"></script>
+	<script src="js/Leaflet/Draw/ext/Polyline.Intersect.js?v=1.0.3"></script>
+	<script src="js/Leaflet/Draw/ext/TouchEvents.js?v=1.0.3"></script>
 
-	<script src="js/Leaflet/Draw/draw/DrawToolbar0.4.2.js"></script>
-	<script src="js/Leaflet/Draw/draw/handler/Draw.Feature0.4.2.js?v=1.01"></script>
-	<script src="js/Leaflet/Draw/draw/handler/Draw.SimpleShape0.4.2.js"></script>
-	<script src="js/Leaflet/Draw/draw/handler/Draw.Marker0.4.2.js"></script>
-	<script src="js/Leaflet/Draw/draw/handler/Draw.Polyline0.4.2.js"></script>
-	<script src="js/Leaflet/Draw/draw/handler/Draw.CircleMarker0.4.2.js"></script>
-	<script src="js/Leaflet/Draw/draw/handler/Draw.Circle0.4.2.js"></script>
-	<script src="js/Leaflet/Draw/draw/handler/Draw.Polygon0.4.2.js"></script>
-	<script src="js/Leaflet/Draw/draw/handler/Draw.Rectangle0.4.2.js"></script>
+	<script src="js/Leaflet/Draw/draw/DrawToolbar.js?v=1.0.3"></script>
+	<script src="js/Leaflet/Draw/draw/handler/Draw.Feature.js?v=1.0.3"></script>
+	<script src="js/Leaflet/Draw/draw/handler/Draw.SimpleShape.js?v=1.0.3"></script>
+	<script src="js/Leaflet/Draw/draw/handler/Draw.Marker.js?v=1.0.3"></script>
+	<script src="js/Leaflet/Draw/draw/handler/Draw.Polyline.js?v=1.0.3"></script>
+	<script src="js/Leaflet/Draw/draw/handler/Draw.Circle.js?v=1.0.3"></script>
+	<script src="js/Leaflet/Draw/draw/handler/Draw.Polygon.js?v=1.0.3"></script>
+	<script src="js/Leaflet/Draw/draw/handler/Draw.Rectangle.js?v=1.0.3"></script>
 
-	<script src="js/Leaflet/Draw/edit/EditToolbar0.4.2.js"></script>
-	<script src="js/Leaflet/Draw/edit/handler/EditToolbar.Edit0.4.2.js"></script>
-	<script src="js/Leaflet/Draw/edit/handler/EditToolbar.Delete0.4.2.js"></script>
+	<script src="js/Leaflet/Draw/edit/EditToolbar.js?v=1.0.3"></script>
+	<script src="js/Leaflet/Draw/edit/handler/EditToolbar.Edit.js?v=1.0.3"></script>
+	<script src="js/Leaflet/Draw/edit/handler/EditToolbar.Delete.js?v=1.0.3"></script>
 
-	<script src="js/Leaflet/Draw/Control.Draw0.4.2.js"></script>
+	<script src="js/Leaflet/Draw/Control.Draw.js?v=1.0.3"></script>
 
-	<script src="js/Leaflet/Draw/edit/handler/Edit.Poly0.4.2.js"></script>
-	<script src="js/Leaflet/Draw/edit/handler/Edit.SimpleShape0.4.2.js"></script>
-	<script src="js/Leaflet/Draw/edit/handler/Edit.CircleMarker0.4.2.js"></script>
-	<script src="js/Leaflet/Draw/edit/handler/Edit.Circle0.4.2.js"></script>
-	<script src="js/Leaflet/Draw/edit/handler/Edit.Rectangle0.4.2.js"></script>
-	<script src="js/Leaflet/Draw/edit/handler/Edit.Marker0.4.2.js"></script>
+	<script src="js/Leaflet/Draw/edit/handler/Edit.Poly.js?v=1.0.3"></script>
+	<script src="js/Leaflet/Draw/edit/handler/Edit.SimpleShape.js?v=1.0.3"></script>
+	<script src="js/Leaflet/Draw/edit/handler/Edit.Circle.js?v=1.0.3"></script>
+	<script src="js/Leaflet/Draw/edit/handler/Edit.Rectangle.js?v=1.0.3"></script>
+	<script src="js/Leaflet/Draw/edit/handler/Edit.Marker.js?v=1.0.3"></script>
 
-	<script src="js/Leaflet/Path.Drag/Path.Drag.js"></script>
-	<script src="js/Leaflet/Path.Drag/Canvas.js"></script>
-	<script src="js/Leaflet/Path.Drag/Path.Transform.js"></script>
-	<script src="js/Leaflet/Path.Drag/SVG.js"></script>
-	<script src="js/Leaflet/Path.Drag/SVG.VML.js"></script>
+	<script src="js/Leaflet/Path.Drag/Path.Drag.js?v=1.0.3"></script>
+	<script src="js/Leaflet/Path.Drag/Canvas.js?v=1.0.3"></script>
+	<script src="js/Leaflet/Path.Drag/Path.Transform.js?v=1.0.3"></script>
+	<script src="js/Leaflet/Path.Drag/SVG.js?v=1.0.3"></script>
+	<script src="js/Leaflet/Path.Drag/SVG.VML.js?v=1.0.3"></script>
 
-	<script src="js/Leaflet/Bounds/Leaflet.Bounds.Aware.LayerGroup.js"></script>
-
-	<!-- <script src="js/Utility/codemirror.js"></script> -->
+	<script src="js/Leaflet/Bounds/Leaflet.Bounds.Aware.LayerGroup.js?v=1.0.3"></script>
 
 	<link rel="stylesheet" href="sass/div.map.css?v=<? echo filemtime('sass/div.map.css') ?>" />
 </head>

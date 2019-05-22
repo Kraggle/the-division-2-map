@@ -7,7 +7,7 @@
 	<li class="dnt">Fixed the timers not ending as they should.</li>
 	<li class="dnt">Timers are still timed from the click rather than the new patch change of the time of day that they refresh. We still need to get those.</li>
 	<li class="dnt">Fixed the Zone Category not showing again after hiding them all.</li>
-	<li class="dnt">All Collecables are now added and correctly described thanks to Engeloki.</li>
+	<li class="dnt">Most Collectables are now added and correctly described thanks to Engeloki.</li>
 </ul>
 
 <span class="sub title date">14<sup>th</sup> <span class="dnt">May</span> 2019</span>

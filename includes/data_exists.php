@@ -8,7 +8,7 @@ if (login_check($mysqli)) {
 	$username = $_SESSION['username'];
 	$path = "../data/$username/complete.json";
 	
-	if (file_exists($path)) echo json_encode(true);
+	if (file_exists($path)) echo json_encode(filemtime($path));
 	else echo json_encode(false);
 	
 } else echo json_encode(false);

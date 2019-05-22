@@ -1,4 +1,6 @@
-function TRUE_FN () { return true; }
+L.Util.trueFn = function() {
+  return true;
+};
 
 L.Canvas.include({
 
@@ -60,7 +62,7 @@ L.Canvas.include({
 
       // avoid flickering because of the 'mouseover's
       layer._containsPoint_ = layer._containsPoint;
-      layer._containsPoint  = TRUE_FN;
+      layer._containsPoint = L.Util.trueFn;
     }
 
     ctx.save();

@@ -3,83 +3,78 @@
 		"path": "$ROOTPATH$\\div.map.js",
 		"bookmarks": [
 			{
-				"line": 753,
-				"column": 4,
+				"line": 842,
+				"column": 1,
 				"label": "K"
 			},
 			{
-				"line": 1012,
-				"column": 5,
+				"line": 1101,
+				"column": 4,
 				"label": "K.map"
 			},
 			{
-				"line": 1135,
-				"column": 8,
+				"line": 1224,
+				"column": 4,
 				"label": "K.settings"
 			},
 			{
-				"line": 1423,
-				"column": 7,
+				"line": 1496,
+				"column": 4,
 				"label": "K.updateMarker()"
 			},
 			{
-				"line": 1533,
-				"column": 4,
+				"line": 1606,
+				"column": 0,
 				"label": "K.tool.marker"
 			},
 			{
-				"line": 1724,
-				"column": 9,
+				"line": 1797,
+				"column": 0,
 				"label": "K.tool.layer"
 			},
 			{
-				"line": 2028,
-				"column": 14,
+				"line": 2101,
+				"column": 4,
 				"label": "K.tool.layer._settingClick()"
 			},
 			{
-				"line": 3275,
-				"column": 11,
-				"label": "L.Layer.applySetting()"
-			},
-			{
-				"line": 3449,
-				"column": 7,
+				"line": 3522,
+				"column": 0,
 				"label": "Document Loaded"
 			},
 			{
-				"line": 3727,
-				"column": 13,
+				"line": 3808,
+				"column": 0,
 				"label": "pageLoad()"
 			},
 			{
-				"line": 4001,
-				"column": 20,
+				"line": 4082,
+				"column": 0,
 				"label": "Draw Events"
 			},
 			{
-				"line": 4140,
-				"column": 20,
+				"line": 4222,
+				"column": 0,
 				"label": "populateMap()"
 			},
 			{
-				"line": 4373,
-				"column": 20,
+				"line": 4444,
+				"column": 0,
 				"label": "populateMenus()"
 			},
 			{
-				"line": 4943,
-				"column": 16,
+				"line": 5014,
+				"column": 0,
 				"label": "drawEventCreated()"
 			},
 			{
-				"line": 5289,
-				"column": 15,
+				"line": 5360,
+				"column": 0,
 				"label": "createMarker()"
 			},
 			{
-				"line": 5508,
-				"column": 15,
+				"line": 5579,
+				"column": 0,
 				"label": "createGeoJSON()"
 			}
 		]

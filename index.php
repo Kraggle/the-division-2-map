@@ -27,7 +27,6 @@ include_once 'includes/functions.php';
 	<link rel="stylesheet" href="css/huebee.min.css" />
 	<link rel="stylesheet" href="css/leaflet.draw.css" />
 	<link rel="stylesheet" href="css/jquery.qtip.min.css" />
-	<link rel="stylesheet" href="css/codemirror.css" />
 
 	<script src="https://code.jquery.com/jquery-3.4.1.js" integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU=" crossorigin="anonymous"></script>
 	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script>
@@ -93,11 +92,18 @@ include_once 'includes/functions.php';
 
 	<div id="mapid"></div>
 	<div id="side-bar">
-		<!-- <a href='#' class="side-menu-toggle mode one" button="mode">Switch to the Survival Map</a> -->
-		<!-- <a href='#' class="side-menu-toggle mode two" button="mode">Switch to the Last Stand Map</a> -->
+		<div class="map-mode-box">
+			<div class="map-mode"><img src="" class="img" /><span class="desc"></span></div>
+		</div>
+
 		<a href='#' class="side-menu-toggle filters" button="filters">Filters Menu</a>
 		<a href='#' class="side-menu-toggle login" button="login">User Account</a>
-		<div class="login">
+		<a href='#' class="side-menu-toggle full" button="full">Toggle Fullscreen</a>
+		<a href='#' class="side-menu-toggle changes" button="changes">Recent Changes</a>
+		<!-- <a href='#' class="side-menu-toggle gear" button="gear">Gear Set Collection Tracker</a> -->
+		<a href='#' class="side-menu-toggle shorts" button="shorts">Keyboard Shortcuts</a>
+
+		<div class="side-menu-box login">
 			<div class="side-content">
 				<? if (isset($_GET['token'], $_GET['forgot']) && token_check($mysqli, $_GET['token'])) {
 					include 'includes/reset.php'; 
@@ -106,35 +112,28 @@ include_once 'includes/functions.php';
 				} ?>
 			</div>
 		</div>
-		<div class="filters">
+
+		<div class="side-menu-box filters">
 			<div class="side-content"></div>
 		</div>
-		<a href='#' class="side-menu-toggle full" button="full">Toggle Fullscreen</a>
-		<a href='#' class="side-menu-toggle changes" button="changes">Recent Changes</a>
-		<div class="changes">
+
+		<div class="side-menu-box changes">
 			<div class="side-content">
 				<? include 'docs/changes.php'; ?>
 			</div>
 		</div>
-		<!-- <a href='#' class="side-menu-toggle todo" button="todo">Upcoming Changes</a>
-		<div class="todo">
-			<div class="side-content"><??> include 'docs/todo.php'; ?></div>
-		</div> -->
-		<!-- <a href='#' class="side-menu-toggle gear" button="gear">Gear Set Collection Tracker</a>
-		<div class="gear">
+
+		<!-- <div class="side-menu-box gear">
 			<div class="side-content">
 				<?// include 'docs/gear.php'; ?>
 			</div>
 		</div> -->
-		<!-- <a href='#' class="side-menu-toggle language" button="language">Language</a>
-		<div class="language">
-			<div class="side-content"><??> include 'docs/language.php'; ?></div>
-		</div> -->
-		<a href='#' class="side-menu-toggle shorts" button="shorts">Keyboard Shortcuts</a>
-		<div class="shorts">
+
+		<div class="side-menu-box shorts">
 			<div class="side-content"></div>
 		</div>
 	</div>
+
 	<div id="logo"></div>
 	<div id="message"></div>
 
@@ -175,12 +174,6 @@ include_once 'includes/functions.php';
 			transfered the domain to the same vendor as the servers host. This is what took a week.</p>
 		<p>Thank you for your patience and thank you GoDaddy!</p>
 	</div> -->
-
-	<!-- <div id="screen-blank"></div> -->
-	<!-- <div id="translate">
-		<??> include 'docs/translate.php' ?>
-	</div> -->
-
 </body>
 
 <script src="div.map.js?v=<? echo filemtime('div.map.js') ?>"></script>

@@ -9,16 +9,9 @@
 
     // Use a stripped-down indexOf as it's faster than native
     // https://jsperf.com/thor-indexof-vs-for/5
-    var indexOf = function(list, elem) {
-        var i = 0,
-            len = list.length;
-        for (; i < len; i++) {
-            if (list[i] === elem) {
-                return i;
-            }
-        }
-        return -1;
-    };
+
+    var arr = [],
+        indexOf = arr.indexOf;
 
     var isWindow = function isWindow(obj) {
         return obj != null && obj === obj.window;
@@ -415,12 +408,19 @@
             return a;
         },
 
-        inArray: function(elem, arr, i) {
-            return arr == null ? -1 : indexOf.call(arr, elem, i);
+        inArray: function(value, obj, i) {
+            return obj == null ? -1 : indexOf.call(obj, value, i);
         },
 
-        isInArray: function() {
-            return $.inArray(arguments[0], arguments[1]) == -1 ? false : true;
+        isInArray: function(value, obj) {
+            switch (K.Util.type(obj)) {
+                case 'array':
+                    return K.Util.inArray(value, obj) == -1 ? false : true;
+                case 'object':
+                    return value in obj;
+                default:
+                    return false;
+            }
         },
 
         local: function(key, value) {
@@ -432,44 +432,81 @@
         },
 
         isIterable: function(obj) {
-            // checks for null and undefined
-            if (obj == null) return false;
-            return typeof obj[Symbol.iterator] === 'function';
+            return K.Util.isInArray(K.Util.type(obj), ['array', 'object']);
         },
 
-        // checks if both passed variables match exactly
+        // checks if both passed variables match
         equals: function(obj1, obj2) {
+            const type1 = K.Util.type(obj1),
+                type2 = K.Util.type(obj2);
 
-            // check if these are both object and iterable
-            if (K.Util.isIterable(obj1) && K.Util.isIterable(obj2)) {
+            // compare if they both match types
+            if (type1 == type2) {
 
-                for (let p in obj1) {
-                    // Check property exists on both objects
-                    if (obj1.hasOwnProperty(p) !== obj2.hasOwnProperty(p)) return false;
+                switch (type1) {
+                    case 'array':
+                        if (K.Util.empty(obj1) && K.Util.empty(obj2)) return true;
+                        if (obj1.length != obj2.length) return false;
+                        for (let i = 0, len = obj1.length; i < len; i++) {
+                            if (!K.isInArray(obj1[i], obj2)) return false;
+                        }
+                        break;
 
-                    switch (typeof(obj1[p])) {
-                        // Deep compare objects
-                        case 'object':
-                            if (!Object.compare(obj1[p], obj2[p])) return false;
-                            break;
-                            // Compare function code
-                        case 'function':
-                            if (typeof(obj2[p]) == 'undefined' || (p != 'compare' && obj1[p].toString() != obj2[p].toString())) return false;
-                            break;
-                            // Compare values
-                        default:
-                            if (obj1[p] != obj2[p]) return false;
-                    }
+                    case 'object':
+                        if (K.Util.empty(obj1) && K.Util.empty(obj2)) return true;
+
+                        for (let p in obj1) {
+                            // Check property exists on both objects
+                            if (!K.Util.isInArray(p, obj2)) return false;
+                            if (!K.Util.equals(obj1[p], obj2[p])) return false;
+                        }
+
+                        // Check obj2 for any extra properties
+                        for (var p in obj2) {
+                            if (typeof(obj1[p]) == 'undefined') return false;
+                        }
+                        break;
+
+                    case 'number':
+                    case 'string':
+                    case 'boolean':
+                        if (obj1 != obj2) return false;
+                        break;
+
+                    case 'function':
+                        if (obj1.toString() != obj2.toString()) return false;
+                        break;
+
+                    default:
+                        if (!obj1 != !obj2) return false;
                 }
+            } else {
+                if (K.Util.empty(obj1) && K.Util.empty(obj2)) return true;
 
-                //Check object 2 for any extra properties
-                for (var p in obj2) {
-                    if (typeof(obj1[p]) == 'undefined') return false;
+                switch (type1) {
+                    case 'array':
+                    case 'object':
+                        // return false as the types don't match
+                        return false;
+                    case 'number':
+                        if (!obj1 && K.Util.isNull(obj2)) return true;
+                        if (obj1 && !obj2) return false;
+                    case 'string':
+                    case 'boolean':
+                        if (obj1 != obj2) return false;
+                        break;
+                    default:
+                        if (!obj1 != !obj2) return false;
+                        break;
                 }
+            }
 
-            } else if (obj1 != obj2) return false;
-
+            // if we have gotten here we are all good, so return true
             return true;
+        },
+
+        isNull: function(obj) {
+            return K.Util.isInArray(K.Util.type(obj), ['null', 'undefined']);
         },
 
         length: function(item) {
@@ -480,12 +517,9 @@
         },
 
         empty: function(obj) {
-            let type = K.Util.type(obj);
-
-            switch (type) {
+            switch (K.Util.type(obj)) {
                 case 'object':
-                    for (let name in obj)
-                        return false;
+                    for (let name in obj) return false;
                     return true;
                 case 'array':
                     return !obj.length;
@@ -495,13 +529,14 @@
                 default:
                     return !obj;
             }
-
         }
     };
 
     // shortcuts for most used utility functions
     K.extend = K.Util.extend;
     K.isInArray = K.Util.isInArray;
+    K.has = K.Util.isInArray;
+    K.in = K.Util.isInArray;
     K.curtail = K.Util.curtail;
     K.reduce = K.Util.reduce;
     K.urlParam = K.Util.urlParam;

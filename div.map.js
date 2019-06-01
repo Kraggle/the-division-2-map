@@ -1,5 +1,21 @@
 K.currentUpdate = '15/05/2019';
 K.iconVersion = '1';
+K.modes = {
+    get: [
+        'Story Mode',
+        'World Tier I',
+        'World Tier II',
+        'World Tier III',
+        'World Tier IV',
+        'World Tier V'
+    ],
+    create: function() {
+        $.each(this.get, function(i, mode) {
+            K.group.feature[mode] = {};
+            K.map.type[mode] = {};
+        });
+    }
+};
 
 /*========================================
 =            LEAFLET INCLUDES            =
@@ -261,30 +277,39 @@ L.Layer.include({
         return this;
     },
 
-    bindPopup: function(content, options) {
+    bindPopup: function() {
+        const a = arguments;
+        let content = a[0],
+            options = a[1] || {};
+        if ($.type(a[0]) === 'object') {
+            options = a[0];
+            content = options.content;
+        }
 
-        if (!options) options = {};
+        this.popup = options;
+        const cn = this.getSetting('className', true);
+        content = this.getSetting('content', true);
 
-        options = $.extend({
-            className: '',
-            pane: (options.className || '').contains('poly-info') ? 'messagePane' : 'popupPane',
-            list: {},
+        let o = {
+            className: cn,
+            pane: (cn || '').contains('poly-info') ? 'messagePane' : 'popupPane',
+            list: this.getSetting('list', true) || {},
             offset: L.point(-24, 42),
             closeButton: false,
             autoPan: false,
             minWidth: 15,
             maxWidth: 300
-        }, options);
+        };
 
-        if (!content && options.list.title)
-            content = this.convertContent(options);
+        if (!content && o.list.title)
+            content = this.convertContent(o);
 
         if (content instanceof L.Popup) {
-            L.setOptions(content, options);
+            L.setOptions(content, o);
             this._popup = content;
             content._source = this;
 
-        } else if ($.type(content) == 'object' && '_content' in content && !content._content) {
+        } else if ($.type(content) == 'object' && K.in('_content', content) && !content._content) {
 
             return this;
 
@@ -292,8 +317,8 @@ L.Layer.include({
 
             content = (content || '').bMatch(/^\$/) ? K.popupContent[content] : content;
 
-            if (!this._popup || options) {
-                this._popup = new L.Popup(options, this);
+            if (!this._popup || o) {
+                this._popup = new L.Popup(o, this);
             }
             this._popup.setContent(content);
         }
@@ -343,7 +368,7 @@ L.Layer.include({
                         mark = w[n];
                 });
 
-                img = `<img${mark ? ` src="${mark.properties.icon.options.iconUrl}"` : ''}>`;
+                img = `<img${mark ? ` src="${mark.properties.iconUrl}"` : ''}>`;
                 html += `<li>${img}<span>${v.item}</span><span class="qty">'${v.qty > 1 ? '(x' + v.qty + ')' : ''}</span></li>`;
             });
             html += '</ul>';
@@ -402,17 +427,8 @@ L.Layer.include({
         }
 
         // set the correct overlay on the marker
-        if (this.options.shape === 'marker') {
-            let i = this.options.icon.options;
-            this.setIcon(createIcon({
-                url: i.iconUrl,
-                size: i.iconSize,
-                html: !i.iconUrl ? i.html : '',
-                className: i.className,
-                done: K.complete.is(this),
-                time: K.complete.time(this)
-            }));
-        }
+        if (this.options.shape === 'marker')
+            this.updateIcon();
 
         if (!!this.options.link) {
             $.each(this.getLinked(), function() {
@@ -433,8 +449,8 @@ L.Layer.include({
 
         let layers = [];
 
-        K.group.feature[K.mode.get].everyLayer.eachLayer(function(l) {
-            if (K.isInArray(l.options.id, links)) layers.push(l);
+        K.group.feature[K.mode].everyLayer.eachLayer(function(l) {
+            if (K.has(l.options.id, links)) layers.push(l);
         });
 
         return layers;
@@ -459,7 +475,11 @@ L.Layer.include({
                 // Only assign if different to avoid unneeded rendering.
                 finalValue = stripAndCollapse(cur);
                 if (curValue !== finalValue) {
-                    this.applySetting('className', finalValue, true);
+                    this.applySetting({
+                        setting: 'className',
+                        value: finalValue,
+                        skipSave: true
+                    });
                 }
             }
         }
@@ -490,7 +510,11 @@ L.Layer.include({
                 // Only assign if different to avoid unneeded rendering.
                 finalValue = stripAndCollapse(cur);
                 if (curValue !== finalValue) {
-                    this.applySetting('className', finalValue, true);
+                    this.applySetting({
+                        setting: 'className',
+                        value: finalValue,
+                        skipSave: true
+                    });
                 }
             }
         }
@@ -504,7 +528,8 @@ L.Polyline.include({
     initialize: function(latlngs, options) {
         L.setOptions(this, options);
 
-        if ('shape' in options) {
+        // Added to condense the latlng to be more saveable
+        if (K.in('shape', options)) {
             $.each(latlngs, (i, v) => {
                 v.lat = L.Util.formatNum(v.lat);
                 v.lng = L.Util.formatNum(v.lng);
@@ -524,7 +549,8 @@ L.Circle.include({
         }
         L.setOptions(this, options);
 
-        if ('shape' in options) {
+        // Added to condense the latlng to be more saveable
+        if (K.in('shape', options)) {
             latlng.lat = L.Util.formatNum(latlng.lat);
             latlng.lng = L.Util.formatNum(latlng.lng);
             this.options.radius = L.Util.formatNum(this.options.radius);
@@ -546,12 +572,231 @@ L.Marker.include({
     initialize: function(latlng, options) {
         L.setOptions(this, options);
 
-        if ('shape' in options) {
+        // Added to condense the latlng to be more saveable
+        if (K.in('shape', options)) {
             latlng.lat = L.Util.formatNum(latlng.lat);
             latlng.lng = L.Util.formatNum(latlng.lng);
         }
 
         this._latlng = L.latLng(latlng);
+    },
+
+    updateIcon: function(options = {}) {
+
+        if (!this.options.icon) return this;
+
+        const i = this.getSetting('iconUrl');
+
+        this.options.icon = createIcon($.extend({
+            iconUrl: i,
+            iconSize: this.getSetting('iconSize'),
+            html: !i ? this.getSetting('html') : '',
+            className: this.getSetting('className'),
+            done: K.complete.is(this),
+            time: K.complete.time(this)
+        }, options));
+
+        if (this._map) {
+            this._initIcon();
+            this.update();
+        }
+
+        this._popup && this.bindPopup(this.popup);
+
+        return this;
+    },
+
+});
+
+L.DivIcon.include({ // MARK: L.DivIcon {extended}
+
+    createIcon: function(oldIcon) {
+        const o = this.options;
+
+        const div = (oldIcon && oldIcon.tagName === 'DIV') ? oldIcon : document.createElement('div');
+
+        div.innerHTML = K.getSetting(this.options, 'html') || this.getIconHTML();
+
+        if (o.bgPos) {
+            var bgPos = L.point(o.bgPos);
+            div.style.backgroundPosition = (-bgPos.x) + 'px ' + (-bgPos.y) + 'px';
+        }
+        this._setIconStyles(div, 'icon');
+
+        return div;
+    },
+
+    getIconHTML: function() {
+        const o = this.options;
+
+        return `${K.getSetting(o, 'className').contains('anim-icon') ? `<img class="halo" src="images/_a.svg">` : ''} 
+                <img src="${K.getSetting(o, 'iconUrl') || ''}" class="icon">
+                ${o.done && !o.time ? '<img src="images/complete.svg" class="done">' : ''}
+                ${o.done && o.time ? `<span class="time">${o.time}</span>` : ''}
+                ${K.svg.dot}`.replace(/ {2,}/g, ' ');
+    }
+});
+
+L.Icon.include({
+
+    _setIconStyles: function(img, name) {
+        const o = this.options,
+            m = K.in('mode', o) && K.in('o', o.mode[K.mode]) ? o.mode[K.mode].o : false,
+            iz = `${name}Size`,
+            cn = 'className';
+
+        let s = K.in(iz, m) ? m[iz] : o[iz];
+        typeof s === 'number' && (s = [s, s]);
+
+        let size = L.point(s),
+            anchor = L.point(name === 'shadow' && o.shadowAnchor || o.iconAnchor ||
+                size && size.divideBy(2, true));
+
+        img.className = `leaflet-marker-${name} ${(K.in(cn, m) ? m[cn] : o[cn]) || ''}`;
+
+        if (anchor) {
+            img.style.marginLeft = (-anchor.x) + 'px';
+            img.style.marginTop = (-anchor.y) + 'px';
+        }
+
+        if (size) {
+            img.style.width = size.x + 'px';
+            img.style.height = size.y + 'px';
+        }
+    }
+});
+
+L.SVG.include({
+
+    _initPath: function(layer) {
+        const path = layer._path = L.SVG.create('path'),
+            o = layer.options,
+            m = K.in('o', o.mode[K.mode]) ? o.mode[K.mode].o : false,
+            cn = 'className',
+            c = K.in(cn, m) ? m[cn] : o[cn];
+
+        c && L.DomUtil.addClass(path, c);
+        o.interactive && L.DomUtil.addClass(path, 'leaflet-interactive');
+
+        this._updateStyle(layer);
+        this._layers[L.stamp(layer)] = layer;
+    },
+
+    _updateStyle: function(layer) {
+        const path = layer._path,
+            o = layer.options,
+            m = K.in('o', o.mode[K.mode]) ? o.mode[K.mode].o : false,
+            stroke = K.in('stroke', m) ? m.stroke : o.stroke,
+            color = K.in('color', m) ? m.color : o.color,
+            opacity = K.in('opacity', m) ? m.opacity : o.opacity,
+            weight = K.in('weight', m) ? m.weight : o.weight,
+            fillColor = K.in('fillColor', m) ? m.fillColor : o.fillColor,
+            fillOpacity = K.in('fillOpacity', m) ? m.fillOpacity : o.fillOpacity;
+
+        if (!path) { return; }
+
+        if (stroke) {
+            path.setAttribute('stroke', color);
+            path.setAttribute('stroke-opacity', opacity);
+            path.setAttribute('stroke-width', weight);
+            path.setAttribute('stroke-linecap', o.lineCap);
+            path.setAttribute('stroke-linejoin', o.lineJoin);
+
+            if (o.dashArray) {
+                path.setAttribute('stroke-dasharray', o.dashArray);
+            } else {
+                path.removeAttribute('stroke-dasharray');
+            }
+
+            if (o.dashOffset) {
+                path.setAttribute('stroke-dashoffset', o.dashOffset);
+            } else {
+                path.removeAttribute('stroke-dashoffset');
+            }
+        } else {
+            path.setAttribute('stroke', 'none');
+        }
+
+        if (o.fill) {
+            path.setAttribute('fill', fillColor || color);
+            path.setAttribute('fill-opacity', fillOpacity);
+            path.setAttribute('fill-rule', o.fillRule || 'evenodd');
+        } else {
+            path.setAttribute('fill', 'none');
+        }
+    }
+});
+
+L.SVG.include(!L.Browser.vml ? {} : {
+
+    _initPath: function(layer) {
+        const container = layer._container = L.SVG.create('shape'),
+            o = layer.options,
+            m = K.in('o', o.mode[K.mode]) ? o.mode[K.mode].o : false,
+            cn = 'className',
+            c = K.in(cn, m) ? m[cn] : o[cn];
+
+        L.DomUtil.addClass(container, 'leaflet-vml-shape ' + (c || ''));
+
+        container.coordsize = '1 1';
+
+        layer._path = L.SVG.create('path');
+        container.appendChild(layer._path);
+
+        this._updateStyle(layer);
+        this._layers[L.stamp(layer)] = layer;
+    },
+
+    _updateStyle: function(layer) {
+        var lStroke = layer._stroke,
+            lFill = layer._fill;
+        const o = layer.options,
+            container = layer._container,
+            m = K.in('o', o.mode[K.mode]) ? o.mode[K.mode].o : false,
+            stroke = K.in('stroke', m) ? m.stroke : o.stroke,
+            color = K.in('color', m) ? m.color : o.color,
+            opacity = K.in('opacity', m) ? m.opacity : o.opacity,
+            weight = K.in('weight', m) ? m.weight : o.weight,
+            fill = K.in('fill', m) ? m.fill : o.fill,
+            fillColor = K.in('fillColor', m) ? m.fillColor : o.fillColor,
+            fillOpacity = K.in('fillOpacity', m) ? m.fillOpacity : o.fillOpacity;
+
+        container.stroked = !!stroke;
+        container.filled = !!fill;
+
+        if (stroke) {
+            !lStroke && (lStroke = layer._stroke = L.SVG.create('stroke'));
+
+            container.appendChild(lStroke);
+            lStroke.weight = weight + 'px';
+            lStroke.color = color;
+            lStroke.opacity = opacity;
+
+            if (o.dashArray) {
+                lStroke.dashStyle = L.Util.isArray(o.dashArray) ?
+                    o.dashArray.join(' ') :
+                    o.dashArray.replace(/( *, *)/g, ' ');
+            } else lStroke.dashStyle = '';
+
+            lStroke.endcap = o.lineCap.replace('butt', 'flat');
+            lStroke.joinstyle = o.lineJoin;
+
+        } else if (lStroke) {
+            container.removeChild(lStroke);
+            layer._stroke = null;
+        }
+
+        if (fill) {
+            !lFill && (lFill = layer._fill = L.SVG.create('fill'));
+
+            container.appendChild(lFill);
+            lFill.color = fillColor || color;
+            lFill.opacity = fillOpacity;
+
+        } else if (lFill) {
+            container.removeChild(lFill);
+            layer._fill = null;
+        }
     }
 });
 
@@ -635,40 +880,6 @@ L.Popup.include({
     }
 });
 
-// Adjustments for under and overground markers so they don't sit level 
-L.Icon.include({
-
-    _setIconStyles: function(img, name) {
-        let options = this.options;
-        let sizeOption = options[name + 'Size'];
-
-        if (typeof sizeOption === 'number') {
-            sizeOption = [sizeOption, sizeOption];
-        }
-
-        let size = L.point(sizeOption),
-            anchor = L.point(name === 'shadow' && options.shadowAnchor || options.iconAnchor ||
-                size && size.divideBy(2, true));
-
-        img.className = 'leaflet-marker-' + name + ' ' + (options.className || '');
-
-        if (anchor) {
-            img.style.marginLeft = (-anchor.x) + 'px';
-            img.style.marginTop = (-anchor.y) + 'px';
-
-            // if ((options.className || '').contains('overground'))
-            //     img.style.marginTop = (-size.y) + 'px';
-            // else if ((options.className || '').contains('underground'))
-            //     img.style.marginTop = 0;
-        }
-
-        if (size) {
-            img.style.width = size.x + 'px';
-            img.style.height = size.y + 'px';
-        }
-    }
-});
-
 // Divmap custom button defaults
 L.Control.Button = L.Control.extend({
 
@@ -746,70 +957,14 @@ L.control.button = function(options) {
     return new L.Control.Button(options);
 };
 
-// L.CursorHandler = L.Handler.extend({
-
-//     _el: false,
-//     _latlng: false,
-
-//     addHooks: function() {
-//         this._popup = new L.Popup();
-//         this._map.on('mouseover', this._open, this);
-//         this._map.on('mousemove', this._update, this);
-//         // this._map.on('mouseout', this._close, this);
-//     },
-
-//     removeHooks: function() {
-//         this._map.off('mouseover', this._open, this);
-//         this._map.off('mousemove', this._update, this);
-//         // this._map.off('mouseout', this._close, this);
-//     },
-
-//     _open: function(e) {
-//         console.log(this, e);
-
-//         this._create(e);
-//         this._update(e);
-//     },
-
-//     _create: function(e) {
-//         if (!this._el) {
-//             this._el = $('<div />', {
-//                 class: 'cursor-display',
-//                 html: '<span class="lat"></span><span class="lng"></span>'
-//             }).appendTo(e.target._container);
-
-//             this._lat = this._el.find('.lat');
-//             this._lng = this._el.find('.lng');
-//         }
-
-//     },
-
-//     _close: function() {
-//         if (this._el) {
-//             this._el.remove();
-//             this._el = false;
-//         }
-//     },
-
-//     _update: function(e) {
-//         this._create(e);
-//         this._el.css({
-//             top: e.containerPoint.y,
-//             left: e.containerPoint.x
-//         });
-
-//         this._lat.text(e.latlng.lat);
-//         this._lng.text(e.latlng.lng);
-        
-//     }
-// });
-
-// L.Map.addInitHook('addHandler', 'cursor', L.CursorHandler);
 /*=====  End of LEAFLET INCLUDES  ======*/
+
+// temporary to update to new mode names
+if (K.has(Cookies.get('mode'), ['normal', 'Story'])) Cookies.set('mode', 'Story Mode');
 
 Cookies.json = true;
 
-K.extend({
+K.extend({ // MARK: K
     lastCheck: false,
     pane: {},
     tool: {},
@@ -866,9 +1021,9 @@ K.extend({
         is: function(layer) {
             let uD = K.user.data,
                 id = layer.options.id;
-            if (!uD && !('complete' in localStorage)) K.local('complete', {});
-            if (uD) return id in uD;
-            return id in K.local('complete');
+            if (!uD && !K.in('complete', localStorage)) K.local('complete', {});
+            if (uD) return K.in(id, uD);
+            return K.in(id, K.local('complete'));
         },
         time: function(layer) {
             if (!K.complete.is(layer)) return false;
@@ -901,7 +1056,7 @@ K.extend({
             let uD = K.user.data,
                 id = layer.options.id,
                 time = layer.options.time;
-            if (!uD && !('complete' in localStorage)) K.local('complete', {});
+            if (!uD && !K.in('complete', localStorage)) K.local('complete', {});
             let obj = uD ? uD : K.local('complete');
 
             if (done) {
@@ -1071,11 +1226,10 @@ K.extend({
     map: {
         active: Cookies.get('activeMap') || [],
         group: {
-            everyLayer: ['n/a'],
+            everyLayer: [],
             groupAll: [],
-            groupDZ: ['n/a'],
-            groupHidden: ['n/a'],
-            groupComplete: ['n/a'],
+            groupHidden: [],
+            groupComplete: [],
             group08: [],
             group09: [],
             group10: [],
@@ -1089,26 +1243,26 @@ K.extend({
         property: { // these are used to clear unwanted settings before saving
             polygon: [
                 'category', 'color', 'weight', 'opacity', 'fillColor',
-                'fill', 'fillOpacity', 'stroke', 'group', 'shape',
+                'fill', 'fillOpacity', 'stroke', 'group',
                 'type', 'className', 'mode', 'complete'
             ],
             circle: [
                 'category', 'color', 'weight', 'opacity', 'fillColor',
-                'fill', 'fillOpacity', 'stroke', 'group', 'shape',
-                'type', 'className', 'mode', 'complete'
+                'fill', 'fillOpacity', 'stroke', 'group', 'type',
+                'className', 'mode', 'complete'
             ],
             rectangle: [
                 'category', 'color', 'weight', 'opacity', 'fillColor',
-                'fill', 'fillOpacity', 'stroke', 'group', 'shape',
-                'type', 'className', 'mode', 'complete'
+                'fill', 'fillOpacity', 'stroke', 'group', 'type',
+                'className', 'mode', 'complete'
             ],
             polyline: [
-                'category', 'color', 'weight', 'opacity', 'stroke', 'complete',
-                'group', 'shape', 'type', 'className', 'mode'
+                'category', 'color', 'weight', 'opacity', 'stroke',
+                'complete', 'group', 'type', 'className', 'mode'
             ],
             marker: [
-                'category', 'group', 'type', 'shape', 'time', 'iconSize', 'html',
-                'opacity', 'mode', 'complete', 'link', 'iconUrl', 'className'
+                'category', 'group', 'type', 'time', 'iconSize', 'html',
+                'mode', 'complete', 'link', 'iconUrl', 'className'
             ],
             popup: ['className']
         },
@@ -1191,6 +1345,7 @@ K.extend({
         zIndex: ['PointOfInterest', 'Hideout', 'Contaminated', 'Landmark', 'CrashSite'],
     },
 
+    // MARK: ^ Settings
     settings: { // these are for the layer tools, so it knows which settings to show
         main: {
             category: {
@@ -1206,10 +1361,9 @@ K.extend({
                 type: 'string'
             },
             mode: {
-                values: {},
-                description: 'Mode is used to suggest what map mode the layers are for, \'All\' is an option. As the modes are created they will be added to the list bellow.',
+                description: 'Mode is used to suggest what map mode the layers are for.\n\nAs the modes are created they will be added to the list bellow.\n\nWhen more than one mode is selected, most other options will have a new mode switch to allow that option to be changed leaving the original the same.',
                 for: ['marker', 'polygon', 'polyline', 'circle', 'rectangle'],
-                type: 'string'
+                type: 'object'
             },
             group: {
                 values: {},
@@ -1279,7 +1433,7 @@ K.extend({
             opacity: {
                 values: {},
                 description: 'Opacity is used to set the opacity of the Stroke.',
-                for: ['marker', 'polygon', 'polyline', 'circle', 'rectangle'],
+                for: ['polygon', 'polyline', 'circle', 'rectangle'],
                 type: 'number'
             },
             weight: {
@@ -1334,14 +1488,7 @@ K.extend({
         }
     },
 
-    mode: {
-        get: Cookies.get('mode') || 'normal',
-        not: function(mode = false, other) {
-            if (!mode)
-                return this.get == 'normal' ? ['survival', 'last stand', 'survival last stand'] : ['normal', 'survival', 'normal survival'];
-            return this.get == mode ? other : mode;
-        }
-    },
+    mode: Cookies.get('mode') || 'Story Mode',
 
     msg: {
         note: $('.notification'),
@@ -1400,8 +1547,7 @@ K.extend({
         zoomDelta: 0.5,
         wheelPxPerZoomLevel: 100,
         zoomControl: false,
-        attributionControl: true,
-        cursor: true
+        attributionControl: true
     }),
 
     popupContent: {
@@ -1470,21 +1616,11 @@ K.extend({
         }
     },
 
-    modes: {
-        get: ['normal', 'survival', 'last stand'],
-        create: function() {
-            $.each(this.get, function(index, mode) {
-                K.group.feature[mode] = {};
-                K.map.type[mode] = {};
-            });
-        }
-    },
-
     updateMarker: function(icon) {
         let mark;
         icon = icon || (Cookies.get('copy') && $.type(mark = Cookies.get('copy').marker) == 'object' ? mark : {});
 
-        let o = ('icon' in icon) ? icon.icon.options : {},
+        let o = icon || {},
             url = 'images/marker-poi-contaminated.svg',
             options = {
                 iconSize: o.iconSize || [22, 22],
@@ -1496,13 +1632,13 @@ K.extend({
         if (!K.drawIcon) {
 
             // L.Control.Draw
-            let createIcon = L.Icon.extend({ options: options });
+            let icon = L.Icon.extend({ options: options });
 
             // Create the drawControl for adding and editing new layers with default settings
             K.drawControl = new L.Control.Draw({
                 draw: {
                     marker: {
-                        icon: new createIcon()
+                        icon: new icon()
                     },
                     // circle: false
                 },
@@ -1558,10 +1694,10 @@ K.extend({
     // this changes values in arrays to strings and ignores functions
     valuesToString(obj) {
 
-        if (K.isInArray($.type(obj), ['object', 'array'])) {
+        if (K.has($.type(obj), ['object', 'array'])) {
             $.each(obj, function(i, v) {
                 if ($.type(v) == 'function') return;
-                obj[i] = K.isInArray($.type(v), ['object', 'array']) ? K.valuesToString(v) : v.toString();
+                obj[i] = K.has($.type(v), ['object', 'array']) ? K.valuesToString(v) : v.toString();
             });
         } else return obj.toString();
 
@@ -1572,7 +1708,12 @@ K.extend({
         types: {}
     },
 
-    settingShape: shape => K.isInArray(shape, ['polyline', 'rectangle']) ? 'polygon' : shape
+    settingShape: shape => K.has(shape, ['polyline', 'rectangle']) ? 'polygon' : shape,
+
+    getSetting: (obj, setting) => {
+        const m = K.in('mode', obj) && K.in('o', obj.mode[K.mode]) ? obj.mode[K.mode].o : false;
+        return m && K.in(setting, m) ? m[setting] : obj[setting];
+    }
 });
 
 K.modes.create();
@@ -1585,12 +1726,12 @@ $.each(K.group.feature, function(i, m) {
 K.myMap.createPane('messagePane', L.DomUtil.get('message'));
 K.myMap.createPane('mapPane');
 K.myMap.createPane('zonePane');
-K.group.mode = K.group.feature[K.mode.get];
+K.group.mode = K.group.feature[K.mode];
 
 /*====================================
 =            MARKER TOOLS            =
 ====================================*/
-K.tool.marker = {
+K.tool.marker = { // MARK: Marker Tools
     full: false,
     layers: {},
 
@@ -1704,7 +1845,7 @@ K.tool.marker = {
             $('a', tools).removeClass('underground overground').addClass($(this).val());
         });
 
-        $.each(sortObjByKeys(this.layers[K.mode.get]), function(category, layers) {
+        $.each(sortObjByKeys(this.layers[K.mode]), function(category, layers) {
 
             $.each(sortObjByKeys(layers), function(i, layer) {
                 let p = layer.o,
@@ -1719,13 +1860,13 @@ K.tool.marker = {
                     }
                 });
 
-                if (p.mode.contains(K.mode.get) || p.mode == 'all') {
+                if (K.mode in p.mode) {
                     $('<a />', {
-                        'class': active,
+                        class: active,
                         title: category + '<br>' + p.type.replace('Survival', '').space(),
                         category: category,
                         type: p.type,
-                        html: `<img src="${p.icon.options.iconUrl}">${key ? '<span class="key">' + key + '</span>' : ''}`
+                        html: `<img src="${p.iconUrl}">${key ? '<span class="key">' + key + '</span>' : ''}`
                     }).data('properties', p).appendTo('.outer.icons');
                 }
             });
@@ -1739,14 +1880,9 @@ K.tool.marker = {
             Cookies.set('markerToolIcon', typ, K.expires);
 
             let o = $(this).data('properties');
-            o = $.extend(true, {}, o, {
-                icon: {
-                    options: {
-                        className: o.icon.options.className.add($('.outer.inputs input:checked').val())
-                    }
-                }
-            });
-            K.updateMarker(o);
+            K.updateMarker($.extend(true, {}, o, {
+                className: o.className.add($('.outer.inputs input:checked').val())
+            }));
 
             K.bar.draw.Marker.enable();
         });
@@ -1781,7 +1917,7 @@ K.tool.marker = {
 /*===================================
 =           LAYER TOOLS            =
 ===================================*/
-K.tool.layer = {
+K.tool.layer = { // MARK: Layer Tools
 
     // Settings to use through all functions
     group: '',
@@ -1805,7 +1941,7 @@ K.tool.layer = {
 
     _show: function(layer) {
         console.log(`Editing layer with ID: ${layer.options.id}`, layer);
-        K.settingShape(layer.options.shape)
+        // K.settingShape(layer.options.shape)
 
         let _this = this;
 
@@ -1837,20 +1973,7 @@ K.tool.layer = {
         this.id = layer._leaflet_id;
 
         // Add the settings if they don't already exist
-        if (!('saved' in layer.editing)) layer.editing.saved = true;
-
-        if (!('options' in layer)) layer.options = {};
-
-        if (this.shape == 'marker') {
-            if (!('icon' in layer.options)) layer.options.icon = {};
-            if (!('options' in layer.options.icon)) layer.options.icon.options = {};
-            this.icon = layer.options.icon.options;
-        }
-
-        if (!('_popup' in layer)) layer._popup = {};
-        if (!('_content' in layer._popup)) layer._popup._content = '';
-        if (!('options' in layer._popup)) layer._popup.options = {};
-        if (!('list' in layer._popup.options)) layer._popup.options.list = {};
+        if (!K.in('saved', layer.editing)) layer.editing.saved = true;
 
         this.group = layer.options.group;
         this.pop = layer.getPopup();
@@ -1869,13 +1992,8 @@ K.tool.layer = {
             this.pop = this.join._popup;
 
             // Add a new popup if it has one
-            if (this.pop._content || this.pop.options.list.title) {
-                let o = this.pop;
-                this.new.bindPopup(o._content, {
-                    className: o.options.className,
-                    list: o.options.list || {}
-                });
-            }
+            if (this.pop._content || this.pop.list.title)
+                this.new.bindPopup(this.pop);
 
             removeLayer(this.join);
             removeLayer(layer, this.group, true);
@@ -1979,10 +2097,10 @@ K.tool.layer = {
 
         for (i in btns) {
             b = btns[i];
-            if (b.cls && (!b.type || K.isInArray(this.shape, b.type))) {
+            if (b.cls && (!b.type || K.has(this.shape, b.type))) {
                 btn.clone().attr({
                     'aria-label': b.cls,
-                    'title': b.title
+                    title: b.title
                 }).addClass(b.cls).appendTo(box);
             }
         }
@@ -1992,26 +2110,26 @@ K.tool.layer = {
         // Fill the menu with settings
         let shape = this.shape;
         $.each(K.settings.main, function(i, n) {
-            if (!K.isInArray(shape, n.for)) return;
+            if (!K.has(shape, n.for)) return;
             $('<a />', {
-                'class': 'dnt settings-item button ' + i,
+                class: 'dnt settings-item button ' + i,
                 'aria-label': i,
-                'html': i.firstToUpper().space()
+                html: i.firstToUpper().space()
             }).appendTo('.settings-tools.marker');
         });
 
         // Fill the popup menu with settings
         $.each(K.settings.popup, function(i, n) {
             $('<a />', {
-                'class': 'dnt settings-item button ' + i,
+                class: 'dnt settings-item button ' + i,
                 'aria-label': 'popup-' + i,
-                'html': i.firstToUpper().space()
+                html: i.firstToUpper().space()
             }).appendTo('.settings-tools.popup');
         });
 
         // Apply the button click functions
         $('.settings-item')
-            .on('mousedown', this._settingClick);
+            .on('click', this._settingClick);
         // .on('mouseover', this._settingOver)
         // .on('mouseleave', this._settingLeave);
         $('.settings-save').on('click', function() {
@@ -2044,7 +2162,8 @@ K.tool.layer = {
         });
         $('.settings.move').on('click', this._move);
         $('.settings.edit').on('click', this._edit);
-        if ('_latlngs' in layer && layer._latlngs.length == 1)
+
+        if (K.in('_latlngs', layer) && layer._latlngs.length == 1)
             $('.settings.split').hide();
         else {
             $('.settings.split').on('click', function() {
@@ -2085,29 +2204,27 @@ K.tool.layer = {
      * Left side setting click
      * Populate the right menu
      */
-    _settingClick: function() {
+    _settingClick: function(e, modeSwitch) { // MARK: ^ Setting Click
 
-        let fn = K.tool.layer,
+        let _t = this,
+            fn = K.tool.layer,
             layer = fn.layer,
             setting = $(this).attr('aria-label'),
             isPopup = setting.bMatch('popup-'),
             object = isPopup ? K.settings.popup : K.settings.main,
-            values = [];
+            values = [],
+            box, toggle, input;
 
         layer.editing.window = setting;
         setting = setting.replace('popup-', '');
 
-        if ('values' in object[setting]) {
+        if (K.in('values', object[setting])) {
             // get and sort settings 
             values = sortObjByKeys(object[setting].values);
         }
 
         let value = layer.options[setting];
-
-        if (isPopup)
-            value = (setting == 'content' ? fn.pop._content : fn.pop.options[setting]);
-        else if (fn.shape == 'marker' && K.isInArray(setting, ['className', 'iconUrl', 'iconSize', 'html']))
-            value = fn.icon[setting];
+        isPopup && (value = layer.popup[setting]);
 
         // Fill the right menu with the title and apply button
         $('.settings-side.right').html(
@@ -2116,7 +2233,7 @@ K.tool.layer = {
             </div>`
         );
 
-        if (!K.isInArray(setting, ['id'])) {
+        if (!K.has(setting, ['id'])) {
 
             $('.right .settings-title').after(`<a class="settings icon copy inline" title="Copy this setting" 
                 setting="' + setting + '" which="${isPopup ? 'popup' : 'icon'}"></a>`);
@@ -2129,6 +2246,55 @@ K.tool.layer = {
 
         let bx = $('.settings-tools.right-bar');
 
+        // add the mode switch
+        if (K.length(layer.options.mode) > 1 && !K.has(setting, ['mode', 'id', 'category', 'type', 'complete', 'time', 'link', 'group'])) {
+
+            const mode = layer.getMode(isPopup);
+
+            let changes = false;
+            K.in(setting, mode) && (changes = true);
+            changes && (value = layer.getModeSetting(setting, isPopup));
+
+            const mC = $('<div />', {
+                    class: 'mode-container edit'
+                }),
+                desc = $('<span />', {
+                    class: 'name',
+                    html: 'Modify for mode:'
+                }),
+                msgs = [
+                    'This will modify this setting for the original layer, no changes will be made to any modified modes.',
+                    `This will modify this setting for ${K.mode} only, no changes will be made to the original layer.\nSwitching this with changes already made will delete any changes for ${K.mode}.`
+                ],
+                help = $('<span />', {
+                    class: 'help',
+                    html: msgs[+changes]
+                });
+
+            toggle = $(`<label class="switch">
+                <span class="label"></span>
+                <span class="back"></span>
+                <input type="checkbox" class="settings-item mode-switch check">
+                <span class="slider"></span>
+            </label>`);
+
+            bx.append(mC.append(desc).append(toggle).append(help));
+
+            $('input', toggle).prop('checked', changes).on('change', function() {
+                changes = $(this).is(':checked');
+                help.text(msgs[+changes]);
+
+                if (!changes) {
+                    K.in(setting, mode) && delete mode[setting];
+                    K.tool.layer._settingClick.call(_t, true);
+                    apply();
+                }
+            });
+        }
+
+        // add the description of the setting
+        object[setting].description && bx.append(`<span class="help">${object[setting].description}</span>`);
+
         if (setting === 'list') {
 
             if ($.type(value) != 'object') {
@@ -2137,8 +2303,7 @@ K.tool.layer = {
             }
 
             $('.settings-tools.right-bar').append(
-                `<span class="help">${object[setting].description}</span>
-				<div class="scroll-box">
+                `<div class="scroll-box">
 				    <div class="section title">
                         <span class="header">TITLE</span><br>
                         <input type="text" class="settings-item input list" name="list-title" role="input" value="${value.title ? value.title : ''}" setting="list-title" which="popup" placeholder="Title">
@@ -2163,17 +2328,17 @@ K.tool.layer = {
                 line: false
             }];
 
-            let box = $('<div />', {
-                'class': 'setting-container'
+            box = $('<div />', {
+                class: 'setting-container'
             });
 
-            let input = $('<input />', {
+            input = $('<input />', {
                 type: 'text',
-                'class': 'settings-item input list',
+                class: 'settings-item input list',
                 which: 'popup'
             });
 
-            let toggle = $(`<label class="switch">
+            toggle = $(`<label class="switch">
                     <span class="label"></span>
                     <span class="back"></span>
                     <input type="checkbox" class="settings-item input list check">
@@ -2351,8 +2516,7 @@ K.tool.layer = {
         } else if (setting === 'link') {
 
             $('.settings-tools.right-bar').append(
-                `<span class="help">${object[setting].description}</span>
-				<div class="scroll-box">
+                `<div class="scroll-box">
                     <div class="section links">
                         <a class="add links button" title="Add another paragraph">+</a>
                         <span class="header">LINKED IDS</span><br>
@@ -2362,23 +2526,23 @@ K.tool.layer = {
 
             if (!value) value = [''];
 
-            let box = $('<div />', {
-                'class': 'setting-container links'
+            box = $('<div />', {
+                class: 'setting-container links'
             });
 
-            let input = $('<input />', {
+            input = $('<input />', {
                 name: 'list-link',
                 type: 'text',
-                'class': 'settings-item input link',
+                class: 'settings-item input link',
                 placeholder: 'Layer ID'
             });
 
             let grab = $('<a />', {
-                'class': 'settings-item link grab'
+                class: 'settings-item link grab'
             });
 
             let trash = $('<a />', {
-                'class': 'settings-item link trash'
+                class: 'settings-item link trash'
             });
 
             $.each(value, function(i, v) {
@@ -2444,7 +2608,7 @@ K.tool.layer = {
 
                 K.check.grabbing = true;
                 let i = $(this).attr('num'),
-                    layers = K.group.feature[K.mode.get].everyLayer,
+                    layers = K.group.feature[K.mode].everyLayer,
                     _this = this;
 
                 layers.eachLayer(function(l) {
@@ -2473,13 +2637,35 @@ K.tool.layer = {
                 });
             });
 
+        } else if (setting === 'mode') {
+
+            const mC = $('<div />', {
+                class: 'mode-container'
+            });
+
+            const desc = $('<span />', {
+                class: 'name'
+            });
+
+            toggle = $(`<label class="switch">
+                <span class="label"></span>
+                <span class="back"></span>
+                <input type="checkbox" class="settings-item input mode check">
+                <span class="slider"></span>
+            </label>`);
+
+            $.each(K.modes.get, function(i, mode) {
+                const cont = mC.clone().appendTo(bx);
+                desc.clone().text(mode).appendTo(cont);
+                const tg = toggle.clone().appendTo(cont);
+                $('input', tg).prop('checked', K.has(mode, layer.options.mode)).attr('mode', mode);
+            });
+
         } else if (K.length(values)) {
             // If presets exist, fill the menu with them
 
             if (setting === 'className' && !isPopup)
                 value = K.stripClasses(value);
-
-            object[setting].description && bx.append(`<span class="help">${object[setting].description}</span>`);
 
             // Append the input
             bx.append(`<input type="text" class="settings-item input ${setting}" name="${setting}" 
@@ -2491,7 +2677,7 @@ K.tool.layer = {
 
             $.each(values, function(i, z) {
 
-                if (setting == 'type' && !K.isInArray(K.settingShape(layer.options.shape), z.shape)) return;
+                if (setting == 'type' && !K.has(K.settingShape(layer.options.shape), z.shape)) return;
 
                 img = ($.type(i) == 'string' ? i.contains('.svg') : false);
                 col = ($.type(i) == 'string' ? i.contains('#') : false);
@@ -2534,34 +2720,26 @@ K.tool.layer = {
             });
 
         } else {
-            object[setting].description && bx.append(`<span class="help">${object[setting].description}</span>`);
-
-            bx.append(`<textarea  rows=2 cols=20 wrap="hard" class="settings-item input ${setting}" name="${setting}" setting="${setting}" which="${isPopup ? 'popup' : 'icon'}">${value ? value : ''}</textarea>`)
-            //     .append($('<div />', {
-            //         id: 'settings-textarea',
-            //         'class': 'textarea'
-            //     }));
-
-            // let myCodeMirror = CodeMirror(document.getElementById('settings-textarea'), {
-            //     mode: 'html',
-            //     lineNumbers: true
-            // });
-            // console.log(document.getElementById('settings-textarea'), myCodeMirror);
+            bx.append(`<textarea type="text" rows=2 cols=20 wrap="hard" class="settings-item input ${setting}" name="${setting}" setting="${setting}" which="${isPopup ? 'popup' : 'icon'}"${setting == 'id' ? ' readonly' : ''}>${value ? value : ''}</textarea>`);
         }
 
-        let apply = function() {
+        const apply = function() {
 
-            let $input = $('.settings-item.input'),
-                setting = $input.attr('setting'),
-                value = $input.val();
+            const $input = $('.settings-item.input'),
+                $mode = $('.mode-switch'),
+                o = {
+                    setting: $input.attr('setting'),
+                    value: $input.val(),
+                    forMode: $mode.length && $mode.is(':checked')
+                };
 
             if ($(this).hasClass('list')) {
 
-                setting = 'list';
-                value = {};
+                o.setting = 'list';
+                o.value = {};
 
-                value.title = $('.input[name="list-title"]').val();
-                value.subs = [];
+                o.value.title = $('.input[name="list-title"]').val();
+                o.value.subs = [];
 
                 $('.input[name="list-sub"]').each(function() {
 
@@ -2577,10 +2755,10 @@ K.tool.layer = {
                     l && (r.line = l);
                     n && (r.note = n);
 
-                    value.subs.push(r);
+                    o.value.subs.push(r);
                 });
 
-                value.list = [];
+                o.value.list = [];
 
                 $('.input[name="list-item"]').each(function() {
 
@@ -2589,33 +2767,45 @@ K.tool.layer = {
 
                     if (!t) return true
 
-                    value.list.push({
+                    o.value.list.push({
                         item: t,
                         qty: $(`.input[name="list-qty"][num="${no}"]`).val() || 1
                     });
                 });
 
-                removeEmpty(value);
+                removeEmpty(o.value);
 
             } else if ($(this).hasClass('link')) {
 
-                setting = 'link';
-                value = [];
+                o.setting = 'link';
+                o.value = [];
 
                 $('[name=list-link]').each(function(i, el) {
                     let v = $(this).val();
-                    if (v) value.push(v);
+                    if (v) o.value.push(v);
                 });
 
-                removeEmpty(value);
-            } else if (setting == 'className' && !isPopup) {
+                removeEmpty(o.value);
 
-                let color = '_popup' in layer && 'options' in layer._popup ? layer._popup.options.className : '';
-                value += ` ${layer.options.group} ${color}`;
+            } else if ($(this).hasClass('mode')) {
+
+                o.setting = 'mode';
+                o.value = layer.backup.options.mode || layer.options.mode || {};
+
+                $('input', bx).each(function() {
+                    const mode = $(this).attr('mode');
+                    if (!$(this).is(':checked')) delete o.value[mode];
+                    else if (!(mode in o.value)) o.value[mode] = {};
+                });
+
+            } else if (o.setting == 'className' && !isPopup) {
+
+                let color = K.in('popup', layer) && K.in('className', layer.popup) ? layer.popup.className : '';
+                o.value += ` ${layer.options.group} ${color}`;
             }
 
-            if ($input.attr('which') == 'popup') layer.updatePopup(setting, value);
-            else layer.applySetting(setting, value);
+            isPopup && layer.updatePopup(o);
+            !isPopup && layer.applySetting(o);
         };
 
         // Menu buttons event
@@ -2628,7 +2818,7 @@ K.tool.layer = {
                 let hex = $(this).attr('aria-label');
                 $input.css({
                     'background-color': hex,
-                    'color': textColor(hex)
+                    color: textColor(hex)
                 });
             }
 
@@ -2639,25 +2829,29 @@ K.tool.layer = {
             apply.call(this);
         });
 
-        let inputRenew = function() {
+        const inputRenew = function() {
             // Apply button event
             $('.input').each(function() {
+                if (!!$(this).prop('readonly')) return;
+
                 let el = $(this),
-                    binds = 'propertychange change click keyup input paste focus blur';
+                    binds = {
+                        text: 'propertychange change focus input paste',
+                        number: 'propertychange change focus input paste',
+                        checkbox: 'change',
+                    },
+                    type = $(this).attr('type');
 
                 el.data('oldVal', el.val());
 
-                el.unbind(binds);
-                el.bind(binds, function() {
+                el.unbind(binds[type]);
+                el.bind(binds[type], function(e) {
 
                     let check = $(this).hasClass('check');
 
-                    if (!check && el.data('oldVal') == el.val())
-                        return;
+                    if (!check && el.data('oldVal') == el.val()) return;
 
                     !check && el.data('oldVal', el.val());
-
-                    apply.call(this);
 
                     let title = $('input[name="list-title"]');
                     title.removeClass('incorrect');
@@ -2670,14 +2864,15 @@ K.tool.layer = {
                         if ($(this).is(':checked')) input.addClass('gray');
                     }
 
-                });
-
-                el.bind('blur', function() {
-                    if (el.data('oldVal') == el.val())
-                        return;
-
                     apply.call(this);
                 });
+
+                // el.bind('blur', function() {
+                //     if (el.data('oldVal') == el.val())
+                //         return;
+
+                //     apply.call(this);
+                // });
             });
         }
 
@@ -2700,6 +2895,8 @@ K.tool.layer = {
                 event: 'click mouseleave'
             }
         });
+
+        modeSwitch && apply();
     },
 
     _settingOver: function() {
@@ -2712,16 +2909,12 @@ K.tool.layer = {
         setting = setting.replace('popup-', '');
 
         let value = layer.options[setting] || '';
-        if (isPopup) {
-            value = (setting == 'content' ? fn.pop._content : fn.pop.options[setting]);
-        } else if (fn.shape == 'marker' && K.isInArray(setting, ['className', 'iconUrl', 'iconSize', 'html'])) {
-            value = fn.icon[setting];
-        }
+        if (isPopup) value = (setting == 'content' ? fn.pop._content : fn.pop.options[setting]);
 
         if ($.type(value) == 'object')
             value = JSON.stringify(value);
 
-        if (K.isInArray(setting, ['content', 'html']))
+        if (K.has(setting, ['content', 'html']))
             value = safeTags(value);
 
         if ($.type(value) == 'string' && !value)
@@ -2732,7 +2925,7 @@ K.tool.layer = {
         if (!$('.' + cv, this).length && value != undefined) {
 
             $('<span />', {
-                'class': cv
+                class: cv
             }).appendTo(this);
 
         }
@@ -2784,7 +2977,7 @@ K.tool.layer = {
 
         delete layer.backup;
 
-        if (!layer.options.mode.contains(K.mode.get) && layer.options.mode != 'all') {
+        if (!(K.mode in layer.options.mode)) {
             K.group.mode[layer.options.group].removeLayer(layer._leaflet_id);
         }
     },
@@ -2795,36 +2988,24 @@ K.tool.layer = {
         this._hide();
         let layer = this.layer,
             o = layer.options,
-            p = layer._popup,
             b = layer.backup;
 
         $.extend(true, o, b.options);
 
         if (b.popup) {
-            $(p._container)
-                .removeClass(p.options.className)
-                .addClass(b.popup.options.className);
-            $.extend(true, p, b.popup);
+            layer.unbindPopup();
+            layer.bindPopup(b.popup);
         }
 
         // Restore old settings
         if (o.shape == 'marker') {
 
             layer.setLatLng(b.pos.latlng);
-
-            let i = o.icon.options;
-
-            layer.setIcon(createIcon({
-                url: i.iconUrl,
-                size: i.iconSize,
-                className: i.className,
-                done: K.complete.is(layer),
-                time: K.complete.time(layer)
-            }));
-            layer.setOpacity(o.opacity);
+            layer.updateIcon();
+            // layer.setOpacity(o.opacity);
 
             // Create a polyline with the new settings
-        } else if (K.isInArray(o.shape, ['polyline', 'polygon'])) {
+        } else if (K.has(o.shape, ['polyline', 'polygon'])) {
 
             layer.setLatLngs(b.pos.latlngs);
             layer.setStyle(o);
@@ -2902,7 +3083,7 @@ K.tool.layer = {
             return;
         }
 
-        if (!('options' in copy)) copy.options = {
+        if (!K.in('options', copy)) copy.options = {
             popup: {}
         };
 
@@ -2964,7 +3145,7 @@ K.tool.layer = {
             pop = $(this).attr('which') == 'popup',
             set = $(this).attr('setting');
 
-        if ((!('options' in copy)) || (pop && !copy.options.popup[set]) || (!pop && !copy.options[set])) {
+        if ((!K.in('options', copy)) || (pop && !copy.options.popup[set]) || (!pop && !copy.options[set])) {
 
             K.msg.show({
                 msg: 'There is no copied setting!',
@@ -3041,29 +3222,29 @@ K.tool.layer = {
         this._hide();
 
         $('<div />', {
-            'class': 'screen-blank',
-            'html': $('<div />', {
-                'class': 'confirm',
-                'html': $('<div />', {
-                    'class': 'message',
-                    'html': 'Are you sure you want to delete this layer?'
+            class: 'screen-blank',
+            html: $('<div />', {
+                class: 'confirm',
+                html: $('<div />', {
+                    class: 'message',
+                    html: 'Are you sure you want to delete this layer?'
                 })
             })
         }).appendTo('body');
 
         $('<a />', {
-                'class': 'button no',
-                'title': 'Cancel',
-                'html': 'Cancel'
+                class: 'button no',
+                title: 'Cancel',
+                html: 'Cancel'
             }).appendTo('.confirm')
             .on('click', function() {
                 $('.screen-blank').remove();
             });
 
         $('<a />', {
-                'class': 'button yes',
-                'title': 'Delete',
-                'html': 'Delete'
+                class: 'button yes',
+                title: 'Delete',
+                html: 'Delete'
             }).appendTo('.confirm')
             .on('click', function() {
                 _this._trueDelete.call(_this);
@@ -3078,46 +3259,46 @@ K.tool.layer = {
         removeLayer(layer, this.group, true);
     },
 
-    _toType: function() {
+    _toType: function() { // MARK: ^ To Type
 
         const layer = this.layer;
-        let value,
-            setting = layer.editing.window;
-        const o = layer.options,
-            p = layer._popup,
-            isPopup = setting.bMatch('popup-');
+        let setting = layer.editing.window;
 
-        if (!(setting && o.type && setting != 'type')) return;
+        if (!(setting && layer.options.type && setting != 'type')) return;
 
+        const isPopup = setting.bMatch('popup-')
         setting = setting.replace('popup-', '');
 
-        switch (isPopup ? 1 : o.shape == 'marker' && K.isInArray(setting, ['className', 'iconUrl', 'iconSize', 'html']) ? 2 : 0) {
-            case 1:
-                value = (setting == 'content' ? p._content : p.options[setting]);
-                break;
-            case 2:
-                value = o.icon.options[setting];
-                break;
-            default:
-                value = o[setting];
-        }
+        const $mode = $('.mode-switch'),
+            o = {
+                setting: setting,
+                value: K.getSetting(layer[isPopup ? 'popup' : 'options'], setting),
+                forMode: $mode.length && $mode.is(':checked')
+            };
 
         // update the global settings for this change
-        const g = K.layer[o.type];
-        !g.changed && (g.changed = { o: {}, p: {} });
-        g.changed[isPopup ? 'p' : 'o'][setting] = value;
-        g[isPopup ? 'p' : 'o'][setting] = value;
+        const g = K.layer[layer.options.type],
+            t = isPopup ? 'p' : 'o';
+        g.changed = true;
+        !K.in(t, g) && (g[t] = {});
+        if (o.forMode) {
+            !K.in('mode', g[t]) && (g[t].mode = {
+                [K.mode]: {}
+            });
+            !K.in(t, g[t].mode[K.mode]) && (g[t].mode[K.mode][t] = {});
+            g[t].mode[K.mode][t][setting] = o.value;
+        } else g[t][setting] = o.value;
 
         $.each(K.group.mode, function(i, g) {
             $.each(g._layers, function(i, l) {
-                if (l.options.type != o.type) return;
-                if (isPopup) l.updatePopup(setting, value);
-                else l.applySetting(setting, value);
+                if (l.options.type != layer.options.type) return;
+                if (isPopup) l.updatePopup(o);
+                else l.applySetting(o);
             });
         });
 
         K.msg.show({
-            msg: 'Setting copied to all ' + o.type.space(),
+            msg: 'Setting copied to all ' + layer.options.type.space(),
             time: 2000
         });
     },
@@ -3141,7 +3322,7 @@ K.tool.layer = {
             ll.lng -= 0.000001;
             ll.lng -= 0.000001;
 
-        } else if (K.isInArray(pType, ['polygon', 'polyline'])) {
+        } else if (K.has(pType, ['polygon', 'polyline'])) {
 
             if (pType == 'polygon') ll = ll[0];
             ll.splice(1, 0, L.latLng(((ll[0].lat + ll[1].lat) / 2), ((ll[0].lng + ll[1].lng) / 2)));
@@ -3270,7 +3451,7 @@ K.tool.layer = {
     }
 };
 
-L.Layer.include({
+L.Layer.include({ // MARK: Layer Include
     tools: K.tool.layer,
     backup: false,
 
@@ -3297,18 +3478,12 @@ L.Layer.include({
         this[t] = {};
         this[t].options = backup(this.options);
 
-        if (this._popup) {
-            this[t].popup = {};
-            this[t].popup._content = this._popup._content;
-
-            if (this._popup.options)
-                this[t].popup.options = backup(this._popup.options);
-        }
+        if (this.popup)
+            this[t].popup = backup(this.popup);
 
         if (t == 'backup') {
 
-            if (K.isInArray(this.options.shape, ['polygon', 'polyline'])) {
-
+            if (K.has(this.options.shape, ['polygon', 'polyline'])) {
                 this.backup.pos = {
                     latlngs: L.LatLngUtil.cloneLatLngs(this.getLatLngs())
                 };
@@ -3332,48 +3507,53 @@ L.Layer.include({
     },
 
     // Apply the settings that you are changing
-    applySetting: function(setting, value, skipSave) {
+    applySetting: function(options) { // MARK: ^ Apply Setting
 
-        if (!this.backup && !skipSave) this.makeBackup();
+        const o = $.extend({
+            setting: undefined, // this has to be a valid setting for the layer
+            value: undefined, // this is the value that is going to change
+            skipSave: false, // this is used when applying a setting but not to be saved 
+            forMode: false // this is used to apply the setting into the mode setting
+        }, options);
+
+        if (!this.backup && !o.skipSave) this.makeBackup();
 
         const oldType = this.options.type;
+        let m = o.forMode ? this.getMode() : false;
+        const mSp = this.getModeSettingPath(o.setting);
+        !o.forMode && mSp !== null && delete mSp[o.setting];
 
         // Add the settings to the correct locations
-        if (this.options.shape == 'marker' && K.isInArray(setting, ['className', 'iconUrl', 'iconSize', 'html'])) {
+        if (this.options.shape == 'marker' && K.has(o.setting, ['className', 'iconUrl', 'iconSize', 'html'])) {
 
-            let p = this.options.icon.options,
+            let p = this.options,
                 layer = this;
-            p[setting] = $.type(value) == 'string' && value.bMatch(/\d+,\d+/) ? value.split(',') : value;
+
+            o.value = $.type(o.value) == 'string' && o.value.bMatch(/\d+,\d+/) ? o.value.split(',') : o.value;
+            !m && (p[o.setting] = o.value);
+            m && (m[o.setting] = o.value);
 
             $.ajax({
                 type: 'HEAD',
-                url: p.iconUrl,
+                url: this.getSetting('iconUrl'),
                 success: function() {
 
-                    layer.setIcon(createIcon({
-                        url: p.iconUrl,
-                        size: p.iconSize,
-                        html: !p.iconUrl ? p.html : '',
-                        className: p.className,
-                        done: K.complete.is(layer),
-                        time: K.complete.time(layer)
-                    }));
-
+                    layer.updateIcon();
                     K.complete.is(layer) && K.complete.add(layer);
-                    // layer.saved(false);
                 }
             });
 
-        } else this.options[setting] = value;
+        } else if (m) m[o.setting] = o.value
+        else this.options[o.setting] = o.value;
 
         // Apply the settings to the original layer (not marker)
         this.options.shape != 'marker' && this.setStyle(this.options);
-        this.options.shape == 'marker' && this.setOpacity(this.options.opacity);
+        // this.options.shape == 'marker' && this.setOpacity(this.options.opacity);
 
         // add the settings to global if they don't already exist
         const type = this.options.type,
             counts = K.map.type.counts;
-        if (type && setting == 'type') {
+        if (type && o.setting == 'type') {
             this.oldType = oldType;
             if (!(type in counts)) counts[type] = 0;
             counts[type] += 1;
@@ -3381,76 +3561,96 @@ L.Layer.include({
         }
 
         this.storeSettings();
-        !skipSave && this.saved(false);
+        !o.skipSave && this.saved(false);
 
-        // as we are changing the type, we need to appy all of the 
+        // as we are changing the type, we need to apply all of the 
         // other settings to match it, if it exists already
-        if (type && setting == 'type') {
+        if (type && o.setting == 'type') {
             const _this = this;
             $.each(K.curtail({}, K.layer[type].o, ['type', 'shape']), function(key, val) {
-                _this.applySetting(key, val);
+                _this.applySetting({
+                    setting: key,
+                    value: val,
+                    forMode: o.forMode
+                });
             });
 
             K.layer[type].p && $.each(K.layer[type].p, function(key, val) {
-                _this.updatePopup(key, val);
+                _this.updatePopup({
+                    setting: key,
+                    value: val,
+                    forMode: o.forMode
+                });
             });
         }
 
         return this;
     },
 
-    updatePopup: function(setting, value) {
+    // returns the mode object creating it if it does not exist
+    getMode: function(isPopup) {
+        const m = this.options.mode[K.mode],
+            t = isPopup ? 'p' : 'o';
+        !K.in(t, m) && (m[t] = {});
+
+        return m[t];
+    },
+
+    // returns the setting from the mode object if it exists
+    getModeSetting: function(setting, isPopup) {
+        const m = this.options.mode[K.mode],
+            t = isPopup ? 'p' : 'o';
+
+        if (K.in(t, m) && K.in(setting, m[t]))
+            return m[t][setting];
+
+        return null;
+    },
+
+    // returns the path to the mode setting
+    getModeSettingPath: function(setting, isPopup) {
+        const m = this.options.mode[K.mode],
+            t = isPopup ? 'p' : 'o';
+
+        if (K.in(t, m) && K.in(setting, m[t]))
+            return m[t];
+
+        return null;
+    },
+
+    getSetting: function(setting, isPopup) {
+        const o = isPopup ? this.popup : this.options,
+            modeValue = this.getModeSetting(setting, isPopup);
+
+        if (modeValue !== null) return modeValue;
+        return o[setting];
+    },
+
+    updatePopup: function(options) { // MARK: ^ Update Popup
+
+        const o = $.extend({
+            setting: undefined, // this has to be a valid setting for the layer
+            value: undefined, // this is the value that is going to change
+            forMode: false // this is used to apply the setting into the mode setting
+        }, options);
 
         if (!this.backup) this.makeBackup();
 
-        let p = this._popup,
-            b = this.backup.popup;
+        const mSp = this.getModeSettingPath(o.setting, true);
+        !o.forMode && mSp !== null && delete mSp[o.setting];
+        !o.forMode && (this.popup[o.setting] = o.value);
+        o.forMode && (this.getMode(true)[o.setting] = o.value);
 
-
-        if (!p) {
-            this.bindPopup('test', K.empty(b) ? {} : this.backup.popup.options);
-            p = this._popup;
-        }
-
-        if (setting == 'list') {
-
-            p.options.list = value;
-            p._content = this.convertContent(p.options);
-
-        } else if (setting == 'content') {
-
-            p._content = value || '';
-            p.options.list = {};
-
-        } else if (setting == 'className') {
-
-            p.options[setting] = value;
-
-            let ocn = K.empty(b) ? '' : p.oldClassName || this.backup.popup.options.className;
-            $(p._container).removeClass(ocn).addClass(value);
-            p.oldClassName = value;
-        }
-
-        if (p instanceof L.Popup) {
-
-            let isOpen = this.isPopupOpen();
-
-            this.closePopup();
-            this.bindPopup(p._content, p.options);
-
-            if (!p._content)
-                this.unbindPopup();
-            else {
-                L.setOptions(p, p.options);
-                if (isOpen) this.openPopup();
-            }
-
-        } else if (p && p._content) {
-            this.bindPopup(p._content, p.options);
-        }
+        this.unbindPopup();
+        this.hasPopupContent() && this.bindPopup(this.popup);
 
         this.storeSettings();
         this.saved(false);
+    },
+
+    hasPopupContent: function() {
+        if (!this.popup) return false;
+        return this.getSetting('content', true) || !K.empty(this.getSetting('list', true));
     },
 
     storeSettings: function() {
@@ -3470,14 +3670,14 @@ L.Layer.include({
             }
 
             m.o = K.reduce({}, o, K.map.property[this.options.shape]);
-            'link' in m.o && delete m.o.link;
+            K.in('link', m.o) && delete m.o.link;
             m.changed = true;
 
-            if (this._popup) {
-                const p = this._popup;
-                m.p = { className: p.options.className };
-                !K.empty(p.options.list) && (m.p.list = p.options.list);
-                !m.p.list && (m.p.content = p._content);
+            if (this.popup) {
+                const p = this.popup;
+                m.p = { className: p.className };
+                !K.empty(p.list) && (m.p.list = p.list);
+                !m.p.list && (m.p.content = p.content);
             }
 
             if (counts[this.oldType] == 0) {
@@ -3506,7 +3706,7 @@ L.Layer.include({
 /*=======================================
 =            DOCUMENT LOADED            =
 =======================================*/
-$(function() {
+$(function() { // MARK: Document Loaded
 
     // Import credits php
     $.ajax({
@@ -3537,7 +3737,7 @@ $(function() {
     });
 
     // Add the main groups to the map
-    K.myMap.addLayer(K.group.mode.groupAll).addLayer(K.group.mode.groupDZ);
+    K.myMap.addLayer(K.group.mode.groupAll);
 
     // On Zoom and Pan
     K.myMap.on('zoomend moveend', function(e) {
@@ -3550,14 +3750,53 @@ $(function() {
         polyHoverAnimation();
     });
 
-    // Toggle map mode buttons
-    $('.side-menu-toggle.mode').on('click', function() {
-        let $t = $(this);
-        K.mode.get = $t.hasClass('one') ? K.mode.not('survival', 'normal') : K.mode.not('last stand', 'normal');
-        Cookies.set('mode', K.mode.get, K.expires);
-        K.group.mode = K.group.feature[K.mode.get];
-        K.bar.b.power && !K.bar.b.power.enabled() ? K.check.doOnce = true : true;
-        pageLoad();
+    // Create the mode buttons
+    const mC = $('.map-mode-box'), // MARK: ^ Create Mode Buttons
+        mB = $('.map-mode', mC).detach();
+    $.each(K.modes.get, function(i, mode) {
+        const nB = mB.clone();
+        $('img', nB).attr('src', `images\\mode-${mode.toLowerCase().replace(/ /g, '-')}.svg`);
+        $('span', nB).text(mode);
+        nB.attr('mode', mode);
+        mC.append(nB);
+        mode == K.mode && nB.addClass('active');
+    });
+
+    const reorderModes = function() {
+        const gap = 45;
+        let i = 0;
+        $('.map-mode').each(function() {
+            if ($(this).hasClass('active')) $(this).css('top', 0);
+            else {
+                i++;
+                $(this).css('top', (i * gap) + 'px');
+            }
+        });
+    };
+    reorderModes();
+
+    // Add click control for the mode buttons
+    $('.map-mode').on('click', function() {
+        if (mC.hasClass('active')) {
+            if (!$(this).hasClass('active')) {
+
+                $(this).siblings().removeClass('active');
+                $(this).addClass('active');
+
+                reorderModes();
+
+                K.mode = $(this).attr('mode');
+                Cookies.set('mode', K.mode, K.expires);
+                K.group.mode = K.group.feature[K.mode];
+                K.bar.b.power && !K.bar.b.power.enabled() ? K.check.doOnce = true : true;
+
+                setTimeout(() => {
+                    pageLoad();
+                }, 1000);
+            }
+            mC.removeClass('active');
+
+        } else mC.addClass('active');
     });
 
     // Toggle menu buttons
@@ -3687,12 +3926,15 @@ $(function() {
     });
 
     // Hide Menus on no click
-    $(document).mousedown(function(e) {
+    $(document).mousedown(function(e) { // MARK: ^ Hide Menus
         if (K.check.grabbing) return;
-        let container = $('.settings-divider, .switch-active-group, #slider-box, .group-switch');
+        const container = $('.settings-divider, .switch-active-group, #slider-box, .group-switch');
         if (!container.is(e.target) && container.has(e.target).length === 0) {
             $(container).remove();
         }
+
+        if ($('.map-mode-box').hasClass('active') && !$(e.target).hasClass('map-mode'))
+            $('.map-mode-box').removeClass('active');
     });
 
     // Error handling in inputs
@@ -3784,7 +4026,7 @@ $(function() {
 /*=================================
 =            PAGE LOAD            =
 =================================*/
-function pageLoad() {
+function pageLoad() { // MARK: Page Load
 
     // Check for clean map params and cookies and hide everything
     if (K.urlParam('noIcon') == 'true')
@@ -3964,7 +4206,7 @@ function pageLoad() {
                     L.DomEvent.disableClickPropagation(div);
                     L.DomEvent.on(div, 'mousewheel', L.DomEvent.stopPropagation);
 
-                    let list = $.merge(K.map.mode[K.mode.get], K.map.mode.all).sort();
+                    let list = $.merge(K.map.mode[K.mode], K.map.mode.all).sort();
                     $.unique(list);
                     $.each(list, function(i, t) {
                         $('.leaflet-menu').append(`<a class="leaflet-menu-item switch-active-group 
@@ -4184,25 +4426,11 @@ function pageLoad() {
 
         K.user.type && K.check.doOnce && K.bar.b.power._onClick();
 
-        let btn = '#side-bar a.mode',
-            b1 = K.mode.not('survival', 'normal'),
-            b2 = K.mode.not('last stand', 'normal');
-        $.each(K.modes.get, function(i, mode) {
-            $(btn).removeClass(mode);
-            $('#logo').removeClass(mode);
-        });
-        $(btn + '.one').text(b1.titleCase() + ' Map').addClass(b1);
-        $(btn + '.two').text(b2.titleCase() + ' Map').addClass(b2);
-        $('#logo').addClass(K.mode.get);
-
-        /*=====================================
-        =            IMPORT LAYERS            =
-        =====================================*/
-        const populateMap = function(e, id) {
+        const populateMap = function(e, id) { // MARK: ^ Populate Map
             let l, // layer
-                s = K.layer[e.t] || {}, // settings
-                o = $.extend({}, s.o || {}, e.o || {}, { creator: e.c, id: id }), // options
+                s = $.extend(true, {}, K.layer[e.t] || {}), // settings
                 g = e.g, // geometry
+                o = $.extend({}, s.o || {}, e.o || {}, { creator: e.c, id: id, shape: g.t }), // options
                 p = $.extend({}, s.p || {}, e.p || {}); // popup
 
             if ((e.p || {}).content) delete p.list;
@@ -4210,11 +4438,16 @@ function pageLoad() {
 
             if (!o) return;
 
+            // convert the mode arrays to objects
+            $.each(o.mode, function(mode, obj) {
+                if (K.type(obj) === 'array') o.mode[mode] = {};
+            });
+
             if (!o.type) o.type = '';
 
             // Fill up groupMap for the filters
             //----------------------------------
-            o.type && !K.isInArray(o.type, K.map.group[o.group]) && K.map.group[o.group].push(o.type);
+            o.type && !K.has(o.type, K.map.group[o.group]) && K.map.group[o.group].push(o.type);
 
             // Fill up typeMap for the filter menus and assigning types automatically
             if (o.type && o.mode && o.shape) {
@@ -4258,14 +4491,14 @@ function pageLoad() {
 
                         if (!obj[cat]) obj[cat] = {};
 
-                        if (o.mode.bMatch(mode) || o.mode == 'all') {
+                        if (K.in(mode, o.mode)) {
                             if (!obj[cat][o.type])
                                 obj[cat][o.type] = [];
 
-                            if (!K.isInArray(val, obj[cat][o.type])) {
+                            if (!K.has(val, obj[cat][o.type])) {
                                 obj[cat][o.type].push(val);
 
-                                if (K.isInArray(o.shape, ['polygon', 'circle']))
+                                if (K.has(o.shape, ['polygon', 'circle', 'rectangle']))
                                     obj[cat][o.type].push(o.color);
                             }
                         }
@@ -4277,66 +4510,43 @@ function pageLoad() {
             if (!(o.mode in K.map.mode)) K.map.mode[o.mode] = [];
 
             // Fill up the modeMap for automatic mode assigning
-            o.mode && o.type && !K.isInArray(o.type, K.map.mode[o.mode]) &&
+            o.mode && o.type && !K.has(o.type, K.map.mode[o.mode]) &&
                 K.map.mode[o.mode].push(o.type);
 
             // Add the settings to the settings object for editing menus
             for (s in o) {
                 o[s] = toCorrectType(s, o[s]);
                 s == 'className' && (o[s] = K.stripClasses(o[s]));
-                s in K.settings.main && 'values' in K.settings.main[s] &&
+                s in K.settings.main && K.in('values', K.settings.main[s]) &&
                     addSet(K.settings.main[s].values, o[s], o.shape);
             }
 
-            p && (p.options = { className: p.className });
+            // fill up classRemoval array for later
             let pCn = p.className ? p.className : '';
             pCn && !K.classRemoval.contains(pCn) && (K.classRemoval = `${K.classRemoval.trim()} ${pCn}`);
             !K.classRemoval.contains(o.group) && (K.classRemoval = `${K.classRemoval.trim()} ${o.group}`);
-
-            if (o.shape == 'marker') {
-                o.icon = {
-                    options: {
-                        iconUrl: o.iconUrl,
-                        iconSize: o.iconSize,
-                        html: o.html,
-                        className: o.className
-                    }
-                };
-            }
 
             // Create the icons for Marker Tools
             // ----------------------
             if (o.shape == 'marker' && o.type) {
 
                 let obj = {
-                    o: $.extend(true, {}, o, {
-                        icon: {
-                            options: {
-                                className: (o.icon.options.className || '').replace(/\w+ground/g, '').trim()
-                            }
-                        }
+                    o: $.extend({}, o, {
+                        className: (o.className || '').replace(/\w+ground/g, '').trim()
                     }),
-                    p: p ? {
-                        content: p.content,
-                        options: {
-                            className: p.className,
-                            list: p.list
-                        }
-                    } : {}
+                    p: p ? p : {}
                 };
-
-                // console.log(p);
 
                 $.each(K.modes.get, function(i, mode) {
                     let tool = K.tool.marker.layers[mode];
-                    if (o.mode.contains(mode) || o.mode == 'all') {
+                    if (mode in o.mode) {
                         if (!(o.category in tool)) tool[o.category] = {};
                         if (!(o.type in tool[o.category])) tool[o.category][o.type] = obj;
                     }
                 });
             }
 
-            if (g.t != 'point') { // Circle, Polyline, Polygon and Rectangle
+            if (g.t != 'marker') { // Circle, Polyline, Polygon and Rectangle
                 let obj = $.extend(o, {
                     pane: o.pane || (o.className == 'poly-hover' ? 'zonePane' : 'overlayPane')
                 });
@@ -4345,20 +4555,11 @@ function pageLoad() {
 
                 l = L[g.t](g.c, o);
 
-            } else if (g.t == 'point') { // Marker
+            } else if (g.t == 'marker') { // Marker
 
-                // console.log(o);
-                // Add the settings to the settings object for editing menus
-                // for (setting in o.icon.options) {
-                //     o.icon.options[setting] = toCorrectType(setting, o.icon.options[setting]);
+                o.className += ` ${o.group}  ${pCn}`;
 
-                //     setting in K.settings.main && 'count' in K.settings.main[setting] &&
-                //         addSet(K.settings.main[setting].count, o.icon.options[setting]);
-                // }
-
-                o.icon.options.className += ` ${o.group}  ${pCn}`;
-
-                l = createMarker($.extend(o, o.icon.options, {
+                l = createMarker($.extend(o, {
                     latlng: g.c
                 }));
             }
@@ -4388,12 +4589,9 @@ function pageLoad() {
 
             // Popup
             // ----------------------
-            if (p && ('content' in p || ('list' in p && p.list.title))) {
+            if (p && K.in('content', p) || K.in('list', p)) {
 
-                l.bindPopup(p.content, {
-                    className: p.className || '',
-                    list: p.list || {}
-                });
+                l.bindPopup(p);
 
                 // Add the settings to the settings object for editing menus
                 K.user.type && addSet(K.settings.popup.className.values, p.className, o.shape);
@@ -4431,7 +4629,7 @@ function pageLoad() {
             l.markComplete();
         };
 
-        const populateMenus = function() {
+        const populateMenus = function() { // MARK: ^ Populate Menus
             onZoomEnd();
 
             // Only switch layers, remove duplicates and add draw control if we are superuser
@@ -4446,10 +4644,10 @@ function pageLoad() {
             let sb = '#side-bar .filters .side-content';
             $(sb).html('');
             $(sb).append(`<a class="hide-all" title="Show/Hide all!"></a>
-                <span class="title">${K.mode.get.titleCase()} Filters</span>
+                <span class="title">Filters</span>
                 <a class="hide-complete${K.completeHidden ? ' hidden">Show' : '">Hide'} Complete</a>`);
 
-            let list = K.map.type[K.mode.get];
+            let list = K.map.type[K.mode];
             list = sortObjByKeys(list);
             K.filters = Cookies.get('filters') || {};
 
@@ -4472,7 +4670,7 @@ function pageLoad() {
                         let active = K.filters[type] || false;
 
                         let el = $('<a />', {
-                            'class': 'side-bar-button ' + (active ? 'inactive' : ''),
+                            class: 'side-bar-button ' + (active ? 'inactive' : ''),
                             set: category,
                             label: type,
                             html: $('<span />', {
@@ -4483,7 +4681,7 @@ function pageLoad() {
 
                         $('<span />', {
                             html: '[ x' + K.map.type.counts[type] + ' ]',
-                            'class': 'quantity'
+                            class: 'quantity'
                         }).appendTo(el);
 
                         if (i[0].contains('.svg')) {
@@ -4495,7 +4693,7 @@ function pageLoad() {
                         } else if (category == 'polyline') {
 
                             $('<div />', {
-                                'class': 'polyline'
+                                class: 'polyline'
                             }).css({
                                 backgroundColor: i[0]
                             }).prependTo(el);
@@ -4503,7 +4701,7 @@ function pageLoad() {
                         } else {
 
                             $('<div />', {
-                                'class': 'polygon'
+                                class: 'polygon'
                             }).css({
                                 borderColor: i[1],
                                 backgroundColor: i[0]
@@ -5001,7 +5199,7 @@ function keypressEvent(e) {
 //            Draw Event Created
 //
 //////////////////////////////////////////////////////
-function drawEventCreated(e) {
+function drawEventCreated(e) { // MARK: Draw Event Created
     let layer = e.layer,
         type = e.layerType,
         popup = false,
@@ -5019,17 +5217,17 @@ function drawEventCreated(e) {
             let lvl = $('input[name="radio"]:checked').val(),
                 cat = selected.attr('category'),
                 typ = selected.attr('type'),
-                j = K.tool.marker.layers[K.mode.get][cat][typ],
+                j = K.tool.marker.layers[K.mode][cat][typ],
                 p = j.o;
 
             lvl = (lvl ? ' ' + lvl : '');
             popup = j.p;
-            color = $.type(popup) === 'object' && 'options' in popup ? popup.options.className : '';
+            color = $.type(popup) === 'object' && K.in('options', popup) ? popup.options.className : '';
 
-            layer = createMarker($.extend({}, p, p.icon.options, {
+            layer = createMarker($.extend({}, p, {
                 id: ID(),
                 latlng: layer._latlng,
-                className: `${p.icon.options.className}${lvl} ${p.group} ${color}`
+                className: `${p.className}${lvl} ${p.group} ${color}`
             }));
 
         } else {
@@ -5054,12 +5252,12 @@ function drawEventCreated(e) {
 
             let ll = layer._latlng;
             if (type == 'polyline') ll = layer._latlngs.removeDupes();
-            else if (K.isInArray(type, ['polygon', 'rectangle'])) ll = layer._latlngs[0].removeDupes();
+            else if (K.has(type, ['polygon', 'rectangle'])) ll = layer._latlngs[0].removeDupes();
 
             $.extend(obj, {
                 id: ID(),
                 pane: (obj.className == 'poly-hover' ? 'zonePane' : 'overlayPane'),
-                mode: obj.mode || K.mode.get,
+                mode: obj.mode || K.mode,
                 shape: type
             });
 
@@ -5073,8 +5271,8 @@ function drawEventCreated(e) {
     o = popup || copy[def + 'Popup'] || {};
 
     // Bind a popup to the new layer
-    if (o.content || (o.options && o.options.list && o.options.list.title))
-        layer.bindPopup(o.content, $.extend(true, {}, o.options));
+    if (o.content || !K.empty(o.list))
+        layer.bindPopup(o);
 
     // Add the new layer to the map
     layer.options.creator = K.user.name;
@@ -5200,7 +5398,7 @@ function removeEmpty(obj) {
 
     $.each(obj, function(i, v) {
 
-        if (K.isInArray($.type(v), ['object', 'array']))
+        if (K.has($.type(v), ['object', 'array']))
 
             obj[i] = removeEmpty(v);
 
@@ -5235,7 +5433,7 @@ function addToFeatureGroups(layer) {
         g = layer.options.group;
     layer.currentGroup = g;
     $.each(K.modes.get, function(i, mode) {
-        (m.contains(mode) || m == 'all') && K.group.feature[mode][g].addLayer(layer) &&
+        (mode in m) && K.group.feature[mode][g].addLayer(layer) &&
             K.group.feature[mode].everyLayer.addLayer(layer);
     });
 }
@@ -5347,60 +5545,43 @@ function toggleHideIcons() {
 //             Create Marker
 //
 //////////////////////////////////////////////////////
-function createMarker(p) {
+function createMarker(p) { // MARK: Create Marker
 
-    p.html = (p.iconUrl ? '' : p.html);
+    !p.mode && (p.mode = {
+        [K.mode]: {}
+    });
+
+    const i = K.getSetting(p, 'iconUrl');
 
     // new settings happen here
-    return L.marker(p.latlng, {
+    return L.marker(p.latlng, $.extend(p, {
         icon: createIcon({
-            url: `${p.iconUrl}`,
-            size: p.iconSize,
-            html: p.html,
-            className: p.className
+            iconUrl: i,
+            iconSize: K.getSetting(p, 'iconSize'),
+            html: !i ? K.getSetting(p, 'html') : '',
+            className: K.getSetting(p, 'className'),
+            mode: p.mode
         }),
-        creator: p.creator,
-        category: p.category || 'default',
-        id: p.id,
-        opacity: p.opacity || '',
-        group: p.group || '',
-        complete: p.complete || false,
-        time: p.time || '',
-        link: p.link || '',
-        type: p.type || getType(p.iconUrl, p.group, (p.iconUrl ? 'marker' : 'html')),
         shape: 'marker',
         riseOnHover: true,
-        zIndexOffset: K.isInArray(p.type, K.map.zIndex) ? 1000 : 0,
-        mode: p.mode || getMode(p.type)
-    });
+        zIndexOffset: K.has(p.type, K.map.zIndex) ? 1000 : 0
+    }));
 }
 
 function createIcon(options) {
-    let o = {
-        url: '',
-        size: '',
+    return L.divIcon($.extend({
+        iconUrl: '',
+        iconSize: '',
         html: '',
         className: '',
         done: false,
-        time: false
-    };
-
-    $.extend(o, options);
-
-    return L.divIcon({
-        iconUrl: o.url,
-        iconSize: o.size,
-        html: o.html || `${o.className.contains('anim-icon') ? `<img class="halo" src="images/_a.svg">` : ''} 
-                <img src="${o.url || ''}" class="icon">
-                ${o.done && !o.time ? '<img src="images/complete.svg" class="done">' : ''}
-                ${o.done && o.time ? `<span class="time">${o.time}</span>` : ''}
-                ${K.svg.dot}`,
-        className: o.className.filter()
-    })
+        time: false,
+        mode: {}
+    }, options));
 }
 
 function showHideAllLayers(show) {
-    $.each(K.map.type[K.mode.get], function(category, array) {
+    $.each(K.map.type[K.mode], function(category, array) {
         $.each(array, function(type, i) {
             let btn = $(`[set="${category}"][label="${type}"]`);
 
@@ -5417,7 +5598,7 @@ function showHideAllLayers(show) {
 }
 
 function showHideCategory(category, show) {
-    $.each(K.map.type[K.mode.get][category], function(type) {
+    $.each(K.map.type[K.mode][category], function(type) {
         let btn = $(`[set="${category}"][label="${type}"]`);
 
         btn.removeClass('inactive');
@@ -5439,7 +5620,7 @@ function showHideLayers(category, type, h) {
     let g, show, hide, group;
     // Find which group to look in
     $.each(K.map.group, function(grp, a) {
-        if (K.isInArray(type, a)) {
+        if (K.has(type, a)) {
             g = K.group.mode[grp];
 
             show = (h ? K.group.mode.groupHidden : g);
@@ -5471,6 +5652,13 @@ function toCorrectType(setting, value) {
     else if (type == 'boolean') {
         return value == 'true' ? true : value == 'false' ? false : !!value;
     }
+
+    if (setting == 'mode') {
+        $.each(value, function(mode, val) {
+            if (K.empty(val) && K.type(val) == 'array') value[mode] = {};
+        });
+    }
+
     return value;
 }
 
@@ -5479,9 +5667,9 @@ function addSet(i, v, shape) {
     if ($.type(v) == 'array')
         v = v.join(',');
     if (v) {
-        shape = K.isInArray(shape, ['rectangle', 'circle']) ? 'polygon' : shape;
+        shape = K.has(shape, ['rectangle', 'circle']) ? 'polygon' : shape;
         !(v in i) && (i[v] = { shape: [] });
-        !K.isInArray(shape, i[v].shape) && i[v].shape.push(shape);
+        !K.has(shape, i[v].shape) && i[v].shape.push(shape);
     }
 }
 
@@ -5566,7 +5754,7 @@ function switchLayerGroups(d) {
 //             Save to geoJSON
 //
 //////////////////////////////////////////////////////
-function createGeoJSON() {
+function createGeoJSON() { // MARK: Create GeoJSON
 
     $('#settings-menu').remove();
 
@@ -5607,48 +5795,51 @@ function createGeoJSON() {
         // Go though each layer
         K.save.unsaved.eachLayer(function(layer) {
 
-            const id = layer.options.id,
+            const o = layer.options,
+                id = o.id,
                 sets = {},
                 pop = {},
-                type = layer.options.type;
+                type = o.type;
+
+            // clear the empty mode objects
+            $.each(o.mode, function(mode, obj) {
+                K.in('o', obj) && K.empty(obj.o) && delete obj.o;
+                K.in('p', obj) && K.empty(obj.p) && delete obj.p;
+            });
 
             // remove the classes that were not added for aesthetics
             layer.removeClass(K.classRemoval);
 
-            feature = { c: layer.options.creator }
+            feature = { c: o.creator }
             type && (feature.t = type);
 
             // create the feature
-            if (layer.options.shape == 'circle') { // Circle
+            if (o.shape == 'circle') { // Circle
                 feature.g = {
                     t: 'circle',
                     c: K.valuesToString(layer._latlng),
                     r: layer._mRadius.toString()
                 };
 
-            } else if (layer.options.shape == 'marker') { // Marker
+            } else if (o.shape == 'marker') { // Marker
                 feature.g = {
-                    t: 'point',
+                    t: 'marker',
                     c: K.valuesToString(layer._latlng)
                 };
 
-                // move icon settings to the correct place
-                let io = layer.options.icon.options;
-                layer.options.iconUrl = io.iconUrl;
-                layer.options.iconSize = io.iconSize;
-                !io.iconUrl && (layer.options.html = io.html);
-                layer.options.className = K.stripClasses(io.className);
+                o.iconUrl && delete o.html;
+                o.className = K.stripClasses(o.className);
 
             } else { // Polyline, Polygon and Rectangle
                 feature.g = {
-                    t: layer.options.shape,
+                    t: o.shape,
                     c: K.valuesToString(layer._latlngs)
                 };
             }
 
             // only add settings that have definitely changed 
-            $.each(layer.options, function(i, v) {
-                if (K.isInArray(i, K.map.property[layer.options.shape])) {
+            $.each(o, function(i, v) {
+                if (K.has(i, K.map.property[o.shape])) {
                     const sv = type && K.layer[type] ? K.layer[type].o[i] : 'false',
                         sm = K.settings.main;
 
@@ -5661,17 +5852,17 @@ function createGeoJSON() {
             !K.empty(sets) && (feature.o = sets);
 
             // grab the popup if it is different from the original
-            if (layer._popup && layer._popup._content) {
+            if (layer.popup && layer.popup.content) {
 
-                const p = layer._popup;
+                const p = layer.popup;
                 const sv = K.layer[type] ? K.layer[type].p : {};
 
-                p.options.className != sv.className && (pop.className = p.options.className);
+                p.className != sv.className && (pop.className = p.className);
 
-                if (p.options && p.options.list && p.options.list.title) // set up with list only
-                    !K.equals(sv.list, p.options.list) && (pop.list = p.options.list);
+                if (p.list && p.list.title) // set up with list only
+                    !K.equals(sv.list, p.list) && (pop.list = p.list);
                 else // set up with content
-                    sv.content != p._content && (pop.content = p._content);
+                    sv.content != p.content && (pop.content = p.content);
 
                 // Set popup content to variable if one exists
                 $.each(K.popupContent, function(k, s) {
@@ -5688,7 +5879,7 @@ function createGeoJSON() {
 
         console.log('saved data...', geoData);
         // console.log(JSON.stringify(geoData));
-
+        // return;
         // Save this all to a file
         $.ajax({
             type: 'POST',
@@ -5757,7 +5948,7 @@ function polyType(l) {
 
 // Get the layer type for the show hide menu
 function getType(o, g, a) {
-    if (!K.isInArray(a, ['marker', 'polyline', 'polygon']))
+    if (!K.has(a, ['marker', 'polyline', 'polygon']))
         return '';
     let type = '';
     o = o.replace('images/', '');
@@ -5765,7 +5956,7 @@ function getType(o, g, a) {
 
         $.each(tg[a], function(i, v) {
 
-            if (K.isInArray(o, v)) {
+            if (K.has(o, v)) {
                 type = i;
                 return;
             }
@@ -5778,7 +5969,7 @@ function getType(o, g, a) {
 function getMode(type) {
     fMode = 'all';
     $.each(K.map.mode, function(mode, array) {
-        if (K.isInArray(type, array)) {
+        if (K.has(type, array)) {
             fMode = mode;
             return;
         }
@@ -5787,7 +5978,7 @@ function getMode(type) {
 }
 
 function setAllLayerClick() {
-    let layers = K.group.feature[K.mode.get].everyLayer;
+    let layers = K.group.feature[K.mode].everyLayer;
 
     layers.eachLayer(function(l) {
 
@@ -5822,16 +6013,9 @@ function onZoomEnd() {
     $.each(K.group.mode, function(g, n) {
         let a = g.replace('group', '');
         a = a.contains('_') ? a.split('_') : a.bMatch(/\d+/) ? Number(a) :
-            K.isInArray(a, ['Hidden', 'Complete', 'everyLayer']) ? false : 0;
-
-        // if ((typeof a == 'number' && zoom >= a) || (typeof a == 'object' && zoom >= a[0] && zoom <= a[1]))
-        //     K.group.mode[g].removeClass('small');
-        // else K.group.mode[g].addClass('small');
+            K.has(a, ['Hidden', 'Complete', 'everyLayer']) ? false : 0;
 
         if ((typeof a == 'number' && zoom >= a - 1) || (typeof a == 'object' && zoom >= a[0] - 1 && zoom <= a[1] + 1)) {
-            // if ((typeof a == 'number' && zoom >= a) || (typeof a == 'object' && zoom >= a[0] && zoom <= a[1])) {
-            if (g == 'groupDZ')
-                K.myMap.removeLayer(K.group.mode[g])
             K.myMap.addLayer(K.group.mode[g])
         } else
             K.myMap.removeLayer(K.group.mode[g])

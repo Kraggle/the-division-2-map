@@ -65,11 +65,6 @@ if (isset($_POST['username'], $_POST['email'], $_POST['p'])) {
         $stmt->close();
     }
  
-    // TODO: 
-    // We'll also have to account for the situation where the user doesn't have
-    // rights to do registration, by checking what type of user is attempting to
-    // perform the operation.
- 
     if (empty($error['error'])) {
  
         // Create hashed password using the password_hash function.

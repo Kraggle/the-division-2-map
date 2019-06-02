@@ -1,14 +1,1 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Generator: Adobe Illustrator 21.0.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
-<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-	 viewBox="0 0 490 490" style="enable-background:new 0 0 490 490;" xml:space="preserve">
-<style type="text/css">
-	.st0{fill:#B8B12E;}
-	.st1{fill:#081B21;}
-</style>
-<g>
-	<polygon class="st0" points="193.6,382.2 74.4,263 125.5,212.7 193.6,280.7 366.5,107.8 417.6,158.2 	"/>
-	<path class="st1" d="M365.5,93.5L192.6,266.4l-68.1-68.8L59.1,263l133.5,133.5l238.3-238.3L365.5,93.5z M192.6,382.2L73.4,263
-		l51.1-50.4l68.1,68.1l172.9-172.9l50.4,50.4L192.6,382.2z"/>
-</g>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 490 490" enable-background="new 0 0 490 490"><style type="text/css">.st0{fill:#B8B12E;} .st1{fill:#081B21;}</style><path class="st0" d="M193.6 382.2l-119.2-119.2 51.1-50.3 68.1 68 172.9-172.9 51.1 50.4z"/><path class="st1" d="M365.5 93.5l-172.9 172.9-68.1-68.8-65.4 65.4 133.5 133.5 238.3-238.3-65.4-64.7zm-172.9 288.7l-119.2-119.2 51.1-50.4 68.1 68.1 172.9-172.9 50.4 50.4-223.3 224z"/></svg>

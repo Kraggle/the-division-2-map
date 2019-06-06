@@ -1,4 +1,4 @@
-K.currentUpdate = '15/05/2019';
+K.currentUpdate = '05/06/2019';
 K.iconVersion = '1';
 K.modes = {
     get: [
@@ -1017,7 +1017,7 @@ L.control.button = function(options) {
 /*=====  End of LEAFLET INCLUDES  ======*/
 
 // temporary to update to new mode names
-if (K.has(Cookies.get('mode'), ['normal', 'Story'])) Cookies.set('mode', 'Story Mode');
+if (!K.local('mode') || K.has(K.local('mode'), ['normal', 'Story'])) K.local('mode', 'Story Mode');
 
 Cookies.json = true;
 
@@ -1078,7 +1078,7 @@ K.extend({ // MARK: K
         is: function(layer) {
             let uD = K.user.data,
                 id = layer.options.id;
-            if (!uD && !K.in('complete', localStorage)) K.local('complete', {});
+            if (!uD && !K.in('complete', K.local())) K.local('complete', {});
             if (uD) return K.in(id, uD);
             return K.in(id, K.local('complete'));
         },
@@ -1154,7 +1154,7 @@ K.extend({ // MARK: K
                 gC = K.group.mode.groupComplete,
                 g, show, hide, i, hidden;
 
-            K.filters = Cookies.get('filters') || {};
+            K.filters = K.local('filters') || {};
 
             $.each(layers, function(x, layer) {
                 hidden = K.filters[layer.options.type];
@@ -1239,10 +1239,35 @@ K.extend({ // MARK: K
 
     group: {
         save: new L.FeatureGroup(),
+
         draw: new L.FeatureGroup([], {
             makeBoundsAware: false
         }),
-        feature: {}
+
+        feature: {},
+
+        addLayer: function(layer) {
+            if (!(layer instanceof L.Layer)) return this;
+
+            for (let mode in layer.options.mode) {
+                if (!K.in(mode, this.feature)) continue;
+                this.feature[mode][layer.options.group].addLayer(layer);
+                this.feature[mode].everyLayer.addLayer(layer);
+            }
+
+            return this;
+        },
+
+        removeLayer: function(layer, group) {
+            if (!(layer instanceof L.Layer) || !group) return this;
+
+            for (let mode in layer.options.mode) {
+                this.feature[mode][group].removeLayer(layer);
+                this.feature[mode].everyLayer.removeLayer(layer);
+            }
+
+            return this;
+        }
     },
 
     grid: {
@@ -1281,7 +1306,7 @@ K.extend({ // MARK: K
     },
 
     map: {
-        active: Cookies.get('activeMap') || [],
+        active: K.local('activeMap') || [],
         group: {
             everyLayer: [],
             groupAll: [],
@@ -1330,7 +1355,9 @@ K.extend({ // MARK: K
                 group: 'group08',
                 iconSize: [22, 22],
                 iconUrl: 'images/marker-poi-contaminated.svg',
-                mode: 'all',
+                mode: {
+                    [K.mode]: {}
+                },
                 shape: 'marker',
                 type: 'Contaminated'
             },
@@ -1342,7 +1369,9 @@ K.extend({ // MARK: K
                 fillColor: '#672f2f',
                 fillOpacity: 0.05,
                 group: 'group08',
-                mode: 'all',
+                mode: {
+                    [K.mode]: {}
+                },
                 opacity: 0.4,
                 pane: 'overlayPane',
                 shape: 'polygon',
@@ -1359,7 +1388,9 @@ K.extend({ // MARK: K
                 fillColor: '#672f2f',
                 fillOpacity: 0.05,
                 group: 'group08',
-                mode: 'all',
+                mode: {
+                    [K.mode]: {}
+                },
                 opacity: 0.4,
                 pane: 'overlayPane',
                 shape: 'rectangle',
@@ -1376,7 +1407,9 @@ K.extend({ // MARK: K
                 fillColor: '#672f2f',
                 fillOpacity: 0.05,
                 group: 'group08',
-                mode: 'all',
+                mode: {
+                    [K.mode]: {}
+                },
                 opacity: 0.4,
                 pane: 'overlayPane',
                 shape: 'circle',
@@ -1389,7 +1422,9 @@ K.extend({ // MARK: K
                 category: 'default',
                 color: '#207e70',
                 group: 'groupAll',
-                mode: 'all',
+                mode: {
+                    [K.mode]: {}
+                },
                 opacity: 1,
                 pane: 'overlayPane',
                 shape: 'polyline',
@@ -1404,6 +1439,22 @@ K.extend({ // MARK: K
 
     // MARK: ^ Settings
     settings: { // these are for the layer tools, so it knows which settings to show
+
+        add: function(setting, value, shape, popup) {
+
+            K.isArray(value) && (value = value.join(','));
+
+            let i = this[popup ? 'popup' : 'main'][setting] || false;
+            i && K.in('values', i) && (i = i.values);
+
+            // Check if the key is in the object then place it if not
+            if (!K.empty(value) && i) {
+                shape = K.settingShape(shape);
+                !(value in i) && (i[value] = { shape: [] });
+                !K.has(shape, i[value].shape) && i[value].shape.push(shape);
+            }
+        },
+
         main: {
             category: {
                 values: {},
@@ -1545,7 +1596,7 @@ K.extend({ // MARK: K
         }
     },
 
-    mode: Cookies.get('mode') || 'Story Mode',
+    mode: K.local('mode') || 'Story Mode',
 
     msg: {
         note: $('.notification'),
@@ -1592,8 +1643,8 @@ K.extend({ // MARK: K
     },
 
     myMap: L.map('mapid', {
-        center: Cookies.get('pan') || [0, 0],
-        zoom: Cookies.get('zoom') || 7,
+        center: K.local('pan') || [0, 0],
+        zoom: K.local('zoom') || 7,
         minZoom: 7,
         maxZoom: 15,
         maxBounds: [
@@ -1674,8 +1725,8 @@ K.extend({ // MARK: K
     },
 
     updateMarker: function(icon) {
-        let mark;
-        icon = icon || (Cookies.get('copy') && $.type(mark = Cookies.get('copy').marker) == 'object' ? mark : {});
+        const copy = K.local('copy') || {};
+        icon = icon || (K.in('marker', copy) ? copy.marker.o : {});
 
         let o = icon || {},
             url = 'images/marker-poi-contaminated.svg',
@@ -1853,7 +1904,7 @@ K.tool.marker = { // MARK: Marker Tools
                     width: $(this).width(),
                     height: $(this).height()
                 });
-                Cookies.set('toolPos', this.position, K.expires);
+                K.local('toolPos', this.position);
             }
         }).resizable({
             containment: '#mapid',
@@ -1869,11 +1920,11 @@ K.tool.marker = { // MARK: Marker Tools
                     width: $(this).width(),
                     height: $(this).height()
                 });
-                Cookies.set('toolPos', this.position, K.expires);
+                K.local('toolPos', this.position);
             }
         });
 
-        this.position = Cookies.get('toolPos') || false;
+        this.position = K.local('toolPos') || false;
 
         if (this.position) tools.css(this.position);
 
@@ -1913,7 +1964,7 @@ K.tool.marker = { // MARK: Marker Tools
 
             $.each(sortObjByKeys(layers), function(i, layer) {
                 let p = layer.o,
-                    active = (p.type == (Cookies.get('markerToolIcon') || 'Contaminated') ? 'enabled' : ''),
+                    active = (p.type == (K.local('markerToolIcon') || 'Contaminated') ? 'enabled' : ''),
                     key = false;
 
                 $.each(K.shortcuts.QuickMarker, function(k, t) {
@@ -1941,7 +1992,7 @@ K.tool.marker = { // MARK: Marker Tools
 
             $(this).siblings('a').removeClass('enabled');
             $(this).addClass('enabled');
-            Cookies.set('markerToolIcon', typ, K.expires);
+            K.local('markerToolIcon', typ);
 
             let o = $(this).data('properties');
             K.updateMarker($.extend(true, {}, o, {
@@ -1984,14 +2035,14 @@ K.tool.marker = { // MARK: Marker Tools
 K.tool.layer = { // MARK: Layer Tools
 
     // Settings to use through all functions
-    group: '',
-    icon: {},
-    id: 0,
     join: false,
     layer: {},
     new: {},
-    pop: {},
-    shape: '',
+    element: null,
+    shape: false,
+    modeSwitch: false,
+    setting: null,
+    isPopup: false,
 
     // Check if the menu is already open
     isOpen: function() {
@@ -2005,11 +2056,8 @@ K.tool.layer = { // MARK: Layer Tools
 
     _show: function(layer) {
         console.log(`Editing layer with ID: ${layer.options.id}`, layer);
-        // K.settingShape(layer.options.shape)
 
-        let _this = this;
-
-        // if (layer.options.link) console.log(layer.getLinked());
+        let self = this;
 
         // Cancel if we are in editing or deleting modes
         if (K.check.deleting || K.check.editing || !K.bar.b.power.enabled())
@@ -2024,23 +2072,18 @@ K.tool.layer = { // MARK: Layer Tools
             });
             layers = sortObjByKeys(layers);
             $.each(layers, function(v, i) {
-                _this.tags.push(v.space());
+                self.tags.push(v.space());
             });
         }
 
-        // console.log(layer);
-
+        // close any other menu that is already open
         this._hide();
 
         this.layer = layer;
-        this.shape = layer.options.shape;
-        this.id = layer._leaflet_id;
+        this.shape = K.settingShape(layer.options.shape);
 
         // Add the settings if they don't already exist
         if (!K.in('saved', layer.editing)) layer.editing.saved = true;
-
-        this.group = layer.options.group;
-        this.pop = layer.getPopup();
 
         layer.makeBackup();
 
@@ -2053,15 +2096,15 @@ K.tool.layer = { // MARK: Layer Tools
                 pane: (this.join.options.className == 'poly-hover' ? 'zonePane' : 'overlayPane'),
             }));
 
-            this.pop = this.join._popup;
+            let p = this.join.popup;
 
             // Add a new popup if it has one
-            if (this.pop._content || this.pop.list.title)
-                this.new.bindPopup(this.pop);
+            if (p.content || p.list)
+                this.new.bindPopup(p);
 
             removeLayer(this.join);
-            removeLayer(layer, this.group, true);
-            K.group.mode[this.new.options.group].addLayer(this.new);
+            removeLayer(layer, layer.options.group, true);
+            K.group.addLayer(this.new);
 
             this.new.on('click', K.tool.layer.show);
             this.new.options.complete && this.new.options.shape === 'marker' && this.new.on('contextmenu', function() {
@@ -2069,6 +2112,8 @@ K.tool.layer = { // MARK: Layer Tools
             });
 
             this.new.saved(false);
+            this.new.storeSettings();
+
             this.join = false;
             K.msg.hide();
 
@@ -2079,10 +2124,16 @@ K.tool.layer = { // MARK: Layer Tools
         $(layer[layer.options.shape != 'marker' ? '_path' : '_icon']).addClass('leaflet-layer-editing');
 
         // Create the menu
-        $('body').append('<div id="settings-menu" class="settings-divider"><div class="settings-side left"></div><div class="settings-side right"></div></div>');
+        $('body').append(`<div id="settings-menu" class="settings-divider">
+            <div class="settings-side left"></div>
+            <div class="settings-side right"></div>
+        </div>`);
 
         $('#settings-menu').on('remove', function() {
             $('.leaflet-layer-editing').removeClass('leaflet-layer-editing');
+
+            // self._save();
+
         }).draggable({
             containment: '#mapid',
             start: function() {
@@ -2094,11 +2145,11 @@ K.tool.layer = { // MARK: Layer Tools
                 this.position = $.extend({}, $(this).position(), {
                     transform: 'translate(0, 0)'
                 });
-                Cookies.set('menuPos', this.position, K.expires);
+                K.local('menuPos', this.position);
             }
         });
 
-        this.position = Cookies.get('menuPos') || false;
+        this.position = K.local('menuPos') || false;
 
         if (this.position) {
             let w = $(window).width() - 300,
@@ -2117,7 +2168,7 @@ K.tool.layer = { // MARK: Layer Tools
 			</div>
 			<div class="settings-tools buttons"></div>
 			<div class="settings-tools save">
-                <a class="settings-save button" aria-label="save">CONFIRM</a>
+                <!-- <a class="settings-save button" aria-label="save">CONFIRM</a> -->
                 <a class="settings-cancel button" aria-label="cancel">CANCEL</a>
 			</div>
 			<div class="creator">${layer.options.creator}</div>
@@ -2131,8 +2182,7 @@ K.tool.layer = { // MARK: Layer Tools
                 title: 'Copy these settings'
             }, {
                 cls: 'paste',
-                title: 'Paste copied settings',
-                type: ['polygon', 'polyline', 'circle']
+                title: 'Paste copied settings'
             }, {
                 cls: 'edit' + (layer.editing.edit ? ' end' : ''),
                 title: 'Add this to editable layer'
@@ -2172,12 +2222,12 @@ K.tool.layer = { // MARK: Layer Tools
         this.updateSaved();
 
         // Fill the menu with settings
-        let shape = this.shape;
+        let shape = layer.options.shape;
         $.each(K.settings.main, function(i, n) {
             if (!K.has(shape, n.for)) return;
             $('<a />', {
                 class: 'dnt settings-item button ' + i,
-                'aria-label': i,
+                setting: i,
                 html: i.firstToUpper().space()
             }).appendTo('.settings-tools.marker');
         });
@@ -2186,43 +2236,46 @@ K.tool.layer = { // MARK: Layer Tools
         $.each(K.settings.popup, function(i, n) {
             $('<a />', {
                 class: 'dnt settings-item button ' + i,
-                'aria-label': 'popup-' + i,
+                setting: i,
+                popup: true,
                 html: i.firstToUpper().space()
             }).appendTo('.settings-tools.popup');
         });
 
         // Apply the button click functions
-        $('.settings-item')
-            .on('click', this._settingClick);
-        // .on('mouseover', this._settingOver)
-        // .on('mouseleave', this._settingLeave);
-        $('.settings-save').on('click', function() {
-            _this._save.call(_this);
+        $('.settings-item').on('click', function() {
+            self.element = $(this);
+            self.setting = $(this).attr('setting');
+            self.isPopup = $(this).attr('popup');
+            self._settingClick();
         });
+        // $('.settings-save').on('click', function() {
+        //     self._save.call(self);
+        // });
         $('.settings-cancel').on('click', function() {
-            _this._cancel.call(_this);
+            self._cancel();
         });
         $('.settings.copy').on('click', function() {
-            _this._copy.call(_this);
+            layer.copy();
         });
         $('.settings.paste').on('click', function() {
-            _this._paste.call(_this);
+            self._paste();
         }).on('mouseover', function() {
-            _this._pasteOver.call(_this, layer);
+            self._pasteOver(layer);
         }).on('mouseout', function() {
-            _this._pasteOut.call(_this, layer);
+            self._pasteOut(layer);
         });
         $('.settings.delete').on('click', function() {
-            _this._delete.call(_this);
+            self._delete();
         });
         $('.settings.dupe').on('click', function() {
-            _this._dupe.call(_this);
+            self._dupe();
         });
         $('.settings.join').on('click', function() {
-            _this._join.call(_this);
+            self._join();
         });
         $('.settings.to-type').on('click', function() {
-            _this._toType.call(_this);
+            self._toType();
         });
         $('.settings.move').on('click', this._move);
         $('.settings.edit').on('click', this._edit);
@@ -2231,7 +2284,7 @@ K.tool.layer = { // MARK: Layer Tools
             $('.settings.split').hide();
         else {
             $('.settings.split').on('click', function() {
-                _this._split.call(_this);
+                self._split();
             });
         }
 
@@ -2268,19 +2321,19 @@ K.tool.layer = { // MARK: Layer Tools
      * Left side setting click
      * Populate the right menu
      */
-    _settingClick: function(e, modeSwitch) { // MARK: ^ Setting Click
+    _settingClick: function() { // MARK: ^ Setting Click
 
-        let _t = this,
-            fn = K.tool.layer,
-            layer = fn.layer,
-            setting = $(this).attr('aria-label'),
-            isPopup = setting.bMatch('popup-'),
-            object = isPopup ? K.settings.popup : K.settings.main,
+        let self = this,
+            layer = this.layer,
+            setting = this.setting,
+            isPopup = this.isPopup,
+            object = K.settings[isPopup ? 'popup' : 'main'],
             values = [],
             box, toggle, input;
 
+        if (!setting) return;
+
         layer.editing.window = setting;
-        setting = setting.replace('popup-', '');
 
         if (K.in('values', object[setting])) {
             // get and sort settings 
@@ -2304,8 +2357,12 @@ K.tool.layer = { // MARK: Layer Tools
             $('.right .settings-title').after(`<a class="settings icon paste inline" title="Paste this setting" 
                 setting="' + setting + '" which="${isPopup ? 'popup' : 'icon'}"></a>`);
 
-            $('.settings.copy.inline').on('click', fn._copySingle);
-            $('.settings.paste.inline').on('click', fn._pasteSingle);
+            $('.settings.copy.inline').on('click', function() {
+                self._copySingle();
+            });
+            $('.settings.paste.inline').on('click', function() {
+                self._pasteSingle();
+            });
         }
 
         let bx = $('.settings-tools.right-bar');
@@ -2350,7 +2407,8 @@ K.tool.layer = { // MARK: Layer Tools
 
                 if (!changes) {
                     K.in(setting, mode) && delete mode[setting];
-                    K.tool.layer._settingClick.call(_t, true);
+                    self.modeSwitch = true;
+                    self._settingClick();
                     apply();
                 }
             });
@@ -2362,7 +2420,7 @@ K.tool.layer = { // MARK: Layer Tools
         if (setting === 'list') {
 
             if ($.type(value) != 'object') {
-                fn.pop.options[setting] = {};
+                layer.popup.list = {};
                 value = {};
             }
 
@@ -2470,7 +2528,7 @@ K.tool.layer = { // MARK: Layer Tools
                     num: i,
                     placeholder: 'Item'
                 }).autocomplete({
-                    source: fn.tags,
+                    source: this.tags,
                     autoFocus: true,
                     appendTo: '#settings-menu'
                 }).appendTo('.section.list');
@@ -2549,7 +2607,7 @@ K.tool.layer = { // MARK: Layer Tools
                         num: i,
                         placeholder: 'Item'
                     }).autocomplete({
-                        source: fn.tags,
+                        source: this.tags,
                         autoFocus: true,
                         appendTo: '#settings-menu'
                     }).appendTo('.section.list');
@@ -2960,89 +3018,20 @@ K.tool.layer = { // MARK: Layer Tools
             }
         });
 
-        modeSwitch && apply();
-    },
-
-    _settingOver: function() {
-
-        let fn = K.tool.layer,
-            layer = fn.layer,
-            setting = $(this).attr('aria-label'),
-            isPopup = setting.bMatch('popup-');
-
-        setting = setting.replace('popup-', '');
-
-        let value = layer.options[setting] || '';
-        if (isPopup) value = (setting == 'content' ? fn.pop._content : fn.pop.options[setting]);
-
-        if ($.type(value) == 'object')
-            value = JSON.stringify(value);
-
-        if (K.has(setting, ['content', 'html']))
-            value = safeTags(value);
-
-        if ($.type(value) == 'string' && !value)
-            value = undefined;
-
-        let cv = 'current-value';
-
-        if (!$('.' + cv, this).length && value != undefined) {
-
-            $('<span />', {
-                class: cv
-            }).appendTo(this);
-
-        }
-
-        $('.' + cv, this).html(value).fadeIn(250);
-    },
-
-    _settingLeave: function() {
-        $('.current-value').fadeOut(500);
+        this.modeSwitch && apply();
+        this.modeSwitch = false;
+        return this;
     },
 
     // Confirm the settings that you have changed and remove the backup
     _save: function() {
 
-        let copy = Cookies.get('copy') || {},
-            layer = this.layer;
-
         this._hide();
-
-        if (this.shape == 'marker') {
-
-            copy.marker = $.extend({}, this.icon, K.curtail({}, layer.options, ['id']));
-
-        } else if (this.shape == 'polyline') {
-
-            copy.polyline = K.curtail({}, layer.options, ['id']);
-
-        } else if (this.shape == 'polygon') {
-
-            copy.polygon = K.curtail({}, layer.options, ['id']);
-
-        } else if (this.shape == 'circle') {
-
-            copy.circle = K.curtail({}, layer.options, ['id']);
-        }
-
-        let p = this.pop,
-            o = p.options;
-
-        copy[this.shape + 'Popup'] = p._content ? {
-            content: (p._content && !(o && o.list && o.list.title) ? p._content : ''),
-            options: {
-                className: (o && o.className ? o.className : ''),
-                list: (o && o.list ? $.extend(true, {}, o.list) : {})
-            }
-        } : {};
-
-        Cookies.set('copy', copy, K.expires);
-
+        layer.copy();
         delete layer.backup;
 
         if (!(K.mode in layer.options.mode)) {
-            K.group.mode[layer.options.group].removeLayer(layer._leaflet_id);
+            K.group.removeLayer(layer);
         }
     },
 
@@ -3086,90 +3075,44 @@ K.tool.layer = { // MARK: Layer Tools
         layer.saved(true);
     },
 
-    // Copy settings 
-    _copy: function() {
-
-        let copy = Cookies.get('copy') || {},
-            layer = this.layer;
-
-        if (this.shape == 'marker') {
-
-            // Save the settings for use later on 
-            copy.marker = $.extend({}, this.icon, K.curtail({}, layer.options, ['id']));
-
-        } else if (this.shape == 'polyline') {
-
-            copy.polyline = K.curtail({}, layer.options, 'id');
-
-        } else if (this.shape == 'polygon') {
-
-            copy.polygon = K.curtail({}, layer.options, 'id');
-
-        } else if (this.shape == 'polygon') {
-
-            copy.circle = K.curtail({}, layer.options, 'id');
-        }
-
-        let p = this.pop,
-            o = p.options;
-
-        copy[this.shape + 'Popup'] = p._content ? {
-            content: (p._content && !(o && o.list && o.list.title) ? p._content : ''),
-            options: {
-                className: (o && o.className ? o.className : ''),
-                list: (o && o.list ? $.extend(true, {}, o.list) : {})
-            }
-        } : {};
-
-
-        Cookies.set('copy', copy, K.expires);
-
-        K.msg.show({
-            msg: 'Settings copied!',
-            time: 2000
-        });
-    },
-
     _copySingle: function() {
 
-        let copy = Cookies.get('copy') || {},
-            fn = K.tool.layer,
-            pop = $(this).attr('which') == 'popup',
-            set = $(this).attr('setting'),
-            val = set == 'list' ? removeEmpty(fn.pop.options.list) : $('.input').val();
+        const copy = K.local('copySingle') || {},
+            layer = this.layer,
+            isPopup = this.isPopup,
+            setting = this.setting,
+            value = layer[isPopup ? 'popup' : 'options'][setting];
 
-        if (val == null || val == undefined || ($.type(val) == 'string' && !val) || ($.type(val) == 'object' && !K.length(val))) {
-
+        if (K.empty(value)) {
             K.msg.show({
                 msg: 'Copy failed!',
                 time: 2000
             });
-            return;
+            return this;
         }
 
-        if (!K.in('options', copy)) copy.options = {
-            popup: {}
-        };
+        const t = isPopup ? 'p' : 'o';
+        if (!K.in(t, copy)) copy[t] = {};
+        copy[t][setting] = value;
 
-        if (pop) copy.options.popup[set] = val;
-        else copy.options[set] = val;
-
-        Cookies.set('copy', copy, K.expires);
+        K.local('copySingle', copy);
 
         K.msg.show({
             msg: 'Setting copied!',
             time: 2000
         });
+
+        return this;
     },
 
     // Paste copied settings 
     _paste: function() {
 
         let layer = this.layer,
-            copy = Cookies.get('copy') || {},
-            sets = copy[this.shape] || false;
+            copy = K.local('copy') || {},
+            options = copy[K.settingShape(layer.options.shape)] || false;
 
-        if (!sets) {
+        if (!options) {
             K.msg.show({
                 msg: 'You need to copy something first!',
                 time: 2000
@@ -3177,39 +3120,34 @@ K.tool.layer = { // MARK: Layer Tools
             return;
         }
 
-        sets = $.extend({}, layer.options, sets, {
-            pane: (sets.className == 'poly-hover' ? 'zonePane' : 'overlayPane')
+        $.each(options.o, function(setting, value) {
+            layer.applySetting({ setting: setting, value: value });
         });
 
-        this.new = layer.shape == 'circle' ? L.circle(layer._latlng, $.extend(sets, {
-            radius: layer._mRadius
-        })) : L[polyType(layer._latlngs)](layer._latlngs, sets);
+        $.each(options.p, function(setting, value) {
+            layer.updatePopup({ setting: setting, value: value });
+        });
 
-        removeLayer(layer, this.group);
-        K.group.mode[layer.options.group].addLayer(this.new);
-        this.new.on('click', this.show);
-
-        // Save all the hard work
-        this.new.saved(false);
-
-        switchLayerGroups();
-        polyHoverAnimation();
         K.msg.show({
             msg: 'Settings pasted!',
             time: 2000
         });
 
-        this._refresh();
+        this._settingClick();
     },
 
     _pasteSingle: function() {
-        let copy = Cookies.get('copy') || {};
+        const copy = K.local('copySingle') || {},
+            layer = this.layer,
+            isPopup = this.isPopup,
+            ms = $('.mode-switch'),
+            t = isPopup ? 'p' : 'o',
+            o = {
+                setting: this.setting,
+                forMode: ms.length ? ms.is(':checked') : false,
+            };
 
-        let fn = K.tool.layer,
-            pop = $(this).attr('which') == 'popup',
-            set = $(this).attr('setting');
-
-        if ((!K.in('options', copy)) || (pop && !copy.options.popup[set]) || (!pop && !copy.options[set])) {
+        if ((!K.in(t, copy)) || !K.in(setting, copy[t])) {
 
             K.msg.show({
                 msg: 'There is no copied setting!',
@@ -3218,64 +3156,24 @@ K.tool.layer = { // MARK: Layer Tools
             return;
         }
 
-        if (set == 'list') {
+        o.value = copy[t][setting];
+        isPopup && layer.updatePopup(o);
+        !isPopup && layer.applySetting(o);
 
-            let list = copy.options.popup.list,
-                input;
-
-            $('input').val('');
-
-            for (let j = 0; j < 2; j++) {
-
-                if (list.subs) {
-                    for (let i = 0; i < list.subs.length; i++) {
-
-                        if (!list.subs[i].value) continue;
-
-                        input = $(`[name="list-sub"][num="${i}"]`);
-
-                        if (!input.length) $('a.add.subs').trigger('click');
-
-                        input.val(list.subs[i].value);
-                        let p = input.parent();
-
-                        p.find('[cat=color]').prop('checked', list.subs[i].color);
-                        p.find('[cat=line]').prop('checked', list.subs[i].line);
-                        p.find('[cat=note]').prop('checked', list.subs[i].note);
-                    }
-                }
-
-                if (list.list) {
-                    for (i = 0; i < list.list.length; i++) {
-
-                        if (!list.list[i].item) continue;
-
-                        input = $(`[name="list-item"][num="${i}"]`);
-
-                        if (!input.length) $('a.add.list').trigger('click');
-
-                        input.val(list.list[i].item);
-                        $(`[name="list-qty"][num="${i}"]`).val(list.list[i].qty);
-                    }
-                }
-            }
-
-            $('[name="list-title"]').val(list.title).trigger('blur');
-
-            return;
-        }
-
-        $('.input').val(pop ? copy.options.popup[set] : copy.options[set]).trigger('blur');
+        this._settingClick();
     },
 
-    _pasteOver: function(layer) {
-        layer.makeBackup();
-
-        layer.setStyle($.extend(layer.options, Cookies.get('copy') ? Cookies.get('copy')[this.shape] || {} : {}));
+    _pasteOver: function() {
+        let c, layer = this.layer,
+            s = K.settingShape(layer.options.shape);
+        if (layer.options.shape == 'marker') return;
+        layer.makeBackup()
+            .setStyle($.extend(layer.options, c = K.local('copy') && K.in(s, c) ? c[s] || {} : {}));
     },
 
-    _pasteOut: function(layer) {
-
+    _pasteOut: function() {
+        const layer = this.layer;
+        if (layer.options.shape == 'marker') return;
         layer.setStyle($.extend(layer.options, layer.paste.options));
     },
 
@@ -3401,7 +3299,7 @@ K.tool.layer = { // MARK: Layer Tools
             radius: layer._mRadius
         })) : L[pType](layer._latlngs, set);
 
-        K.group.mode[layer.options.group].addLayer(this.new);
+        K.group.addLayer(this.new);
         this.new.on('click', this.show);
 
         this.new.saved(false);
@@ -3476,7 +3374,7 @@ K.tool.layer = { // MARK: Layer Tools
 
             newLayer = L[polyType([m])]([m], sets);
 
-            K.group.mode[newLayer.options.group].addLayer(newLayer);
+            K.group.addLayer(newLayer);
             newLayer.on('click', show);
 
             newLayer.saved(false);
@@ -3539,6 +3437,8 @@ L.Layer.include({ // MARK: Layer Include
 
         let t = !this.backup ? 'backup' : 'paste';
 
+        this.oldType = this.options.type;
+
         this[t] = {};
         this[t].options = backup(this.options);
 
@@ -3574,15 +3474,18 @@ L.Layer.include({ // MARK: Layer Include
     applySetting: function(options) { // MARK: ^ Apply Setting
 
         const o = $.extend({
-            setting: undefined, // this has to be a valid setting for the layer
-            value: undefined, // this is the value that is going to change
-            skipSave: false, // this is used when applying a setting but not to be saved 
-            forMode: false // this is used to apply the setting into the mode setting
-        }, options);
+                setting: undefined, // this has to be a valid setting for the layer
+                value: undefined, // this is the value that is going to change
+                skipSave: false, // this is used when applying a setting but not to be saved 
+                forMode: false // this is used to apply the setting into the mode setting
+            }, options),
+            group = this.options.group;
 
         if (!this.backup && !o.skipSave) this.makeBackup();
 
-        const oldType = this.options.type;
+        // set oldType to check for changes and update objects
+        if (o.setting == 'type') this.oldType = this.options.type;
+
         let m = o.forMode ? this.getMode() : false;
         const mSp = this.getModeSettingPath(o.setting);
         !o.forMode && mSp !== null && delete mSp[o.setting];
@@ -3610,6 +3513,8 @@ L.Layer.include({ // MARK: Layer Include
         } else if (m) m[o.setting] = o.value
         else this.options[o.setting] = o.value;
 
+        if (o.setting == 'group') switchLayerGroup(this, group);
+
         // Apply the settings to the original layer (not marker)
         this.options.shape != 'marker' && this.setStyle(this.options);
         // this.options.shape == 'marker' && this.setOpacity(this.options.opacity);
@@ -3617,21 +3522,21 @@ L.Layer.include({ // MARK: Layer Include
         // add the settings to global if they don't already exist
         const type = this.options.type,
             counts = K.map.type.counts;
-        if (type && o.setting == 'type') {
-            this.oldType = oldType;
-            if (!(type in counts)) counts[type] = 0;
-            counts[type] += 1;
-            counts[oldType] -= 1;
+        // adjust the counts for the new and old types
+        // also being aware that the new or old type may be blank
+        if (type != this.oldType) {
+            type && !K.in(type, counts) && (counts[type] = 0);
+            type && (counts[type] += 1);
+            this.oldType && (counts[this.oldType] -= 1);
         }
 
-        this.storeSettings();
-        !o.skipSave && this.saved(false);
-
-        // as we are changing the type, we need to apply all of the 
+        // if we are changing the type, we need to apply all of the 
         // other settings to match it, if it exists already
-        if (type && o.setting == 'type') {
+        if (type != this.oldType && K.in(type, K.layer)) {
+            this.oldType = type;
             const _this = this;
             $.each(K.curtail({}, K.layer[type].o, ['type', 'shape']), function(key, val) {
+
                 _this.applySetting({
                     setting: key,
                     value: val,
@@ -3647,6 +3552,9 @@ L.Layer.include({ // MARK: Layer Include
                 });
             });
         }
+
+        this.storeSettings();
+        !o.skipSave && this.saved(false);
 
         return this;
     },
@@ -3702,6 +3610,7 @@ L.Layer.include({ // MARK: Layer Include
 
         const mSp = this.getModeSettingPath(o.setting, true);
         !o.forMode && mSp !== null && delete mSp[o.setting];
+        !this.popup && (this.popup = {});
         !o.forMode && (this.popup[o.setting] = o.value);
         o.forMode && (this.getMode(true)[o.setting] = o.value);
 
@@ -3710,6 +3619,8 @@ L.Layer.include({ // MARK: Layer Include
 
         this.storeSettings();
         this.saved(false);
+
+        return this;
     },
 
     hasPopupContent: function() {
@@ -3749,6 +3660,8 @@ L.Layer.include({ // MARK: Layer Include
                 delete K.map.type.counts[this.oldType];
             }
         }
+
+        return this;
     },
 
     saved: function(saved) {
@@ -3763,7 +3676,32 @@ L.Layer.include({ // MARK: Layer Include
         }
 
         if (tool.isOpen()) tool.updateSaved();
-    }
+
+        return this;
+    },
+
+    // Copy settings 
+    copy: function() {
+
+        let copy = K.local('copy') || {};
+
+        copy[K.settingShape(this.options.shape)] = {
+            o: K.reduce({}, this.options, K.map.property[this.options.shape]),
+            p: this.popup ? this.popup : false
+        };
+
+        K.local('copy', copy);
+
+        K.msg.show({
+            msg: 'Settings copied!',
+            time: 2000
+        });
+
+        K.updateMarker();
+
+        return this;
+    },
+
 });
 /*=====  End of LAYER TOOLS  ======*/
 
@@ -3808,8 +3746,8 @@ $(function() { // MARK: Document Loaded
         zoom = e.target._zoom;
         onZoomEnd();
 
-        Cookies.set('zoom', K.myMap.getZoom(), K.expires);
-        Cookies.set('pan', K.myMap.getCenter(), K.expires);
+        K.local('zoom', K.myMap.getZoom());
+        K.local('pan', K.myMap.getCenter());
 
         polyHoverAnimation();
     });
@@ -3850,7 +3788,7 @@ $(function() { // MARK: Document Loaded
                 reorderModes();
 
                 K.mode = $(this).attr('mode');
-                Cookies.set('mode', K.mode, K.expires);
+                K.local('mode', K.mode);
                 K.group.mode = K.group.feature[K.mode];
                 K.bar.b.power && !K.bar.b.power.enabled() ? K.check.doOnce = true : true;
 
@@ -3869,10 +3807,10 @@ $(function() { // MARK: Document Loaded
         let sb = $('#side-bar'),
             c = 'active',
             a = $(this).attr('button'),
-            o = Cookies.get('sideMenu'),
+            o = K.local('sideMenu'),
             setCookies = function() {
-                Cookies.set('sideBar', sb.hasClass(c), K.expires);
-                Cookies.set('sideMenu', a, K.expires);
+                K.local('sideBar', sb.hasClass(c));
+                K.local('sideMenu', a);
             };
 
         if ($(this).hasClass(c)) {
@@ -3909,10 +3847,10 @@ $(function() { // MARK: Document Loaded
     });
 
     // Set change log if they have not seen it before
-    if (!K.urlParam('overwolf') && Cookies.get('currentUpdate') != K.currentUpdate) {
-        Cookies.set('sideMenu', 'changes', K.expires);
-        Cookies.set('sideBar', true, K.expires);
-        Cookies.set('currentUpdate', K.currentUpdate, K.expires);
+    if (!K.urlParam('overwolf') && K.local('currentUpdate') != K.currentUpdate) {
+        K.local('sideMenu', 'changes');
+        K.local('sideBar', true);
+        K.local('currentUpdate', K.currentUpdate);
     }
 
     // User account controls
@@ -4068,8 +4006,8 @@ $(function() { // MARK: Document Loaded
         return;
     });
 
-    if (Cookies.get('powered') !== undefined)
-        K.check.doOnce = !Cookies.get('powered');
+    if (K.local('powered') !== undefined)
+        K.check.doOnce = !K.local('powered');
 
     // Add user as donator if they have correct token
     if ($.type(K.urlParam('d')) == 'string') {
@@ -4094,15 +4032,15 @@ function pageLoad() { // MARK: Page Load
 
     // Check for clean map params and cookies and hide everything
     if (K.urlParam('noIcon') == 'true')
-        Cookies.set('hideIcon', true, K.expires);
+        K.local('hideIcon', true);
 
     if (K.urlParam('clean') == 'true')
-        Cookies.set('cleanMenu', true, K.expires);
+        K.local('cleanMenu', true);
 
-    if (!Cookies.get('hideIcon'))
+    if (!K.local('hideIcon'))
         $('#survival-logo').fadeIn(500);
 
-    if (Cookies.get('cleanMenu')) {
+    if (K.local('cleanMenu')) {
         $('.side-menu-toggle.login').hide(0);
         $('.side-menu-toggle.filters').hide(0);
         $('.side-menu-toggle.full').hide(0);
@@ -4246,7 +4184,7 @@ function pageLoad() { // MARK: Page Load
                         switchLayerGroups();
                     }
 
-                    Cookies.set('powered', this.enabled(), K.expires);
+                    K.local('powered', this.enabled());
                     K.check.doOnce = false;
                 }
             });
@@ -4270,18 +4208,20 @@ function pageLoad() { // MARK: Page Load
                     L.DomEvent.disableClickPropagation(div);
                     L.DomEvent.on(div, 'mousewheel', L.DomEvent.stopPropagation);
 
-                    let list = $.merge(K.map.mode[K.mode], K.map.mode.all).sort();
-                    $.unique(list);
-                    $.each(list, function(i, t) {
-                        $('.leaflet-menu').append(`<a class="leaflet-menu-item switch-active-group 
-                            ${K.map.active[t] ? ' active' : ''}" type="${t}">${t.space()}</a>`);
+                    $.each(sortObjByKeys(K.map.type[K.mode]), function(category, types) {
+                        $('.leaflet-menu').append(`<span class="leaflet-menu-item title">${category.space()}</span>`);
+                        $.each(sortObjByKeys(types), function(type, display) {
+                            $('.leaflet-menu').append(`<a class="leaflet-menu-item switch-active-group 
+                                ${K.map.active[type] ? ' active' : ''}" type="${type}">${type.space().replace(' Of ', ' of ')}</a>`);
+                        });
+
                     });
 
                     $('.switch-active-group').on('click', function(e) {
                         let t = $(this).attr('type');
                         $(this).toggleClass('active');
                         K.map.active[t] = !K.map.active[t];
-                        Cookies.set('activeMap', $.extend({}, K.map.active), K.expires);
+                        K.local('activeMap', $.extend({}, K.map.active));
                         switchLayerGroups();
                     });
                 }
@@ -4313,19 +4253,19 @@ function pageLoad() { // MARK: Page Load
                             min: (type == 'rotate' ? -45 : -100),
                             max: (type == 'rotate' ? 45 : 100),
                             step: (type == 'rotate' ? 0.5 : 1),
-                            value: Cookies.get(`grid-${type}`) || 0,
+                            value: K.local(`grid-${type}`) || 0,
                             create: function() {
                                 let val = $(this).slider('value');
                                 $('.handle-' + type).text((type == 'rotate' ? val + ' deg' : (type == 'x-pos' ? 'X: ' + val : 'Y: ' + val)));
                             },
                             slide: function(e, ui) {
                                 $('.handle-' + type).text((type == 'rotate' ? ui.value + ' deg' : (type == 'x-pos' ? 'X: ' + ui.value : 'Y: ' + ui.value)));
-                                Cookies.set('grid-' + type, ui.value, K.expires);
+                                K.local('grid-' + type, ui.value);
                                 setGridRotate();
                             },
                             change: function(e, ui) {
                                 $('.handle-' + type).text((type == 'rotate' ? ui.value + ' deg' : (type == 'x-pos' ? 'X: ' + ui.value : 'Y: ' + ui.value)));
-                                Cookies.set('grid-' + type, ui.value, K.expires);
+                                K.local('grid-' + type, ui.value);
                                 setGridRotate();
                             }
                         });
@@ -4449,7 +4389,7 @@ function pageLoad() { // MARK: Page Load
                     type.disabler();
                 });
 
-                K.myMap.addLayer(K.group.draw).addLayer(K.grid.overlay);
+                K.myMap.addLayer(K.group.draw);
 
                 setGridRotate();
             })
@@ -4581,8 +4521,7 @@ function pageLoad() { // MARK: Page Load
             for (s in o) {
                 o[s] = toCorrectType(s, o[s]);
                 s == 'className' && (o[s] = K.stripClasses(o[s]));
-                s in K.settings.main && K.in('values', K.settings.main[s]) &&
-                    addSet(K.settings.main[s].values, o[s], o.shape);
+                K.settings.add(s, o[s], o.shape);
             }
 
             // fill up classRemoval array for later
@@ -4658,7 +4597,7 @@ function pageLoad() { // MARK: Page Load
                 l.bindPopup(p);
 
                 // Add the settings to the settings object for editing menus
-                K.user.type && addSet(K.settings.popup.className.values, p.className, o.shape);
+                K.user.type && K.settings.add('className', p.className, o.shape, true);
             }
 
             // Add the Layer editing tools on click if you created it
@@ -4689,7 +4628,7 @@ function pageLoad() { // MARK: Page Load
                 add = true;
             }
 
-            add && addToFeatureGroups(l);
+            add && K.group.addLayer(l);
             l.markComplete();
         };
 
@@ -4698,7 +4637,7 @@ function pageLoad() { // MARK: Page Load
 
             // Only switch layers, remove duplicates and add draw control if we are superuser
             K.user.type && switchLayerGroups();
-            K.completeHidden = Cookies.get('completeHidden') || false;
+            K.completeHidden = K.local('completeHidden') || false;
 
             //////////////////////////////////////////////////////
             //
@@ -4711,9 +4650,8 @@ function pageLoad() { // MARK: Page Load
                 <span class="title">Filters</span>
                 <a class="hide-complete${K.completeHidden ? ' hidden">Show' : '">Hide'} Complete</a>`);
 
-            let list = K.map.type[K.mode];
-            list = sortObjByKeys(list);
-            K.filters = Cookies.get('filters') || {};
+            const list = sortObjByKeys(K.map.type[K.mode]);
+            K.filters = K.local('filters') || {};
 
             $.each(list, function(category, types) {
 
@@ -4787,9 +4725,9 @@ function pageLoad() { // MARK: Page Load
 
                 // Set a cookie for reload
 
-                K.filters = Cookies.get('filters') || {};
+                K.filters = K.local('filters') || {};
                 K.filters[t] = ia;
-                Cookies.set('filters', K.filters, K.expires);
+                K.local('filters', K.filters);
 
                 // Add the layers to the shown or hidden groups
                 showHideLayers($(this).attr('set'), t, ia);
@@ -4814,7 +4752,7 @@ function pageLoad() { // MARK: Page Load
                     K.completeHidden = true;
                 }
 
-                Cookies.set('completeHidden', K.completeHidden);
+                K.local('completeHidden', K.completeHidde);
                 K.complete.showHide();
             });
 
@@ -4845,8 +4783,8 @@ function pageLoad() { // MARK: Page Load
             $(sb).append(K.credits);
 
             // Show side bar if it was open before 
-            if (Cookies.get('sideBar') && !Cookies.get('cleanMenu')) {
-                let a = Cookies.get('sideMenu');
+            if (K.local('sideBar') && !K.local('cleanMenu')) {
+                let a = K.local('sideMenu');
                 $('#side-bar, #side-bar .' + a).addClass('active ' + a);
             }
 
@@ -5016,13 +4954,13 @@ function doLogin() {
         }
     }).done(function(a) {
 
-        if (Cookies.get('username')) {
-            K.user.name = Cookies.get('username');
-            K.user.type = Cookies.get('usertype');
+        if (K.local('username')) {
+            K.user.name = K.local('username');
+            K.user.type = K.local('usertype');
             K.user.getData();
         }
 
-        if (!Cookies.get('donate')) {
+        if (!K.local('donate')) {
             $('#alert').show();
         } else {
             $('#alert').hide();
@@ -5266,9 +5204,10 @@ function keypressEvent(e) {
 function drawEventCreated(e) { // MARK: Draw Event Created
     let layer = e.layer,
         type = e.layerType,
+        shape = K.settingShape(type),
+        copy = (K.local('copy') || {})[shape] || false,
         popup = false,
-        copy = Cookies.get('copy') || {},
-        color, def = 'marker';
+        color;
 
     // Marker
     // ----------------------
@@ -5296,21 +5235,18 @@ function drawEventCreated(e) { // MARK: Draw Event Created
 
         } else {
 
-            icon = $.type(mark = copy.marker) == 'object' ? mark : K.map.defaults.marker;
+            icon = copy ? copy.o : K.map.defaults.marker;
 
-            layer = createMarker($.extend({}, icon, {
+            layer = createMarker($.extend(icon, {
                 id: ID(),
-                latlng: layer._latlng
+                latlng: layer._latlng,
+                shape: 'marker'
             }));
         }
 
-        layer.markComplete();
-    }
+    } else { // Circle, Polyline, Polygon or Rectangle
 
-    if (type != 'marker') { // Circle / Polyline / Polygon / Rectangle
-
-        def = type != 'polyline' ? 'polygon' : type;
-        let obj = copy[def] || K.map.defaults[def];
+        let obj = copy.o || K.map.defaults[shape];
 
         if ($.type(obj) == 'object') {
 
@@ -5321,7 +5257,6 @@ function drawEventCreated(e) { // MARK: Draw Event Created
             $.extend(obj, {
                 id: ID(),
                 pane: (obj.className == 'poly-hover' ? 'zonePane' : 'overlayPane'),
-                mode: obj.mode || K.mode,
                 shape: type
             });
 
@@ -5332,17 +5267,13 @@ function drawEventCreated(e) { // MARK: Draw Event Created
         }
     }
 
-    o = popup || copy[def + 'Popup'] || {};
-
-    // Bind a popup to the new layer
-    if (o.content || !K.empty(o.list))
-        layer.bindPopup(o);
+    if (K.in('p', copy)) layer.bindPopup(copy.p);
 
     // Add the new layer to the map
     layer.options.creator = K.user.name;
     layer.options.group = layer.options.group || 'group08';
 
-    K.group.mode[layer.options.group].addLayer(layer);
+    K.group.addLayer(layer);
 
     layer.on('click', K.tool.layer.show);
     layer.options.complete && layer.options.shape === 'marker' && layer.on('contextmenu', function() {
@@ -5350,6 +5281,7 @@ function drawEventCreated(e) { // MARK: Draw Event Created
     });
 
     layer.saved(false);
+    layer.storeSettings();
 
     switchLayerGroups();
     polyHoverAnimation();
@@ -5418,20 +5350,22 @@ function updateSetCounter() {
     $('#side-bar .warning').html('');
 
     if (!K.user.type) {
-        $('#side-bar .warning').html("This data is stored as a cookie, if you would\
+        $('#side-bar .warning').html("This data is stored locally, if you would\
             like it to be persistant, please create an account or sign in.");
 
-        let setData1 = {};
-        let setData2 = setData;
+        // let setData1 = {};
+        // let setData2 = setData;
 
-        while (K.length(setData1) < K.length(setData2)) {
-            let key = Object.keys(setData2)[0];
-            setData1[key] = setData2[key];
-            delete setData2[key];
-        }
+        // while (K.length(setData1) < K.length(setData2)) {
+        //     let key = Object.keys(setData2)[0];
+        //     setData1[key] = setData2[key];
+        //     delete setData2[key];
+        // }
 
-        Cookies.set('setData1', setData1, K.expires);
-        Cookies.set('setData2', setData2, K.expires);
+        K.local('setData', setData);
+
+        // K.local('setData1', setData1);
+        // K.local('setData2', setData2);
 
     } else {
 
@@ -5441,9 +5375,6 @@ function updateSetCounter() {
             data: {
                 setData: JSON.stringify(setData)
             }
-        }).done(function(a) {
-
-            Cookies.remove('setData');
         });
     }
 
@@ -5490,16 +5421,6 @@ function sortObjByKeys(object) {
     });
 
     return rObj;
-}
-
-function addToFeatureGroups(layer) {
-    let m = layer.options.mode,
-        g = layer.options.group;
-    layer.currentGroup = g;
-    $.each(K.modes.get, function(i, mode) {
-        (mode in m) && K.group.feature[mode][g].addLayer(layer) &&
-            K.group.feature[mode].everyLayer.addLayer(layer);
-    });
 }
 
 function polyHoverAnimation(stop) {
@@ -5563,10 +5484,10 @@ function setGridRotate(reset) {
 
     K.grid.x = (!K.grid.x || reset ? gridM[4] : K.grid.x);
     K.grid.y = (!K.grid.y || reset ? gridM[5].replace(')', '') : K.grid.y);
-    K.grid.r = Cookies.get('grid-rotate') || 0;
+    K.grid.r = K.local('grid-rotate') || 0;
 
-    let gridXAlt = Cookies.get('grid-x-pos') || 0,
-        gridYAlt = Cookies.get('grid-y-pos') || 0;
+    let gridXAlt = K.local('grid-x-pos') || 0,
+        gridYAlt = K.local('grid-y-pos') || 0;
 
     Number(K.grid.x);
     Number(K.grid.y);
@@ -5652,9 +5573,9 @@ function showHideAllLayers(show) {
             btn.removeClass('inactive');
             show && btn.addClass('inactive');
 
-            K.filters = Cookies.get('filters') || {};
+            K.filters = K.local('filters') || {};
             K.filters[type] = show;
-            Cookies.set('filters', K.filters, K.expires);
+            K.local('filters', K.filters);
 
             showHideLayers(category, type, show);
         });
@@ -5668,9 +5589,9 @@ function showHideCategory(category, show) {
         btn.removeClass('inactive');
         show && btn.addClass('inactive');
 
-        K.filters = Cookies.get('filters') || {};
+        K.filters = K.local('filters') || {};
         K.filters[type] = show;
-        Cookies.set('filters', K.filters, K.expires);
+        K.local('filters', K.filters);
 
         showHideLayers(category, type, show);
     });
@@ -5726,17 +5647,6 @@ function toCorrectType(setting, value) {
     return value;
 }
 
-// Check if the key is in the object then place it if not
-function addSet(i, v, shape) {
-    if ($.type(v) == 'array')
-        v = v.join(',');
-    if (v) {
-        shape = K.has(shape, ['rectangle', 'circle']) ? 'polygon' : shape;
-        !(v in i) && (i[v] = { shape: [] });
-        !K.has(shape, i[v].shape) && i[v].shape.push(shape);
-    }
-}
-
 function offset(latlng, oLat, oLng) {
     if (oLat)
         latlng.lat += oLat;
@@ -5756,14 +5666,16 @@ function textColor(hex) {
     return (luma < 40 ? '#ffffff' : '#000000');
 }
 
-function removeLayer(layer, group, del) {
-    let grp = group || layer.options.group,
-        id = layer._leaflet_id;
-    del && K.save.delete(layer);
+function switchLayerGroup(layer, oldGroup) {
+    const group = layer.options.group,
+        id = layer._leaflet_id,
+        groups = K.group.feature[K.mode];
+
     K.group.draw.removeLayer(id);
-    $.each(K.modes.get, function(i, mode) {
-        K.group.feature[mode][grp].removeLayer(id);
-    });
+    groups[oldGroup].removeLayer(id);
+    groups[group].addLayer(layer);
+
+    $(layer._icon).removeClass(oldGroup).addClass(group);
 }
 
 // Create a L.point from array or separate numbers
@@ -5776,20 +5688,11 @@ function createPoint(e, f) {
 // Used to add whole groups to and from the Draw Control layer
 function switchLayerGroups(d) {
 
-    // $.ajax({
-    //     url: 'includes/check_login.php'
-
-    // }).done(function(a) {
-
-    //     a = $.parseJSON(a);
-    //     K.user.name = a.username || false;
-    //     K.user.type = a.usertype || 0;
-
     // Remove current layers in the K.group.draw to original group
     $.each(K.group.draw._layers, function(i, l) {
 
         l.editing.currentGroup = l.options.group;
-        K.group.mode[l.options.group].addLayer(K.group.draw.getLayer(i));
+        K.group.addLayer(K.group.draw.getLayer(i));
         K.group.draw.removeLayer(i);
     });
 
@@ -5797,10 +5700,9 @@ function switchLayerGroups(d) {
     !d && $.each(K.group.mode, function(j, g) {
 
         g.eachLayer(function(l) {
-            if ((K.map.active[l.options.type] && (l.options.creator == K.user.name || K.user.type > 3)) ||
-                l.editing.edit) {
+            if ((K.map.active[l.options.type] && (l.options.creator == K.user.name || K.user.type > 3)) || l.editing.edit) {
                 l.editing.currentGroup = 'drawLayer';
-                K.group.draw.addLayer(K.group.mode[l.options.group].getLayer(l._leaflet_id));
+                K.group.draw.addLayer(l);
                 K.group.mode[l.options.group].removeLayer(l._leaflet_id);
             }
         });
@@ -5810,7 +5712,6 @@ function switchLayerGroups(d) {
 
     // Show and hide layers after the change
     onZoomEnd(true);
-    // });
 }
 
 //////////////////////////////////////////////////////

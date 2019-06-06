@@ -408,11 +408,11 @@
             return a;
         },
 
-        inArray: function(value, obj, i) {
+        inArray: (value, obj, i) => {
             return obj == null ? -1 : indexOf.call(obj, value, i);
         },
 
-        isInArray: function(value, obj) {
+        isInArray: (value, obj) => {
             switch (K.Util.type(obj)) {
                 case 'array':
                     return K.Util.inArray(value, obj) == -1 ? false : true;
@@ -423,20 +423,23 @@
             }
         },
 
-        local: function(key, value) {
-            if (K.Util.type(value) === 'undefined') {
+        local: (key, value) => {
+            if (value === undefined) {
+                if (key === undefined) return localStorage;
                 return JSON.parse(localStorage.getItem(key));
             } else {
                 localStorage.setItem(key, JSON.stringify(value));
             }
         },
 
+        localRemove: (key) => localStorage.removeItem(key),
+
         isIterable: function(obj) {
             return K.Util.isInArray(K.Util.type(obj), ['array', 'object']);
         },
 
         // checks if both passed variables match
-        equals: function(obj1, obj2) {
+        equals: (obj1, obj2) => {
             const type1 = K.Util.type(obj1),
                 type2 = K.Util.type(obj2);
 
@@ -505,18 +508,18 @@
             return true;
         },
 
-        isNull: function(obj) {
+        isNull: (obj) => {
             return K.Util.isInArray(K.Util.type(obj), ['null', 'undefined']);
         },
 
-        length: function(item) {
+        length: (item) => {
             const type = K.Util.type(item);
             if (type == 'object') return Object.keys(item).length;
             else if (type == 'array') return item.length;
             return 0;
         },
 
-        empty: function(obj) {
+        empty: (obj) => {
             switch (K.Util.type(obj)) {
                 case 'object':
                     for (let name in obj) return false;
@@ -535,6 +538,7 @@
     // shortcuts for most used utility functions
     K.extend = K.Util.extend;
     K.isInArray = K.Util.isInArray;
+    K.isArray = K.Util.isArray;
     K.has = K.Util.isInArray;
     K.in = K.Util.isInArray;
     K.curtail = K.Util.curtail;
@@ -543,13 +547,14 @@
     K.bind = K.Util.bind;
     K.stamp = K.Util.stamp;
     K.setOptions = K.Util.setOptions;
-    K.local = K.Util.local;
     K.each = K.Util.each;
     K.equals = K.Util.equals;
     K.isIterable = K.Util.isIterable;
     K.type = K.Util.type;
     K.length = K.Util.length;
     K.empty = K.Util.empty;
+    K.local = K.Util.local;
+    K.localRemove = K.Util.localRemove;
 
     // @class Class
     // @aka K.Class
@@ -923,80 +928,7 @@
 
     var proto = K.Evented.prototype;
 
-    // aliases; we should ditch those eventually
-
-    // @method addEventListener(…): this
-    // Alias to [`on(…)`](#evented-on)
-    proto.addEventListener = proto.on;
-
-    // @method removeEventListener(…): this
-    // Alias to [`off(…)`](#evented-off)
-
-    // @method clearAllEventListeners(…): this
-    // Alias to [`off()`](#evented-off)
-    proto.removeEventListener = proto.clearAllEventListeners = proto.off;
-
-    // @method addOneTimeEventListener(…): this
-    // Alias to [`once(…)`](#evented-once)
-    proto.addOneTimeEventListener = proto.once;
-
-    // @method fireEvent(…): this
-    // Alias to [`fire(…)`](#evented-fire)
-    proto.fireEvent = proto.fire;
-
-    // @method hasEventListeners(…): Boolean
-    // Alias to [`listens(…)`](#evented-listens)
-    proto.hasEventListeners = proto.listens;
-
     K.Mixin = { Events: proto };
-
-    /*
-    	K.Handler is a base class for handler classes that are used internally to inject
-    	interaction features like dragging to classes like Map and Marker.
-    */
-
-    // @class Handler
-    // @aka K.Handler
-    // Abstract class for map interaction handlers
-
-    K.Handler = K.Class.extend({
-        initialize: function(map) {
-            this._map = map;
-        },
-
-        // @method enable(): this
-        // Enables the handler
-        enable: function() {
-            if (this._enabled) { return this; }
-
-            this._enabled = true;
-            this.addHooks();
-            return this;
-        },
-
-        // @method disable(): this
-        // Disables the handler
-        disable: function() {
-            if (!this._enabled) { return this; }
-
-            this._enabled = false;
-            this.removeHooks();
-            return this;
-        },
-
-        // @method enabled(): Boolean
-        // Returns `true` if the handler is enabled
-        enabled: function() {
-            return !!this._enabled;
-        }
-
-        // @section Extension methods
-        // Classes inheriting from `Handler` must implement the two following methods:
-        // @method addHooks()
-        // Called when the handler is enabled, should add event hooks.
-        // @method removeHooks()
-        // Called when the handler is disabled, should remove the event hooks added previously.
-    });
 
     K.isWindow = isWindow;
 

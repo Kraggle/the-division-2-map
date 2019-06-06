@@ -1,6 +1,16 @@
 <? ?>
 <span class="title">Change Log</span>
 
+<span class="sub title date">05<sup>th</sup> <span class="dnt">June</span> 2019</span>
+<ul>
+	<li class="dnt">Copy and paste functionality is working better than ever.</li>
+	<li class="dnt">Added Modes to both layers and the map for implementing World Tier changes.</li>
+	<li class="dnt">Cookies will be used a lot less now, as we've updated to local storage.</li>
+	<li class="dnt">Improved overall storage and loading of the database.</li>
+	<li class="dnt">Improved a lot of functionality.</li>
+	<li class="dnt">Fixed some existing and new bugs.</li>
+</ul>
+
 <span class="sub title date">15<sup>th</sup> <span class="dnt">May</span> 2019</span>
 <ul>
 	<li class="dnt">Upon zooming out, previously hidden markers will now change to coloured dots, these the dots appear one zoom level above when they would previously be hidden. These dots are still hoverable and easily identifiable by the color in most cases.</li>

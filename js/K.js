@@ -1111,7 +1111,7 @@ if (!String.prototype.remove) {
     String.prototype.remove = function(value) {
 
         let classes = classesToArray(value),
-            cur, curValue, clazz, j, finalValue,
+            cur, curValue, clazz, j,
             string = this.toString();
 
         if (classes.length) {

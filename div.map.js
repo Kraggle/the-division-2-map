@@ -1259,7 +1259,8 @@ K.extend({ // MARK: K
         },
 
         removeLayer: function(layer, group) {
-            if (!(layer instanceof L.Layer) || !group) return this;
+            if (!(layer instanceof L.Layer)) return this;
+            !group && (group = layer.options.group);
 
             for (let mode in layer.options.mode) {
                 this.feature[mode][group].removeLayer(layer);
@@ -1294,6 +1295,7 @@ K.extend({ // MARK: K
         delete: function(layer) {
             this.remove(layer);
             this.deleted.push(layer.options.id);
+            K.group.removeLayer(layer);
             this.check();
         },
         check: function() {
@@ -2102,8 +2104,8 @@ K.tool.layer = { // MARK: Layer Tools
             if (p.content || p.list)
                 this.new.bindPopup(p);
 
-            removeLayer(this.join);
-            removeLayer(layer, layer.options.group, true);
+            K.group.removeLayer(this.join);
+            K.group.removeLayer(layer);
             K.group.addLayer(this.new);
 
             this.new.on('click', K.tool.layer.show);
@@ -2417,18 +2419,15 @@ K.tool.layer = { // MARK: Layer Tools
         // add the description of the setting
         object[setting].description && bx.append(`<span class="help">${object[setting].description}</span>`);
 
-        if (setting === 'list') {
-
-            if ($.type(value) != 'object') {
-                layer.popup.list = {};
-                value = {};
-            }
+        // List population functions
+        const resetList = function() {
+            $('.right-bar .list-box').remove();
 
             $('.settings-tools.right-bar').append(
-                `<div class="scroll-box">
+                `<div class="scroll-box list-box">
 				    <div class="section title">
                         <span class="header">TITLE</span><br>
-                        <input type="text" class="settings-item input list" name="list-title" role="input" value="${value.title ? value.title : ''}" setting="list-title" which="popup" placeholder="Title">
+                        <input type="text" class="settings-item input list" name="list-title" role="input" setting="list-title" which="popup" placeholder="Title">
                     </div>
                     <div class="section subs">
                         <a class="add subs button" title="Add another paragraph">+</a>
@@ -2443,15 +2442,10 @@ K.tool.layer = { // MARK: Layer Tools
 				</div>`
             );
 
-            if (!value.subs) value.subs = [{
-                value: '',
-                color: false,
-                note: false,
-                line: false
-            }];
-
+            // reusable elements
             box = $('<div />', {
-                class: 'setting-container'
+                class: 'setting-container clone',
+                num: 0
             });
 
             input = $('<input />', {
@@ -2461,173 +2455,214 @@ K.tool.layer = { // MARK: Layer Tools
             });
 
             toggle = $(`<label class="switch">
-                    <span class="label"></span>
-                    <span class="back"></span>
-                    <input type="checkbox" class="settings-item input list check">
-                    <span class="slider"></span>
-                </label>`);
+                <span class="label"></span>
+                <span class="back"></span>
+                <input type="checkbox" class="settings-item input list check">
+                <span class="slider"></span>
+            </label>`);
 
-            $.each(value.subs, function(i, itm) {
+            // create the list paragraph section
+            let bx = box.clone().addClass('subs').appendTo('.section.subs'),
+                tg;
 
-                let bx = box.clone().appendTo('.section.subs'),
-                    tg;
+            input.clone().attr({
+                name: 'list-sub',
+                num: 0,
+                placeholder: 'Paragraph'
+            }).appendTo(bx);
 
-                let inpt = input.clone().attr({
-                    name: 'list-sub',
-                    value: itm.value,
-                    num: i,
-                    placeholder: 'Paragraph'
-                }).appendTo(bx);
+            $('<br>').appendTo(bx);
 
-                if (itm.color) inpt.addClass('gray');
+            // color button
+            tg = toggle.clone().appendTo(bx);
+            tg.find('input').attr({
+                name: 'list-sub-class',
+                cat: 'color',
+                num: 0
+            });
+            tg.find('.label').text('Color:');
 
-                $('<br>').appendTo(bx);
+            // underline button
+            tg = toggle.clone().appendTo(bx);
+            tg.find('input').attr({
+                name: 'list-sub-class',
+                cat: 'line',
+                num: 0
+            });
+            tg.find('.label').text('Line:');
+            tg.find('.slider').addClass('note');
 
-                // color button
-                tg = toggle.clone().appendTo(bx);
-                tg.find('input').attr({
-                    name: 'list-sub-class',
-                    cat: 'color',
-                    num: i
-                }).prop('checked', itm.color);
-                tg.find('.label').text('Color:');
+            // note button
+            tg = toggle.clone().appendTo(bx);
+            tg.find('input').attr({
+                name: 'list-sub-class',
+                cat: 'note',
+                num: 0
+            });
+            tg.find('.label').text('Note:');
+            tg.find('.slider').addClass('note');
 
-                // underline button
-                tg = toggle.clone().appendTo(bx);
-                tg.find('input').attr({
-                    name: 'list-sub-class',
-                    cat: 'line',
-                    num: i
-                }).prop('checked', itm.line);
-                tg.find('.label').text('Line:');
-                tg.find('.slider').addClass('note');
+            // create the list bullet section
+            bx = box.clone().addClass('list').appendTo('.section.list');
 
-                // note button
-                tg = toggle.clone().appendTo(bx);
-                tg.find('input').attr({
-                    name: 'list-sub-class',
-                    cat: 'note',
-                    num: i
-                }).prop('checked', itm.note);
-                tg.find('.label').text('Note:');
-                tg.find('.slider').addClass('note');
+            input.clone().attr({
+                name: 'list-item',
+                num: 0,
+                placeholder: 'Item'
+            }).autocomplete({
+                source: this.tags,
+                autoFocus: true,
+                appendTo: '#settings-menu'
+            }).appendTo(bx);
 
-                $('<br>').appendTo('.section.subs');
+            input.clone().attr({
+                type: 'number',
+                min: 1,
+                name: 'list-qty',
+                num: 0,
+                placeholder: 'Qty'
+            }).appendTo(bx);
+        };
+        const cloneList = function(identifier) {
+            const clone = $(identifier).clone(),
+                i = +clone.attr('num') + 1;
+            clone.attr('num', i);
+
+            $('input', clone).each(function() {
+                $(this).attr('num', i);
+                if ($(this).attr('type') == 'checkbox')
+                    $(this).prop('checked', false);
+                else
+                    $(this).val('');
             });
 
-            if (!value.list) value.list = [{
-                item: '',
-                qty: ''
-            }];
+            $(identifier).removeClass('clone').parent().append(clone);
 
-            $.each(value.list, function(i, itm) {
+            return clone;
+        };
+        const populateList = function(value) {
+            if (!K.empty(value)) {
+                value.title && $('[setting=list-title]').val(value.title);
 
-                input.clone().attr({
-                    name: 'list-item',
-                    value: itm.item,
-                    num: i,
-                    placeholder: 'Item'
-                }).autocomplete({
-                    source: this.tags,
-                    autoFocus: true,
-                    appendTo: '#settings-menu'
-                }).appendTo('.section.list');
+                K.empty(value.subs) && (value.subs = []);
+                $.each(value.subs, function(i, itm) {
+                    const tag = '.subs.clone';
+                    let clone = $(tag);
+                    if (i) clone = cloneList(tag);
 
-                input.clone().attr({
-                    type: 'number',
-                    min: 1,
-                    name: 'list-qty',
-                    value: itm.qty || 1,
-                    num: i,
-                    placeholder: 'Qty'
-                }).appendTo('.section.list');
+                    $('input[name=list-sub]', clone).val(itm.value);
+                    $('input[cat=color]', clone).prop('checked', itm.color);
+                    $('input[cat=note]', clone).prop('checked', itm.note);
+                    $('input[cat=line]', clone).prop('checked', itm.line);
+                });
 
-                $('<br>').appendTo('.section.list');
+                K.empty(value.list) && (value.list = []);
+                $.each(value.list, function(i, itm) {
+                    const tag = '.list.clone';
+                    let clone = $(tag);
+                    if (i) clone = cloneList(tag);
+
+                    $('input[name=list-item]', clone).val(itm.item);
+                    $('input[name=list-qty]', clone).val(itm.qty);
+                });
+            }
+        };
+
+        // MARK: ^^ Restore Button
+        if (K.user.type > 3 && !K.in(setting, ['mode', 'id', 'link'])) {
+
+            $('.settings-tools.right-bar').append(
+                `<div class="restore-container hide">
+                    <div class="restore-back img"></div>
+                    <span class="restore-text">Current</span>
+                    <div class="restore-forward img"></div>
+                </div>`
+            );
+
+            const rc = $('.restore-container'),
+                rb = $('.restore-back', rc),
+                rf = $('.restore-forward', rc),
+                rt = $('.restore-text', rc);
+
+            let num, items;
+
+            $.ajax({
+                type: 'POST',
+                url: 'includes/get_restore.php',
+                data: {
+                    id: layer.options.id,
+                    setting: setting,
+                    type: isPopup ? 'p' : 'o'
+                }
+            }).done(function(data) {
+                items = $.parseJSON(data);
+
+                $.each(items, function(key, val) {
+                    K.equals(val, value) && delete items[key];
+                });
+
+                if (K.empty(items)) return;
+
+                rc.removeClass('hide');
+                rb.addClass('enabled');
+
+                items.Current = value;
+
+                num = K.length(items) - 1;
             });
 
-            $('a.add').on('click', function() {
-                let focus = false,
-                    name, i, tg;
+            rc.on('click', '.enabled', function() {
 
-                if ($(this).hasClass('subs')) {
+                const key = Object.keys(items)[$(this).hasClass('restore-back') ? --num : ++num],
+                    item = items[key];
 
-                    name = 'input[name="list-sub"]';
-                    i = $(name).length;
-
-                    let bx = box.clone().appendTo('.section.subs');
-
-                    input.clone().attr({
-                        name: 'list-sub',
-                        setting: 'list-sub',
-                        num: i,
-                        placeholder: 'Paragraph'
-                    }).appendTo(bx);
-
-                    $('<br>').appendTo(bx);
-
-                    // color button
-                    tg = toggle.clone().appendTo(bx);
-                    tg.find('input').attr({
-                        name: 'list-sub-class',
-                        cat: 'color',
-                        num: i
-                    });
-                    tg.find('.label').text('Color:');
-
-                    // line button
-                    tg = toggle.clone().appendTo(bx);
-                    tg.find('input').attr({
-                        name: 'list-sub-class',
-                        cat: 'line',
-                        num: i
-                    });
-                    tg.find('.label').text('Line:');
-                    tg.find('.slider').addClass('note');
-
-                    // note button
-                    tg = toggle.clone().appendTo(bx);
-                    tg.find('input').attr({
-                        name: 'list-sub-class',
-                        cat: 'note',
-                        num: i
-                    });
-                    tg.find('.label').text('Note:');
-                    tg.find('.slider').addClass('note');
-
-                    $('<br>').appendTo('.section.subs');
-
+                if (num == 0) {
+                    rb.removeClass('enabled');
+                    rf.addClass('enabled');
+                } else if (num == K.length(items)) {
+                    rf.removeClass('enabled');
+                    rb.addClass('enabled');
                 } else {
-
-                    name = 'input[name="list-item"]';
-                    i = $(name).length;
-
-                    input.clone().attr({
-                        name: 'list-item',
-                        setting: 'list-item',
-                        num: i,
-                        placeholder: 'Item'
-                    }).autocomplete({
-                        source: this.tags,
-                        autoFocus: true,
-                        appendTo: '#settings-menu'
-                    }).appendTo('.section.list');
-
-                    input.clone().attr({
-                        type: 'number',
-                        min: 1,
-                        name: 'list-qty',
-                        setting: 'list-qty',
-                        num: i,
-                        placeholder: 'Qty'
-                    }).appendTo('.section.list');
-
-                    $('<br>').appendTo('.section.list');
-
+                    rf.addClass('enabled');
+                    rb.addClass('enabled');
                 }
 
-                $(name).each(function(i, el) {
-                    if (!$(el).val() && !focus) {
-                        $(el).focus();
+                rt.text(key);
+                if (setting == 'list') {
+                    resetList();
+                    populateList(item);
+
+                    inputRenew();
+                    apply.call($('[name=list-title]'));
+
+                } else if (K.length(values)) {
+                    $(`[aria-label="${item}"]`).trigger('click');
+                } else {
+                    apply.call($('textarea.input').text(item));
+                }
+            });
+        }
+
+        if (setting === 'list') {
+
+            resetList();
+
+            if ($.type(value) != 'object') {
+                layer.popup.list = {};
+                value = {};
+            }
+
+            populateList(value);
+
+            $('.settings-side.right').off('click', '.list-box a.add').on('click', '.list-box a.add', function() {
+                let focus = false,
+                    name = $(this).hasClass('subs') ? '.subs.clone' : '.list.clone';
+
+                cloneList(name);
+
+                $(` ${name.replace('.clone', '')} input[type=text]`).each(function() {
+                    if (!$(this).val() && !focus) {
+                        $(this).focus();
                         focus = true;
                     }
                 });
@@ -2838,7 +2873,7 @@ K.tool.layer = { // MARK: Layer Tools
                 customColors: colors,
                 staticOpen: true
             }).on('change', function() {
-                $('.settings-item.input').trigger('click');
+                $('.settings-item.input').trigger('change');
             });
 
         } else {
@@ -3216,9 +3251,7 @@ K.tool.layer = { // MARK: Layer Tools
     },
 
     _trueDelete: function() {
-
-        let layer = this.layer;
-        removeLayer(layer, this.group, true);
+        this.layer.delete();
     },
 
     _toType: function() { // MARK: ^ To Type
@@ -3380,7 +3413,7 @@ K.tool.layer = { // MARK: Layer Tools
             newLayer.saved(false);
         });
 
-        removeLayer(layer, this.group, true);
+        K.group.removeLayer(layer);
 
         // Save all the hard work
 
@@ -3678,6 +3711,10 @@ L.Layer.include({ // MARK: Layer Include
         if (tool.isOpen()) tool.updateSaved();
 
         return this;
+    },
+
+    delete: function() {
+        K.save.delete(this);
     },
 
     // Copy settings 

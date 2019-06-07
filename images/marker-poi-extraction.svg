@@ -1,1 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" enable-background="new 0 0 64 64"><style type="text/css">.st0{fill:#93581C;} .st1{fill:#C4BC2C;}</style><circle class="st0" cx="32" cy="33.2" r="28.9"/><path class="st1" d="M22.7 33.3h18.7v-12.6h6.3l-15.7-18.8-15.6 18.8h6.3zM22.7 36.4v25.1h18.8v-25.1h-18.8zm15.6 22h-12.6v-18.8h12.6v18.8z"/></svg>
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 21.0.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 64 64" style="enable-background:new 0 0 64 64;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:#93581C;}
+	.st1{fill:#C4BC2C;}
+</style>
+<circle class="st0" cx="32" cy="33.2" r="28.9"/>
+<g>
+	<polygon class="st1" points="22.7,33.3 41.4,33.3 41.4,20.7 47.7,20.7 32,1.9 16.4,20.7 22.7,20.7 	"/>
+	<path class="st1" d="M22.7,36.4v25.1h18.8V36.4H22.7z M38.3,58.4H25.7V39.6h12.6V58.4z"/>
+</g>
+</svg>

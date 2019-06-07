@@ -1496,7 +1496,6 @@ hr {
         width: 33.333%;
         height: 20px;
         top: 0;
-        margin-bottom: -16px;
         background: $background;
         border-right: $border-hmm 1px solid;
         border-bottom: $border-hmm 1px solid;
@@ -1645,6 +1644,48 @@ hr {
                     content: "CURRENT";
                 }
             }
+        }
+    }
+    
+    .restore-container {
+        height: 30px;
+        display: flex;
+        border-bottom: 1px solid $border-hmm;
+        
+        &.hide {
+            display: none;
+        }
+        
+        .img {
+            width: 30px;
+            background-repeat: no-repeat;
+            background-size: 60px 30px;
+            background-position-x: -30px;
+            
+            &.enabled {
+                background-position-x: 0;
+                
+                &:focus,
+                &:hover {
+                    background-color: $background-hover;
+                }
+            }
+        }
+        
+        .restore-back {
+            background-image: url(../images/menu-rewind.svg);
+        }
+        
+        .restore-forward {
+            background-image: url(../images/menu-forward.svg);
+        }
+        
+        .restore-text {
+            flex-grow: 2;
+            line-height: 30px;
+            text-align: center;
+            color: $text;
+            font-size: 12px;
         }
     }
 }

@@ -27,6 +27,8 @@ include_once 'includes/functions.php';
 	<link rel="stylesheet" href="css/huebee.min.css" />
 	<link rel="stylesheet" href="css/leaflet.draw.css" />
 	<link rel="stylesheet" href="css/jquery.qtip.min.css" />
+	<link rel="stylesheet" href="plugin/codemirror/lib/codemirror.css" />
+	<link rel="stylesheet" href="plugin/codemirror/theme/onedarkpro.css" />
 
 	<script src="https://code.jquery.com/jquery-3.4.1.js" integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU=" crossorigin="anonymous"></script>
 	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script>
@@ -42,6 +44,16 @@ include_once 'includes/functions.php';
 	<script src="js/Utility/huebee.pkgd.min.js?v=1.0.3"></script>
 	<script src="js/Utility/tinysort.js?v=1.0.3"></script>
 	<script src="js/Utility/jquery.selectric.js?v=1.0.3"></script>
+
+	<script src="plugin/codemirror/lib/codemirror.js?v=1.0.3"></script>
+	<script src="plugin/codemirror/mode/htmlmixed/htmlmixed.js?v=1.0.3"></script>
+	<script src="plugin/codemirror/mode/javascript/javascript.js?v=1.0.3"></script>
+	<script src="plugin/codemirror/mode/css/css.js?v=1.0.3"></script>
+	<script src="plugin/codemirror/mode/xml/xml.js?v=1.0.3"></script>
+	<script src="plugin/codemirror/addon/edit/closebrackets.js?v=1.0.3"></script>
+	<script src="plugin/codemirror/addon/fold/xml-fold.js?v=1.0.3"></script>
+	<script src="plugin/codemirror/addon/edit/closetag.js?v=1.0.3"></script>
+	<script src="plugin/codemirror/addon/comment/comment.js?v=1.0.3"></script>
 
 	<script src="js/Leaflet/Draw/Leaflet.draw.js?v=1.0.3"></script>
 	<script src="js/Leaflet/Draw/Leaflet.Draw.Event.js?v=1.0.3"></script>

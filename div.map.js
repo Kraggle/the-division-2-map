@@ -2148,7 +2148,8 @@ K.tool.layer = { // MARK: Layer Tools
                     transform: 'translate(0, 0)'
                 });
                 K.local('menuPos', this.position);
-            }
+            },
+            handle: '.settings-title'
         });
 
         this.position = K.local('menuPos') || false;
@@ -2331,7 +2332,7 @@ K.tool.layer = { // MARK: Layer Tools
             isPopup = this.isPopup,
             object = K.settings[isPopup ? 'popup' : 'main'],
             values = [],
-            box, toggle, input;
+            box, toggle, input, editor;
 
         if (!setting) return;
 
@@ -2347,7 +2348,7 @@ K.tool.layer = { // MARK: Layer Tools
 
         // Fill the right menu with the title and apply button
         $('.settings-side.right').html(
-            `<div class="settings-tools right-bar" aria-label="' + setting + '">
+            `<div class="settings-tools right-bar" aria-label="${setting}">
 			    <span class="settings-title">${isPopup ? 'POPUP ' : ''}${setting.space().toUpperCase()}</span>
             </div>`
         );
@@ -2355,9 +2356,9 @@ K.tool.layer = { // MARK: Layer Tools
         if (!K.has(setting, ['id'])) {
 
             $('.right .settings-title').after(`<a class="settings icon copy inline" title="Copy this setting" 
-                setting="' + setting + '" which="${isPopup ? 'popup' : 'icon'}"></a>`);
+                setting="${setting}" which="${isPopup ? 'popup' : 'icon'}"></a>`);
             $('.right .settings-title').after(`<a class="settings icon paste inline" title="Paste this setting" 
-                setting="' + setting + '" which="${isPopup ? 'popup' : 'icon'}"></a>`);
+                setting="${setting}" which="${isPopup ? 'popup' : 'icon'}"></a>`);
 
             $('.settings.copy.inline').on('click', function() {
                 self._copySingle();
@@ -2413,11 +2414,37 @@ K.tool.layer = { // MARK: Layer Tools
                     self._settingClick();
                     apply();
                 }
+
+                setContentHeight();
             });
         }
 
         // add the description of the setting
         object[setting].description && bx.append(`<span class="help">${object[setting].description}</span>`);
+
+        const setContentHeight = function() {
+            const right = $('.settings-side .right-bar');
+            let adjust, height = 0,
+                max = 8;
+
+            $('.settings-side.left .settings-tools:not(.buttons)').each(function() {
+                max += $(this).outerHeight();
+            });
+
+            $('> div:not(.scroll-box):not(.CodeMirror-wrap):visible, > span, > input', right).each(function() {
+                height += $(this).outerHeight();
+            });
+
+            if ((adjust = $('.scroll-box', right)).length) {
+                adjust.css('max-height', (max - height) + 'px');
+
+            } else if ((adjust = $('.CodeMirror-wrap', right)).length) {
+                adjust.css('height', (max - height) + 'px')
+
+            } else if ((adjust = $('textarea', right)).length) {
+                adjust.css('height', (max - height) + 'px')
+            }
+        };
 
         // List population functions
         const resetList = function() {
@@ -2523,6 +2550,7 @@ K.tool.layer = { // MARK: Layer Tools
                 placeholder: 'Qty'
             }).appendTo(bx);
         };
+
         const cloneList = function(identifier) {
             const clone = $(identifier).clone(),
                 i = +clone.attr('num') + 1;
@@ -2540,6 +2568,7 @@ K.tool.layer = { // MARK: Layer Tools
 
             return clone;
         };
+
         const populateList = function(value) {
             if (!K.empty(value)) {
                 value.title && $('[setting=list-title]').val(value.title);
@@ -2609,6 +2638,8 @@ K.tool.layer = { // MARK: Layer Tools
                 items.Current = value;
 
                 num = K.length(items) - 1;
+
+                setContentHeight();
             });
 
             rc.on('click', '.enabled', function() {
@@ -2639,6 +2670,7 @@ K.tool.layer = { // MARK: Layer Tools
                     $(`[aria-label="${item}"]`).trigger('click');
                 } else {
                     apply.call($('textarea.input').text(item));
+                    editor && editor.setValue(item);
                 }
             });
         }
@@ -2878,6 +2910,26 @@ K.tool.layer = { // MARK: Layer Tools
 
         } else {
             bx.append(`<textarea type="text" rows=2 cols=20 wrap="hard" class="settings-item input ${setting}" name="${setting}" setting="${setting}" which="${isPopup ? 'popup' : 'icon'}"${setting == 'id' ? ' readonly' : ''}>${value ? value : ''}</textarea>`);
+
+            if (K.in(setting, ['html', 'content'])) {
+                bx.parent().addClass('code');
+
+                editor = CodeMirror.fromTextArea($(`textarea.${setting}`)[0], {
+                    lineNumbers: true,
+                    mode: 'htmlmixed',
+                    indentUnit: 4,
+                    theme: 'one-dark',
+                    indentWithTabs: true,
+                    showCursorWhenSelecting: true,
+                    autoCloseBrackets: true,
+                    autoCloseTags: true,
+                    lineWrapping: true
+                });
+
+                editor.on('change', function() {
+                    $('textarea.input').text(editor.getValue()).trigger('input');
+                })
+            }
         }
 
         const apply = function() {
@@ -3034,6 +3086,7 @@ K.tool.layer = { // MARK: Layer Tools
         }
 
         inputRenew();
+        setContentHeight();
 
         $('.inline.icon[title!=""]').qtip({
             position: {
@@ -3769,7 +3822,7 @@ $(function() { // MARK: Document Loaded
             [15, -15],
             [-15, 15]
         ], {
-            attribution: '<a title="Tom Clancy\'s The Division 2" href="https:// tomclancy-thedivision.ubisoft.com/">The Division 2</a>',
+            attribution: `<a title="Tom Clancy's The Division 2" href="https://tomclancy-thedivision.ubisoft.com/">The Division 2</a>`,
             pane: 'mapPane'
         }).addTo(K.myMap);
 
@@ -4944,7 +4997,9 @@ function pageLoad() { // MARK: Page Load
                                 populateMap(feature, id);
                             });
 
-                        }).done(function() { populateMenus(); });
+                        }).done(function() {
+                            populateMenus();
+                        });
                     });
                 });
             });
@@ -5764,12 +5819,14 @@ function createGeoJSON() { // MARK: Create GeoJSON
 
     K.checkLogin(() => {
 
+        const development = false;
+
         if (K.backup != K.user.name) {
             alert('I\'m sorry but your account information is incorrect, you cannot save your changes! Please log in and try again!');
             return;
         }
 
-        K.msg.show({
+        !development && K.msg.show({
             msg: 'SAVING...',
             dots: true
         });
@@ -5854,7 +5911,7 @@ function createGeoJSON() { // MARK: Create GeoJSON
             !K.empty(sets) && (feature.o = sets);
 
             // grab the popup if it is different from the original
-            if (layer.popup && layer.popup.content) {
+            if (layer.popup && layer.popup.content || !K.empty(layer.popup.list)) {
 
                 const p = layer.popup;
                 const sv = K.layer[type] ? K.layer[type].p : {};
@@ -5881,7 +5938,7 @@ function createGeoJSON() { // MARK: Create GeoJSON
 
         console.log('saved data...', geoData);
         // console.log(JSON.stringify(geoData));
-        // return;
+        if (development) return;
         // Save this all to a file
         $.ajax({
             type: 'POST',

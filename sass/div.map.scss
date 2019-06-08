@@ -80,7 +80,7 @@ $font-5: Helvetica;
 ///
 @mixin responsive-font($responsive, $min, $max: false, $fallback: false) {
     $responsive-unitless: $responsive / ($responsive - $responsive + 1);
-    $dimension: if(unit($responsive) == "vh", "height", "width");
+    $dimension: if(unit($responsive)=="vh", "height", "width");
     $min-breakpoint: $min / $responsive-unitless * 100;
 
     @media (max-#{$dimension}: #{$min-breakpoint}) {
@@ -558,7 +558,7 @@ hr {
         width: max-content;
 
         // width: auto !important;
-   
+
     }
 }
 
@@ -600,7 +600,7 @@ hr {
             color: $gray;
 
             // padding-left: 6px;
-       
+
         }
 
         &.note {
@@ -713,8 +713,8 @@ hr {
     &.group-switch {
         margin-top: 2px;
         max-height: 65%;
-        
-        span { 
+
+        span {
             border-bottom: 1px solid $border-hmm;
             box-sizing: border-box;
             color: $text;
@@ -722,7 +722,7 @@ hr {
             padding: 0 15px;
             line-height: 30px;
         }
-        
+
         a {
             border-bottom: 1px solid $border-hmm;
             box-sizing: border-box;
@@ -1023,6 +1023,7 @@ hr {
 .z7 {
     .group08 {
         &.anim-icon {
+
             span,
             img {
                 transform: scale(0);
@@ -1065,6 +1066,7 @@ hr {
         }
 
         &.anim-icon {
+
             span,
             img {
                 transform: scale(0);
@@ -1257,7 +1259,7 @@ hr {
 
     .scroll-box {
         max-height: 410px;
-        min-width: 200px;
+        // min-width: 200px;
         margin: 0;
         overflow-y: scroll;
 
@@ -1288,11 +1290,7 @@ hr {
         outline-width: 0;
         text-align: left;
         white-space: nowrap;
-        width: calc(100% + 2px);
         transition: .4s color ease;
-        left: -1px;
-        top: -1px;
-        margin-bottom: -2px;
 
         &.gray {
             color: $gray;
@@ -1308,6 +1306,11 @@ hr {
         height: 400px;
         resize: none;
         overflow: hidden;
+    }
+
+    .right {
+        position: relative;
+        width: 200px;
     }
 
     .settings-icons {
@@ -1358,7 +1361,7 @@ hr {
         position: relative;
         margin: 0;
 
-        > span {
+        >span {
             display: inline-block;
             width: 100%;
         }
@@ -1396,7 +1399,6 @@ hr {
 
     .help {
         white-space: pre-line;
-        max-width: 200px;
         background-color: $background;
         color: $text;
         text-align: left;
@@ -1470,7 +1472,7 @@ hr {
             flex-wrap: initial;
 
             input {
-                width: 133px;
+                width: 120px;
             }
 
             a {
@@ -1513,7 +1515,7 @@ hr {
 
     span.slider {
         cursor: pointer;
-        transition: .4s;
+        transition: .4s all ease;
         height: initial;
 
         &::before {
@@ -1524,7 +1526,7 @@ hr {
             right: 11px;
             bottom: 4px;
             background-color: $text;
-            transition: .4s;
+            transition: .4s all ease;
             font-size: 5pt;
             line-height: 12px;
         }
@@ -1538,7 +1540,7 @@ hr {
         }
     }
 
-    input:checked + .slider {
+    input:checked+.slider {
         &::before {
             background-color: $gray;
             transform: translateX(8px);
@@ -1558,6 +1560,7 @@ hr {
         flex-flow: row-reverse;
         justify-content: flex-end;
         border-bottom: 1px solid $border-hmm;
+        transition: .4s all ease;
 
         .name {
             color: $text;
@@ -1596,7 +1599,7 @@ hr {
             }
         }
 
-        input:checked + .slider {
+        input:checked+.slider {
             &::before {
                 background-color: $power-green;
                 transform: translateX(13px);
@@ -1607,7 +1610,6 @@ hr {
         &.edit {
             flex-flow: row wrap;
             justify-content: flex-start;
-            max-width: 200px;
             background: repeating-linear-gradient(45deg, $background, $background 10px, $background-hover 10px, $background-hover 20px);
 
             .help {
@@ -1627,7 +1629,7 @@ hr {
 
             .slider {
                 &::before {
-                    right: 34px;
+                    right: 22px;
                     width: 50px;
                     content: "ALL";
                     background-color: $power-red;
@@ -1637,49 +1639,49 @@ hr {
                 }
             }
 
-            input:checked + .slider {
+            input:checked+.slider {
                 &::before {
                     background-color: $power-green;
-                    transform: translateX(28px);
+                    transform: translateX(16px);
                     content: "CURRENT";
                 }
             }
         }
     }
-    
+
     .restore-container {
         height: 30px;
         display: flex;
         border-bottom: 1px solid $border-hmm;
-        
+
         &.hide {
             display: none;
         }
-        
+
         .img {
             width: 30px;
             background-repeat: no-repeat;
             background-size: 60px 30px;
             background-position-x: -30px;
-            
+
             &.enabled {
                 background-position-x: 0;
-                
+
                 &:focus,
                 &:hover {
                     background-color: $background-hover;
                 }
             }
         }
-        
+
         .restore-back {
             background-image: url(../images/menu-rewind.svg);
         }
-        
+
         .restore-forward {
             background-image: url(../images/menu-forward.svg);
         }
-        
+
         .restore-text {
             flex-grow: 2;
             line-height: 30px;
@@ -1687,6 +1689,31 @@ hr {
             color: $text;
             font-size: 12px;
         }
+    }
+
+    .code {
+        width: 250px;
+
+        .edit {
+            .slider::before {
+                width: 70px;
+                right: 52px;
+            }
+
+            input:checked+.slider::before {
+                transform: translateX(46px);
+            }
+        }
+    }
+
+    .CodeMirror-wrap {
+        background-color: transparent;
+        box-shadow: inset 0 0 15px 2px $box-shadow;
+    }
+
+    .CodeMirror-gutters {
+        background-color: transparent;
+        border-right: 1px solid darken($background, 5%);
     }
 }
 
@@ -1903,6 +1930,7 @@ hr {
     }
 
     div {
+
         &.login,
         &.todo,
         &.changes {
@@ -1952,18 +1980,18 @@ hr {
     }
 
     &.active {
-        &.filters > * {
+        &.filters>* {
             transform: translateX(-212px);
         }
 
-        &.shorts > *,
-        &.language > * {
+        &.shorts>*,
+        &.language>* {
             transform: translateX(-172px);
         }
 
-        &.login > *,
-        &.todo > *,
-        &.changes > * {
+        &.login>*,
+        &.todo>*,
+        &.changes>* {
             @media (max-width: 346px) {
                 transform: translateX(calc(-100vw + 38px));
             }
@@ -1971,7 +1999,7 @@ hr {
             transform: translateX(-302px);
         }
 
-        &.gear > * {
+        &.gear>* {
             @media (max-width: 500px) {
                 transform: translateX(calc(-100vw + 38px));
             }
@@ -1987,7 +2015,7 @@ hr {
     .item {
         padding: 3px 0;
 
-        > div {
+        >div {
             display: inline-block;
             width: 20px;
             text-align: center;
@@ -2547,7 +2575,7 @@ input {
 
         .check {
             // flex-grow: 1;
-       
+
         }
 
         label,
@@ -2621,7 +2649,7 @@ input {
 
         .checks {
             // top: -12px;
-       
+
         }
     }
 }
@@ -2681,9 +2709,10 @@ input {
 
         .hover-icon,
         .anim-icon {
-            &:hover >,
-            &:focus >,
-            &:active > {
+
+            &:hover>,
+            &:focus>,
+            &:active> {
                 .icon {
                     transform: scale(1.4);
                 }
@@ -2849,6 +2878,7 @@ input {
 
 .leaflet-marker-icon {
     &.underground {
+
         // margin-top: 0px !important;
         &::before {
             position: absolute;
@@ -2864,6 +2894,7 @@ input {
     }
 
     &.overground {
+
         // margin-top: -20px !important;
         &::before {
             position: absolute;
@@ -3142,7 +3173,7 @@ path {
         &.inputs {
             min-width: 95px;
 
-            > div {
+            >div {
                 position: absolute;
                 top: 50%;
                 transform: translateY(-50%);
@@ -3585,38 +3616,18 @@ $blank: rgb(36, 55, 61);
     }
 }
 
-.huebee {
-    position: absolute;
-    z-index: 1;
-    transform: translateY(0);
-    transition: opacity 0.15s, transform 0.15s;
-}
-
-.huebee__canvas {
-    display: block;
-    cursor: pointer;
-}
-
 .huebee__container {
-    position: absolute;
-    left: 0;
-    top: 5px;
-    padding: 10px;
-    background: $background;
-    border-radius: 0 0 4px 4px;
+    padding: 10px 13px;
+    background: transparent;
+    border-radius: 0;
     box-shadow: none;
-    border: solid $border 1px;
-    border-top: 0;
 }
 
 $white: #fff;
 
 .huebee__cursor {
-    width: 10px;
-    height: 10px;
-    position: absolute;
-    left: 0;
-    top: 0;
+    width: 9px;
+    height: 9px;
     box-sizing: content-box;
     border: 3px solid $white;
     border-radius: 5px;
@@ -3678,194 +3689,6 @@ $white: #fff;
         left: 50%;
         transform: translateX(-50%);
         cursor: pointer;
-    }
-}
-
-#translate {
-    display: none;
-    border-radius: 10px 0;
-    min-height: 250px;
-    overflow: hidden;
-    max-height: 90vh;
-
-    .title {
-        display: block;
-        font-size: 20px;
-        text-align: center;
-        margin-bottom: 10px;
-    }
-
-    .sub-title {
-        font-size: 14px;
-        margin-bottom: 5px;
-        display: block;
-        text-align: center;
-    }
-
-    .bounds {
-        margin-top: 10px;
-        display: flex;
-        margin-bottom: 20px;
-    }
-
-    .list {
-        border-right: 2px solid $border;
-        width: 30%;
-        margin-right: 10px;
-        padding-right: 0;
-        height: 78vh;
-        overflow: auto;
-
-        ul,
-        li {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-    }
-
-    .local-button {
-        display: block;
-        height: 25px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        line-height: 25px;
-        padding-left: 5px !important;
-        cursor: pointer;
-
-        &:hover {
-            color: $orange-roughy;
-            background: $background-hover-50;
-        }
-
-        &.active {
-            color: $orange;
-            background: $background-hover;
-        }
-
-        &.got {
-            color: $gray;
-        }
-    }
-
-    .right-box {
-        width: 70%;
-
-        li {
-            margin-bottom: 7px;
-        }
-    }
-
-    div {
-        &.default {
-            display: none;
-        }
-    }
-
-    .other {
-        display: none;
-        border-top: 2px solid $border;
-        margin-top: 10px;
-        padding-top: 10px;
-    }
-
-    .name {
-        position: absolute;
-        font-size: 11px;
-        top: 15px;
-        right: 25px;
-
-        span {
-            color: $orange;
-            font-size: 11px;
-        }
-    }
-
-    .english {
-        white-space: pre-wrap;
-    }
-
-    textarea {
-        background-color: $background;
-        border: 1px solid $border;
-        box-shadow: inset 0 0 15px 2px $box-shadow;
-        box-sizing: border-box;
-        color: $text;
-        font-size: 13px;
-        height: 150px;
-        line-height: normal;
-        outline-width: 0;
-        overflow: hidden;
-        padding: 5px 10px;
-        resize: none;
-        text-align: left;
-        white-space: pre-wrap;
-        width: 100%;
-        word-wrap: break-word;
-    }
-
-    .contribute {
-        position: absolute;
-        right: 50px;
-        transform: translateY(-27px);
-        font-size: 11px;
-        text-align: right;
-
-        .user {
-            color: $orange;
-        }
-    }
-
-    .close {
-        position: absolute;
-        font-size: 10px;
-        bottom: 15px;
-        right: 20px;
-        cursor: pointer;
-
-        &:hover {
-            color: $orange;
-        }
-    }
-
-    .check {
-        cursor: pointer;
-        position: absolute;
-        top: 50px;
-        left: 425px;
-
-        a {
-            background-image: url(../images/set-checkbox.svg);
-            width: 30px;
-            height: 30px;
-            position: absolute;
-            background-size: 60px 30px;
-            margin: -10px -25px;
-
-            &.checked {
-                background-position-x: 30px;
-            }
-        }
-
-        &:hover {
-            color: $orange;
-        }
-    }
-
-    .display {
-        position: absolute;
-        top: 45px;
-        left: 300px;
-
-        .number {
-            font-size: 20px;
-        }
-
-        .percent {
-            position: relative;
-            top: -2px;
-        }
     }
 }
 
@@ -3969,7 +3792,9 @@ $selectric-font-size: 14px; // Font size
         color: $selectric-secondary-color;
         text-align: center;
         font: 0/0 a;
-        *font: 20px /#{$selectric-inner-height} Lucida Sans Unicode, Arial Unicode MS, Arial;
+        *font: 20px /#{$selectric-inner-height} Lucida Sans Unicode,
+        Arial Unicode MS,
+        Arial;
 
         &::after {
             content: ' ';
@@ -4017,7 +3842,7 @@ $selectric-font-size: 14px; // Font size
 }
 
 .selectric-disabled {
-    filter: alpha(opacity = 50);
+    filter: alpha(opacity=50);
     opacity: 0.5;
     cursor: default;
     user-select: none;
@@ -4131,7 +3956,7 @@ $selectric-font-size: 14px; // Font size
     }
 
     .disabled {
-        filter: alpha(opacity = 50);
+        filter: alpha(opacity=50);
         opacity: 0.5;
         cursor: default !important;
         background: none !important;
@@ -4150,7 +3975,7 @@ $selectric-font-size: 14px; // Font size
         }
 
         &.disabled li {
-            filter: alpha(opacity = 100);
+            filter: alpha(opacity=100);
             opacity: 1;
         }
 

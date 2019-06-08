@@ -1,7 +1,7 @@
 <? ?>
 <span class="title">Change Log</span>
 
-<span class="sub title date">05<sup>th</sup> <span class="dnt">June</span> 2019</span>
+<span class="sub title date">5<sup>th</sup> <span class="dnt">June</span> 2019</span>
 <ul>
 	<li class="dnt">Copy and paste functionality is working better than ever.</li>
 	<li class="dnt">Added Modes to both layers and the map for implementing World Tier changes.</li>

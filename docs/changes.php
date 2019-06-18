@@ -1,6 +1,17 @@
 <? ?>
 <span class="title">Change Log</span>
 
+<span class="sub title date">18<sup>th</sup> <span class="dnt">June</span> 2019</span>
+<ul>
+	<li class="dnt">Updated the marker panel to display the icons in a more stylish manner.</li>
+	<li class="dnt">Fixed the editable layers panel that wasn't displaying correctly.</li>
+	<li class="dnt">Fixed icons not deleting when using editable layers.</li>
+	<li class="dnt">You can now delete all editable layers.</li>
+	<li class="dnt">Editable layers now clears when the page is reloaded, as it caused page load to increase dramatically.</li>
+	<li class="dnt">Main and Side Missions are now grouped together in filters, respectively.</li>
+	<li class="dnt">Added 'World Tier I' changes to missions.</li>
+</ul>
+
 <span class="sub title date">5<sup>th</sup> <span class="dnt">June</span> 2019</span>
 <ul>
 	<li class="dnt">Copy and paste functionality is working better than ever.</li>

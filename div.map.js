@@ -1,4 +1,4 @@
-K.currentUpdate = '05/06/2019';
+K.currentUpdate = '18/06/2019';
 K.iconVersion = '1';
 K.modes = {
     get: [
@@ -11,6 +11,15 @@ K.modes = {
     ]
 };
 K.keepPopupsOpen = false;
+K.icons = {
+    'Steel': 'images/marker-crate-materials-steel.svg',
+    'Ceramics': 'images/marker-crate-materials-ceramic.svg',
+    'Polycarbonate': 'images/marker-crate-materials-polycarb.svg',
+    'Carbon Fibre': 'images/marker-crate-materials-carbon.svg',
+    'Electronics': 'images/marker-crate-materials-electro.svg',
+    'Titanium': 'images/marker-crate-materials-titanium.svg',
+    'Trinket': 'images/marker-crate-trinkets.svg'
+};
 
 /*========================================
 =            LEAFLET INCLUDES            =
@@ -98,22 +107,22 @@ L.Draw.Feature.include({
 });
 
 // Included to remove the clear all option from Leaflet.Draw
-L.EditToolbar.include({
+// L.EditToolbar.include({
 
-    getActions: function() {
-        return [{
-            title: L.drawLocal.edit.toolbar.actions.save.title,
-            text: L.drawLocal.edit.toolbar.actions.save.text,
-            callback: this._save,
-            context: this
-        }, {
-            title: L.drawLocal.edit.toolbar.actions.cancel.title,
-            text: L.drawLocal.edit.toolbar.actions.cancel.text,
-            callback: this.disable,
-            context: this
-        }];
-    }
-});
+//     getActions: function() {
+//         return [{
+//             title: L.drawLocal.edit.toolbar.actions.save.title,
+//             text: L.drawLocal.edit.toolbar.actions.save.text,
+//             callback: this._save,
+//             context: this
+//         }, {
+//             title: L.drawLocal.edit.toolbar.actions.cancel.title,
+//             text: L.drawLocal.edit.toolbar.actions.cancel.text,
+//             callback: this.disable,
+//             context: this
+//         }];
+//     }
+// });
 
 // Included to be able to disable the Leaflet.Draw delete button
 L.EditToolbar.Delete.include({
@@ -246,7 +255,7 @@ L.Map.include({
             return this;
         }
 
-        if (popup.options.className.contains('poly-info')) {
+        if (popup.options.type != 'marker') {
 
             if (this._detail && this._detail.options.autoClose) {
                 this.closeDetail();
@@ -338,18 +347,18 @@ L.Layer.include({
         }
 
         this.popup = options;
-        const cn = this.getSetting('className', true);
         content = this.getSetting('content', true);
 
         let o = {
-            className: cn,
-            pane: (cn || '').contains('poly-info') ? 'messagePane' : 'popupPane',
+            className: this.getSetting('className', true),
+            pane: this.options.shape == 'marker' ? 'popupPane' : 'messagePane',
             list: this.getSetting('list', true) || {},
             offset: L.point(-24, 42),
             closeButton: false,
             autoPan: false,
             minWidth: 15,
-            maxWidth: 300
+            maxWidth: 300,
+            type: this.options.shape
         };
 
         if (!content && o.list.title)
@@ -382,7 +391,7 @@ L.Layer.include({
             });
 
             this.on('mouseover click focus', this._openPopup);
-            !K.keepPopupsOpen && !cn.contains('poly-info') && this.on('mouseout blur', this.closePopup);
+            !K.keepPopupsOpen && this.options.shape == 'marker' && this.on('mouseout blur', this.closePopup);
 
             this._popupHandlersAdded = true;
         }
@@ -416,14 +425,9 @@ L.Layer.include({
 
                 if (!v) return true;
 
-                let n = (v.item || '').replace(/ /g, '');
-                $.each(K.tool.marker.layers, function(j, w) {
-                    if (w[n])
-                        mark = w[n];
-                });
-
-                img = `<img${mark ? ` src="${mark.properties.iconUrl}"` : ''}>`;
-                html += `<li>${img}<span>${v.item}</span><span class="qty">'${v.qty > 1 ? '(x' + v.qty + ')' : ''}</span></li>`;
+                mark = K.icons[v.item];
+                img = `<img${mark ? ` src="${mark}"` : ''}>`;
+                html += `<li>${img}<span>${v.item}</span><span class="qty">${v.qty > 1 ? '(x' + v.qty + ')' : ''}</span></li>`;
             });
             html += '</ul>';
         }
@@ -633,6 +637,7 @@ L.Marker.include({
         }
 
         this._latlng = L.latLng(latlng);
+        this.updateIcon();
     },
 
     updateIcon: function(options = {}) {
@@ -647,7 +652,8 @@ L.Marker.include({
             html: !i ? this.getSetting('html') : '',
             className: this.getSetting('className'),
             done: K.complete.is(this),
-            time: K.complete.time(this)
+            time: K.complete.time(this),
+            layer: this
         }, options));
 
         if (this._map) {
@@ -684,10 +690,10 @@ L.DivIcon.include({ // MARK: L.DivIcon {extended}
         const o = this.options;
 
         return `${K.getSetting(o, 'className').contains('anim-icon') ? `<img class="halo" src="images/_a.svg">` : ''} 
-                <img src="${K.getSetting(o, 'iconUrl') || ''}" class="icon">
-                ${o.done && !o.time ? '<img src="images/complete.svg" class="done">' : ''}
-                ${o.done && o.time ? `<span class="time">${o.time}</span>` : ''}
-                ${K.svg.dot}`.replace(/ {2,}/g, ' ');
+            <img src="${K.getSetting(o, 'iconUrl') || ''}" class="icon">
+            ${o.done && !o.time ? '<img src="images/complete.svg" class="done">' : ''}
+            ${o.done && o.time ? `<span class="time">${o.time}</span>` : ''}
+            ${K.svg.dot}`.replace(/ {2,}/g, ' ');
     }
 });
 
@@ -695,18 +701,17 @@ L.Icon.include({
 
     _setIconStyles: function(img, name) {
         const o = this.options,
-            m = K.in('mode', o) && K.in('o', o.mode[K.mode]) ? o.mode[K.mode].o : false,
+            l = o.layer,
             iz = `${name}Size`,
             cn = 'className';
 
-        let s = K.in(iz, m) ? m[iz] : o[iz];
-        typeof s === 'number' && (s = [s, s]);
+        let s = l.getSetting(iz);
+        $.type(s) === 'number' && (s = [s, s]);
 
         let size = L.point(s),
-            anchor = L.point(name === 'shadow' && o.shadowAnchor || o.iconAnchor ||
-                size && size.divideBy(2, true));
+            anchor = L.point(name === 'shadow' && o.shadowAnchor || o.iconAnchor || size && size.divideBy(2, true));
 
-        img.className = `leaflet-marker-${name} ${(K.in(cn, m) ? m[cn] : o[cn]) || ''}`;
+        img.className = `leaflet-marker-${name} ${l.getSetting(cn) || ''} ${l.getSetting(cn, true) || ''} ${l.getSetting('group', ) || ''}`;
 
         if (anchor) {
             img.style.marginLeft = (-anchor.x) + 'px';
@@ -1056,26 +1061,27 @@ K.extend({ // MARK: K
         layers: [],
         add: function(layer) {
             let add = true;
-            $.each(K.complete.layers, function(i, l) {
+            $.each(this.layers, function(i, l) {
                 if (layer.options.id === l.options.id) add = false;
             });
-            add && K.complete.layers.push(layer);
+            add && this.layers.push(layer);
 
             if (!K.timed.interval) K.timed.action();
         },
         remove: function(id) {
             let index = false;
-            for (let i = 0; i < K.complete.layers.length; i++) {
-                const v = K.complete.layers[i];
+            for (let i = 0; i < this.layers.length; i++) {
+                const v = this.layers[i];
                 if (id === v.options.id) {
                     index = i;
                     break;
                 }
             }
 
-            if ($.type(index) === 'number') K.complete.layers.splice(index, 1);
+            if ($.type(index) === 'number') this.layers.splice(index, 1);
         },
         is: function(layer) {
+            if (!layer.options.complete) return false;
             let uD = K.user.data,
                 id = layer.options.id;
             if (!uD && !K.in('complete', K.local())) K.local('complete', {});
@@ -1083,7 +1089,7 @@ K.extend({ // MARK: K
             return K.in(id, K.local('complete'));
         },
         time: function(layer) {
-            if (!K.complete.is(layer)) return false;
+            if (!this.is(layer)) return false;
             let uD = K.user.data,
                 id = layer.options.id,
                 time = uD ? uD[id] : K.local('complete')[id];
@@ -1096,7 +1102,7 @@ K.extend({ // MARK: K
                     min = Math.ceil((gap % (1000 * 60 * 60)) / (1000 * 60));
 
                 if (gap < 0) {
-                    K.complete.set(false, layer);
+                    this.set(false, layer);
                     time = false;
                 } else if (hrs) time = hrs + 'h';
                 else if (min) time = min + 'm';
@@ -1106,7 +1112,7 @@ K.extend({ // MARK: K
             return time;
         },
         toggle: function(layer) {
-            return K.complete.set(!layer.complete, layer);
+            return this.set(!layer.complete, layer);
         },
         set: function(done, layer) {
 
@@ -1118,18 +1124,18 @@ K.extend({ // MARK: K
 
             if (done) {
                 obj[id] = time ? new Date().addHours(time).toString() : true;
-                K.complete.add(layer);
+                this.add(layer);
             } else {
                 delete obj[id];
-                K.complete.remove(layer.options.id);
+                this.remove(layer.options.id);
             }
 
             layer.complete = done;
 
             !uD && K.local('complete', obj);
             if (uD) {
-                if (K.complete.timeout) clearTimeout(K.complete.timeout);
-                K.complete.timeout = setTimeout(() => {
+                if (this.timeout) clearTimeout(this.timeout);
+                this.timeout = setTimeout(() => {
                     $.ajax({
                         type: "POST",
                         url: 'includes/write_complete.php',
@@ -1308,7 +1314,7 @@ K.extend({ // MARK: K
     },
 
     map: {
-        active: K.local('activeMap') || [],
+        active: [],
         group: {
             everyLayer: [],
             groupAll: [],
@@ -1660,10 +1666,7 @@ K.extend({ // MARK: K
         attributionControl: true
     }),
 
-    popupContent: {
-        $rucksack: "<span class='title'>Rucksack</span><p>Could contain...</p><ul><li><img src='images/crate-clothing.svg'><span>Clothing</span><span class='qty'></span></li><li><img src='images/crate-food.svg'><span>Food</span><span class='qty'></span></li><li><img src='images/crate-drink.svg'><span>Drink</span><span class='qty'></span></li></ul>",
-        $crateElite: "<span class='title'>Elite Crate</span><p>Contains a combination of...</p><ul><li><img src='images/crate-gear.svg'><span>Gear</span><span class='qty'></span></li><li><img src='images/crate-weapons.svg'><span>Weapon</span><span class='qty'></span></li><li><img src='images/crate-clothing.svg'><span>Clothing</span><span class='qty'></span></li><li><img src='images/crate-medication.svg'><span>Medication</span><span class='qty'></span></li><li><img src='images/crate-medkit.svg'><span>Medkit</span><span class='qty'></span></li><li><img src='images/crate-food.svg'><span>Food</span><span class='qty'></span></li><li><img src='images/crate-drink.svg'><span>Drink</span><span class='qty'></span></li></ul>"
-    },
+    popupContent: {},
 
     shortcuts: {
         Draw: {
@@ -1878,17 +1881,23 @@ K.tool.marker = { // MARK: Marker Tools
             return;
         }
 
-        $('body').append('<div id="marker-tools"></div>');
+        $('body').append('<div id="marker-tools" class="marker-panel"></div>');
         tools = $('#marker-tools');
         tools.append(
-            '<div class="outer inputs">\
-			<div>\
-			<input id="_1" type="radio" name="radio" value="" checked><label for="_1">Z - Ground</label></br>\
-			<input id="_2" type="radio" name="radio" value="underground"><label for="_2">X - Subway</label></br>\
-			<input id="_3" type="radio" name="radio" value="overground"><label for="_3">C - Roof</label></br>\
-			</div>\
-			</div>\
-			<div class="outer icons"></div>'
+            `<div class="outer inputs">
+                <div class="switch">
+                    <input name="switch" id="_2" type="radio" name="radio" value="underground">
+                    <label for="_2" class="label down" title="Underground">Below</label>
+                    <input name="switch" id="_1" type="radio" name="radio" value="" checked>
+                    <label for="_1" class="label level" title="Ground Level">Ground</label>
+                    <input name="switch" id="_3" type="radio" name="radio" value="overground">
+                    <label for="_3" class="label up" title="Overground">Above</label>
+                    <div class="indicator"></div>
+                </div>
+			</div>
+            <div class="outer scroller">
+                <div class="icons"></div>
+            </div>`
         );
 
         tools.draggable({
@@ -1908,61 +1917,23 @@ K.tool.marker = { // MARK: Marker Tools
                 });
                 K.local('toolPos', this.position);
             }
-        }).resizable({
-            containment: '#mapid',
-            minHeight: 92,
-            minWidth: 250,
-            resize: function() {
-                iconSize.call($('.outer.icons'));
-            },
-            stop: function() {
-                this.position = $.extend({}, $(this).position(), {
-                    transform: 'translateX(0)',
-                    bottom: 'initial',
-                    width: $(this).width(),
-                    height: $(this).height()
-                });
-                K.local('toolPos', this.position);
-            }
         });
 
         this.position = K.local('toolPos') || false;
 
-        if (this.position) tools.css(this.position);
-
-        let iconSize = function() {
-            let n = $('a', this).length,
-                a = $(this).width(),
-                b = $(this).height(),
-                i, x, y, m, k, o, oX, oY, w, oK, oM;
-
-            for (i = 1; i < n + 1; i++) {
-                m = Math.round(i);
-                k = Math.ceil(n / i);
-                x = (a / m);
-                y = (b / k);
-                if (Math.abs(x - y) > o)
-                    break;
-                oX = x;
-                oY = y;
-                oK = k;
-                oM = m;
-                o = Math.abs(x - y)
-            }
-            w = (Math.min(oX, oY) - 16);
-            $('a', this).width(w).height(w);
-
-            $('div.spacer').remove();
-            for (i = 0; i < (oK * oM) - n; i++) {
-                $('<div class="spacer" />').width(w + 16).height(0).appendTo(this);
-            }
+        if (this.position) {
+            delete this.position.width;
+            delete this.position.height;
+            tools.css(this.position);
         }
 
-        $('input[name="radio"]').on('change', function() {
+        $('.switch input', tools).on('change', function() {
             $('a', tools).removeClass('underground overground').addClass($(this).val());
         });
 
         $.each(sortObjByKeys(this.layers[K.mode]), function(category, layers) {
+
+            $('<span class="category"/>').text(category).appendTo('.outer .icons');
 
             $.each(sortObjByKeys(layers), function(i, layer) {
                 let p = layer.o,
@@ -1984,7 +1955,7 @@ K.tool.marker = { // MARK: Marker Tools
                         category: category,
                         type: p.type,
                         html: `<img src="${p.iconUrl}">${key ? '<span class="key">' + key + '</span>' : ''}`
-                    }).data('properties', p).appendTo('.outer.icons');
+                    }).data('properties', p).appendTo('.outer .icons');
                 }
             });
         });
@@ -2002,31 +1973,6 @@ K.tool.marker = { // MARK: Marker Tools
             }));
 
             K.bar.draw.Marker.enable();
-        });
-
-        iconSize.call($('.outer.icons'));
-
-        $(window).off('resize')
-            .on('resize', function() {
-                iconSize.call($('.outer.icons'));
-            });
-
-        $('.outer.icons [title!=""]').qtip({
-            position: {
-                viewport: $('#mapid'),
-                my: 'top center',
-                at: 'bottom center'
-            },
-            style: {
-                classes: 'tooltip-style'
-            },
-            show: {
-                delay: 250,
-                solo: true
-            },
-            hide: {
-                event: 'click mouseleave'
-            }
         });
     }
 }; /*=====  End of MARKER TOOLS  ======*/
@@ -2068,14 +2014,11 @@ K.tool.layer = { // MARK: Layer Tools
         if (!this.tags) {
             this.tags = [];
 
-            let layers = {};
-            $.each(K.tool.marker.layers, function(i, mode) {
-                $.extend(layers, mode);
+            $.each(K.icons, function(v, i) {
+                self.tags.push(v);
             });
-            layers = sortObjByKeys(layers);
-            $.each(layers, function(v, i) {
-                self.tags.push(v.space());
-            });
+
+            this.tags.sort();
         }
 
         // close any other menu that is already open
@@ -2309,6 +2252,11 @@ K.tool.layer = { // MARK: Layer Tools
             },
             hide: {
                 event: 'click mouseleave'
+            },
+            events: {
+                hide: function(e, api) {
+                    api.destroy(true);
+                }
             }
         });
 
@@ -2369,6 +2317,7 @@ K.tool.layer = { // MARK: Layer Tools
         }
 
         let bx = $('.settings-tools.right-bar');
+        bx.parent().removeClass('code');
 
         // add the mode switch
         if (K.length(layer.options.mode) > 1 && !K.has(setting, ['mode', 'id', 'category', 'type', 'complete', 'time', 'link', 'group'])) {
@@ -2535,9 +2484,10 @@ K.tool.layer = { // MARK: Layer Tools
             input.clone().attr({
                 name: 'list-item',
                 num: 0,
-                placeholder: 'Item'
+                placeholder: 'Item',
+                autocomplete: true
             }).autocomplete({
-                source: this.tags,
+                source: self.tags,
                 autoFocus: true,
                 appendTo: '#settings-menu'
             }).appendTo(bx);
@@ -2562,6 +2512,12 @@ K.tool.layer = { // MARK: Layer Tools
                     $(this).prop('checked', false);
                 else
                     $(this).val('');
+
+                $(this).attr('autocomplete') && $(this).autocomplete({
+                    source: self.tags,
+                    autoFocus: true,
+                    appendTo: '#settings-menu'
+                })
             });
 
             $(identifier).removeClass('clone').parent().append(clone);
@@ -2598,7 +2554,7 @@ K.tool.layer = { // MARK: Layer Tools
         };
 
         // MARK: ^^ Restore Button
-        if (K.user.type > 3 && !K.in(setting, ['mode', 'id', 'link'])) {
+        if (K.user.type > 3 && !K.in(setting, ['id'])) {
 
             $('.settings-tools.right-bar').append(
                 `<div class="restore-container hide">
@@ -2666,8 +2622,36 @@ K.tool.layer = { // MARK: Layer Tools
                     inputRenew();
                     apply.call($('[name=list-title]'));
 
+                } else if (setting == 'mode') {
+
+                    layer.applySetting({ setting: 'mode', value: $.type(item) != 'object' ? {} : item });
+
+                    $('.mode-container .input.mode').each(function() {
+                        const mode = $(this).attr('mode');
+                        $(this).prop('checked', K.has(mode, layer.options.mode));
+                        const cont = $(this).parents('.mode-container');
+                        cont.removeClass('changes');
+                        !K.empty(layer.options.mode[mode]) && cont.addClass('changes');
+                    });
+
+                } else if (setting == 'link') {
+
+                    $('.setting-container.links').each(function() {
+                        if ($('input', this).attr('num') == 0)
+                            $('input', this).val('');
+                        else $(this).remove();
+                    });
+
+                    if ($.type(item) == 'array') {
+                        $.each(item, function(i, v) {
+                            if (i) $('.add.links').trigger('click');
+                            $(`input[num=${i}]`).val(v);
+                        });
+                    }
+
                 } else if (K.length(values)) {
                     $(`[aria-label="${item}"]`).trigger('click');
+
                 } else {
                     apply.call($('textarea.input').text(item));
                     editor && editor.setValue(item);
@@ -2785,10 +2769,15 @@ K.tool.layer = { // MARK: Layer Tools
             });
 
             $('.section.links').on('click', '.trash', function() {
-                $(`.section.links [num=${$(this).attr('num')}]`).parent().remove();
-                $('.setting-container').each(function(i) {
-                    $('[num]', this).attr('num', i);
-                });
+
+                if ($('.section.links input').length == 1) {
+                    $('.section.links input').val('');
+                } else {
+                    $(`.section.links [num=${$(this).attr('num')}]`).parent().remove();
+                    $('.setting-container').each(function(i) {
+                        $('[num]', this).attr('num', i);
+                    });
+                }
 
                 apply.call(this);
             });
@@ -2848,6 +2837,7 @@ K.tool.layer = { // MARK: Layer Tools
                 desc.clone().text(mode).appendTo(cont);
                 const tg = toggle.clone().appendTo(cont);
                 $('input', tg).prop('checked', K.has(mode, layer.options.mode)).attr('mode', mode);
+                K.has(mode, layer.options.mode) && !K.empty(layer.options.mode[mode]) && cont.addClass('changes');
             });
 
         } else if (K.length(values)) {
@@ -3103,6 +3093,11 @@ K.tool.layer = { // MARK: Layer Tools
             },
             hide: {
                 event: 'click mouseleave'
+            },
+            events: {
+                hide: function(e, api) {
+                    api.destroy(true);
+                }
             }
         });
 
@@ -3118,7 +3113,7 @@ K.tool.layer = { // MARK: Layer Tools
         layer.copy();
         delete layer.backup;
 
-        if (!(K.mode in layer.options.mode)) {
+        if (!K.in(K.mode, layer.options.mode)) {
             K.group.removeLayer(layer);
         }
     },
@@ -3309,13 +3304,11 @@ K.tool.layer = { // MARK: Layer Tools
 
     _toType: function() { // MARK: ^ To Type
 
-        const layer = this.layer;
-        let setting = layer.editing.window;
+        const layer = this.layer,
+            isPopup = this.isPopup,
+            setting = this.setting;
 
         if (!(setting && layer.options.type && setting != 'type')) return;
-
-        const isPopup = setting.bMatch('popup-')
-        setting = setting.replace('popup-', '');
 
         const $mode = $('.mode-switch'),
             o = {
@@ -3506,30 +3499,15 @@ L.Layer.include({ // MARK: Layer Include
     // Backup the original settings
     makeBackup: function() {
 
-        let backup = function(obj) {
-            let rObj = {};
-
-            for (key in obj) {
-                if ($.type(obj[key]) === 'object') {
-                    rObj[key] = backup(obj[key]);
-
-                } else if ($.type(obj[key]) !== 'function' && !key.bMatch(/^_/)) {
-                    rObj[key] = obj[key];
-                }
-            }
-
-            return rObj;
-        }
-
         let t = !this.backup ? 'backup' : 'paste';
 
         this.oldType = this.options.type;
 
         this[t] = {};
-        this[t].options = backup(this.options);
+        this[t].options = K.reduce({}, this.options, K.map.property[this.options.shape]);
 
         if (this.popup)
-            this[t].popup = backup(this.popup);
+            this[t].popup = K.extend({}, this.popup);
 
         if (t == 'backup') {
 
@@ -3579,22 +3557,14 @@ L.Layer.include({ // MARK: Layer Include
         // Add the settings to the correct locations
         if (this.options.shape == 'marker' && K.has(o.setting, ['className', 'iconUrl', 'iconSize', 'html'])) {
 
-            let p = this.options,
-                layer = this;
+            let p = this.options;
 
             o.value = $.type(o.value) == 'string' && o.value.bMatch(/\d+,\d+/) ? o.value.split(',') : o.value;
             !m && (p[o.setting] = o.value);
             m && (m[o.setting] = o.value);
 
-            $.ajax({
-                type: 'HEAD',
-                url: this.getSetting('iconUrl'),
-                success: function() {
-
-                    layer.updateIcon();
-                    K.complete.is(layer) && K.complete.add(layer);
-                }
-            });
+            this.updateIcon();
+            K.complete.is(this) && K.complete.add(this);
 
         } else if (m) m[o.setting] = o.value
         else this.options[o.setting] = o.value;
@@ -3639,6 +3609,10 @@ L.Layer.include({ // MARK: Layer Include
             });
         }
 
+        if (K.empty(this.options.mode)) this.options.mode = {
+            [K.mode]: {}
+        };
+
         this.storeSettings();
         !o.skipSave && this.saved(false);
 
@@ -3677,10 +3651,11 @@ L.Layer.include({ // MARK: Layer Include
     },
 
     getSetting: function(setting, isPopup) {
-        const o = isPopup ? this.popup : this.options,
+        const o = (isPopup ? this.popup : this.options) || {},
             modeValue = this.getModeSetting(setting, isPopup);
 
         if (modeValue !== null) return modeValue;
+        // console.log(setting, '=', o[setting]);
         return o[setting];
     },
 
@@ -3725,7 +3700,7 @@ L.Layer.include({ // MARK: Layer Include
                 o = this.options;
 
             if (o.shape == 'marker') {
-                $.extend(o, o.icon.options);
+                // $.extend(o, o.icon.options);
                 o.iconUrl && delete o.html;
                 !o.iconUrl && delete o.iconUrl;
             }
@@ -4311,7 +4286,7 @@ function pageLoad() { // MARK: Page Load
                         let t = $(this).attr('type');
                         $(this).toggleClass('active');
                         K.map.active[t] = !K.map.active[t];
-                        K.local('activeMap', $.extend({}, K.map.active));
+                        // K.local('activeMap', $.extend({}, K.map.active));
                         switchLayerGroups();
                     });
                 }
@@ -4486,8 +4461,7 @@ function pageLoad() { // MARK: Page Load
 
             // L.Control.Draw Deleted
             K.myMap.on('draw:deleted', function(e) {
-                K.group.draw.eachLayer(function(l) {
-                    let i = l._leaflet_id;
+                $.each(e.layers._layers, function(i, l) {
                     K.group.draw.removeLayer(i);
                     K.save.delete(l)
                 });
@@ -4635,6 +4609,9 @@ function pageLoad() { // MARK: Page Load
                     if (mode in o.mode) {
                         if (!(o.category in tool)) tool[o.category] = {};
                         if (!(o.type in tool[o.category])) tool[o.category][o.type] = obj;
+
+                        // fill the icon array for the auto image assignment in popups
+                        K.icons[o.type.space()] = obj.o.iconUrl;
                     }
                 });
             }
@@ -4649,8 +4626,6 @@ function pageLoad() { // MARK: Page Load
                 l = L[g.t](g.c, o);
 
             } else if (g.t == 'marker') { // Marker
-
-                o.className += ` ${o.group}  ${pCn}`;
 
                 l = createMarker($.extend(o, {
                     latlng: g.c
@@ -4745,65 +4720,68 @@ function pageLoad() { // MARK: Page Load
 
             $.each(list, function(category, types) {
 
-                if (K.length(types)) {
+                if (!K.length(types)) return;
 
-                    types = sortObjByKeys(types);
+                types = sortObjByKeys(types);
 
-                    $(sb).append(`<div class="sub title buttons">
-                            <a class="collapse">
-                                <span class="text">${category.firstToUpper()}</span>
-                                <span class="control icon" title="Collapse/Expand ${category}"></span>
-                            </a>
-                            <a class="control hide-some" category="${category}" title="Show/Hide all ${category}"></a>
-                        </div>`);
+                $(sb).append(`<div class="sub title buttons">
+                        <a class="collapse">
+                            <span class="text">${category.firstToUpper()}</span>
+                            <span class="control icon" title="Collapse/Expand ${category}"></span>
+                        </a>
+                        <a class="control hide-some" category="${category}" title="Show/Hide all ${category}"></a>
+                    </div>`);
 
-                    $.each(types, function(type, i) {
+                $.each(types, function(type, i) {
 
-                        let active = K.filters[type] || false;
+                    let active = K.filters[type] || false;
 
-                        let el = $('<a />', {
-                            class: 'side-bar-button ' + (active ? 'inactive' : ''),
-                            set: category,
-                            label: type,
-                            html: $('<span />', {
-                                html: type.space().replace(/Dz/, 'DZ').replace(/ (Survival|Complete)/, '').replace(' Of ', ' of ')
-                            }),
+                    let el = $('<a />', {
+                        class: 'side-bar-button ' + (active ? 'inactive' : ''),
+                        set: category,
+                        label: type,
+                        html: $('<span />', {
+                            html: type.space().replace(/Dz/, 'DZ').replace(/ (Survival|Complete)/, '').replace(' Of ', ' of ')
+                        }),
 
-                        }).appendTo(sb);
+                    }).appendTo(sb);
 
-                        $('<span />', {
-                            html: '[ x' + K.map.type.counts[type] + ' ]',
-                            class: 'quantity'
-                        }).appendTo(el);
+                    $('<span />', {
+                        html: '[ x' + K.map.type.counts[type] + ' ]',
+                        class: 'quantity'
+                    }).appendTo(el);
 
-                        if (i[0].contains('.svg')) {
+                    if (i[0].contains('.svg')) {
 
-                            $('<img />', {
-                                src: i[Math.floor(Math.random() * i.length)]
-                            }).prependTo(el);
+                        let src = i[Math.floor(Math.random() * i.length)];
+                        type == 'MainMission' && (src = 'images/marker-mission.svg');
+                        type == 'SideMission' && (src = 'images/marker-mission-side.svg');
 
-                        } else if (category == 'polyline') {
+                        $('<img />', {
+                            src: src
+                        }).prependTo(el);
 
-                            $('<div />', {
-                                class: 'polyline'
-                            }).css({
-                                backgroundColor: i[0]
-                            }).prependTo(el);
+                    } else if (category == 'polyline') {
 
-                        } else {
+                        $('<div />', {
+                            class: 'polyline'
+                        }).css({
+                            backgroundColor: i[0]
+                        }).prependTo(el);
 
-                            $('<div />', {
-                                class: 'polygon'
-                            }).css({
-                                borderColor: i[1],
-                                backgroundColor: i[0]
-                            }).prependTo(el);
-                        }
+                    } else {
 
-                        // Hide the layers that were hidden on the last load
-                        active && showHideLayers(category, type, true);
-                    });
-                }
+                        $('<div />', {
+                            class: 'polygon'
+                        }).css({
+                            borderColor: i[1],
+                            backgroundColor: i[0]
+                        }).prependTo(el);
+                    }
+
+                    // Hide the layers that were hidden on the last load
+                    active && showHideLayers(category, type, true);
+                });
             });
 
             // Filter button events
@@ -4895,6 +4873,11 @@ function pageLoad() { // MARK: Page Load
                 },
                 hide: {
                     event: 'click mouseleave'
+                },
+                events: {
+                    hide: function(e, api) {
+                        api.destroy(true);
+                    }
                 }
             });
 
@@ -4919,6 +4902,11 @@ function pageLoad() { // MARK: Page Load
                         },
                         hide: {
                             event: 'click mouseleave'
+                        },
+                        events: {
+                            hide: function(e, api) {
+                                api.destroy(true);
+                            }
                         }
                     });
                     $(this).qtip('toggle', true);
@@ -5297,8 +5285,8 @@ function drawEventCreated(e) { // MARK: Draw Event Created
     let layer = e.layer,
         type = e.layerType,
         shape = K.settingShape(type),
-        copy = (K.local('copy') || {})[shape] || false,
-        popup = false,
+        copy = (K.local('copy') || {})[shape] || {},
+        popup = copy.p || {},
         color;
 
     // Marker
@@ -5317,12 +5305,12 @@ function drawEventCreated(e) { // MARK: Draw Event Created
 
             lvl = (lvl ? ' ' + lvl : '');
             popup = j.p;
-            color = $.type(popup) === 'object' && K.in('options', popup) ? popup.options.className : '';
+            color = !K.empty(popup) ? popup.className : '';
 
             layer = createMarker($.extend({}, p, {
                 id: ID(),
                 latlng: layer._latlng,
-                className: `${p.className}${lvl} ${p.group} ${color}`
+                className: `${p.className}${lvl}`
             }));
 
         } else {
@@ -5359,7 +5347,7 @@ function drawEventCreated(e) { // MARK: Draw Event Created
         }
     }
 
-    if (K.in('p', copy)) layer.bindPopup(copy.p);
+    if (!K.empty(popup)) layer.bindPopup(popup);
 
     // Add the new layer to the map
     layer.options.creator = K.user.name;
@@ -5866,7 +5854,7 @@ function createGeoJSON() { // MARK: Create GeoJSON
                 K.in('p', obj) && K.empty(obj.p) && delete obj.p;
             });
 
-            // remove the classes that were not added for aesthetics
+            // remove the classes that were added for aesthetics
             layer.removeClass(K.classRemoval);
 
             feature = { c: o.creator }
@@ -5903,7 +5891,7 @@ function createGeoJSON() { // MARK: Create GeoJSON
                         sm = K.settings.main;
 
                     if (sv == 'false' || !K.equals(sv, v)) // do this if there is a type
-                        sets[i] = i in sm && sm[i].type == 'number' ? v.toString() : v;
+                        sets[i] = i in sm && $.type(sm[i]) == 'number' ? v.toString() : v;
                 }
             });
 

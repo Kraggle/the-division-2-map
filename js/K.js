@@ -1045,7 +1045,7 @@ if (!String.prototype.contains) {
     String.prototype.contains = function(str) {
         var s = this.toString().toLowerCase();
 
-        if (s.indexOf(str.toLowerCase()) == -1)
+        if (s.indexOf((str || '').toLowerCase()) == -1)
             return false;
 
         return true;

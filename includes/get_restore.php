@@ -15,7 +15,7 @@ if (login_check($mysqli) && $_SESSION['usertype'] > 3 && isset($_POST['id'], $_P
 	array_multisort(
 		array_map('filemtime', $files),
 		SORT_NUMERIC,
-		SORT_DESC,
+		SORT_ASC,
 		$files
 	);
 	

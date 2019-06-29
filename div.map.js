@@ -1,13 +1,9 @@
-K.currentUpdate = '18/06/2019';
+K.currentUpdate = '26/06/2019';
 K.iconVersion = '1';
 K.modes = {
     get: [
         'Story Mode',
-        'World Tier I',
-        'World Tier II',
-        'World Tier III',
-        'World Tier IV',
-        'World Tier V'
+        'World Tier'
     ]
 };
 K.keepPopupsOpen = false;
@@ -105,24 +101,6 @@ L.Draw.Feature.include({
         }
     }
 });
-
-// Included to remove the clear all option from Leaflet.Draw
-// L.EditToolbar.include({
-
-//     getActions: function() {
-//         return [{
-//             title: L.drawLocal.edit.toolbar.actions.save.title,
-//             text: L.drawLocal.edit.toolbar.actions.save.text,
-//             callback: this._save,
-//             context: this
-//         }, {
-//             title: L.drawLocal.edit.toolbar.actions.cancel.title,
-//             text: L.drawLocal.edit.toolbar.actions.cancel.text,
-//             callback: this.disable,
-//             context: this
-//         }];
-//     }
-// });
 
 // Included to be able to disable the Leaflet.Draw delete button
 L.EditToolbar.Delete.include({
@@ -298,7 +276,7 @@ L.Map.include({
 });
 
 // Included to modify the way popups work
-L.Layer.include({
+L.Layer.include({ // MARK: Popups
 
     openPopup: function(layer, latlng) {
         if (!(layer instanceof L.Layer)) {
@@ -315,7 +293,8 @@ L.Layer.include({
 
         if (!this._popup._content) return this;
 
-        this._popup.setContent(this._popup._content);
+        let content = this.getSetting('content', true) || this.getSetting('list', true);
+        this._popup.setContent(content);
 
         if (!latlng) {
             latlng = layer.getCenter ? layer.getCenter() : layer.getLatLng();
@@ -361,27 +340,15 @@ L.Layer.include({
             type: this.options.shape
         };
 
-        if (!content && o.list.title)
+        if (!content && !K.empty(o.list))
             content = this.convertContent(o);
 
-        if (content instanceof L.Popup) {
-            L.setOptions(content, o);
-            this._popup = content;
-            content._source = this;
+        if (!content) return this;
 
-        } else if ($.type(content) == 'object' && K.in('_content', content) && !content._content) {
+        content = content.bMatch(/^\$/) ? K.popupContent[content] : content;
 
-            return this;
-
-        } else {
-
-            content = (content || '').bMatch(/^\$/) ? K.popupContent[content] : content;
-
-            if (!this._popup || o) {
-                this._popup = new L.Popup(o, this);
-            }
-            this._popup.setContent(content);
-        }
+        this._popup = new L.Popup(o, this);
+        this._popup.setContent(content);
 
         if (!this._popupHandlersAdded) {
             this.on({
@@ -443,17 +410,32 @@ L.Layer.include({
         }
         return this;
     },
+});
 
+// Included for layer complete functionality
+L.Layer.include({
     toggleCompleted: function() {
-        if (!this.options.complete) return;
+        if (!this.getSetting('complete')) return;
 
-        K.complete.toggle(this);
-        this.markComplete();
+        let pre = this.options.prerequisites,
+            doIt = true;
+        if (pre) {
+            $.each(pre, function(i, id) {
+                !K.complete.is(id) && (doIt = false);
+            });
+        }
 
+        doIt && K.complete.toggle(this);
+        doIt && this.markComplete();
+
+        !doIt && K.msg.show({
+            msg: 'Prerequisites are not met for this to be completed!',
+            time: 4000
+        });
     },
 
     setCompleted: function(done) {
-        if (!this.options.complete) return;
+        if (!this.getSetting('complete')) return;
 
         K.complete.set(done, this);
         this.markComplete();
@@ -461,9 +443,9 @@ L.Layer.include({
     },
 
     markComplete: function() {
-        if (!this.options.complete) return;
+        if (!this.getSetting('complete')) return;
 
-        // a startup check to see if this needs changing
+        // a initial check to see if this needs changing
         let done = this.complete = K.complete.is(this);
         if (!this.init && !done) {
             this.init = true;
@@ -472,7 +454,7 @@ L.Layer.include({
         this.init = true;
 
         // when timed, check it still needs the overlay 
-        let time = this.options.time;
+        const time = this.options.time;
         if (time && done) {
             if (K.complete.time(this)) {
                 K.timed.add(this);
@@ -487,6 +469,8 @@ L.Layer.include({
         // set the correct overlay on the marker
         if (this.options.shape === 'marker')
             this.updateIcon();
+        else if (this.options.onComplete)
+            this.updateStyle();
 
         if (!!this.options.link) {
             $.each(this.getLinked(), function() {
@@ -499,6 +483,8 @@ L.Layer.include({
         else K.complete.remove(this.options.id);
 
         K.complete.showHide();
+
+        K.loaded && this.options.onComplete == 'toStoryMode' && K.setWorldTier();
     },
 
     getLinked: function() {
@@ -513,7 +499,10 @@ L.Layer.include({
 
         return layers;
     },
+});
 
+// Included for adding and removing classes to the layers
+L.Layer.include({
     addClass: function(value) {
         let classes = classesToArray(value),
             cur, curValue, clazz, j, finalValue,
@@ -625,7 +614,16 @@ L.Circle.include({
     }
 });
 
-L.Marker.include({
+L.Path.include({
+    updateStyle: function() {
+        if (this._renderer) {
+            this._renderer._updateStyle(this);
+        }
+        return this;
+    }
+});
+
+L.Marker.include({ // MARK: L.Marker
 
     initialize: function(latlng, options) {
         L.setOptions(this, options);
@@ -637,7 +635,9 @@ L.Marker.include({
         }
 
         this._latlng = L.latLng(latlng);
-        this.updateIcon();
+        this.options.creator && this.updateIcon();
+
+        this.options.cycle && K.cycle.add(this);
     },
 
     updateIcon: function(options = {}) {
@@ -651,7 +651,7 @@ L.Marker.include({
             iconSize: this.getSetting('iconSize'),
             html: !i ? this.getSetting('html') : '',
             className: this.getSetting('className'),
-            done: K.complete.is(this),
+            done: !this.options.onComplete && K.complete.is(this),
             time: K.complete.time(this),
             layer: this
         }, options));
@@ -700,18 +700,33 @@ L.DivIcon.include({ // MARK: L.DivIcon {extended}
 L.Icon.include({
 
     _setIconStyles: function(img, name) {
+        let size, anchor, s;
         const o = this.options,
-            l = o.layer,
             iz = `${name}Size`,
-            cn = 'className';
+            cn = 'className',
+            l = o.layer;
 
-        let s = l.getSetting(iz);
-        $.type(s) === 'number' && (s = [s, s]);
+        if (!!l) {
 
-        let size = L.point(s),
+            s = l.getSetting(iz);
+            $.type(s) === 'number' && (s = [s, s]);
+
+            size = L.point(s);
             anchor = L.point(name === 'shadow' && o.shadowAnchor || o.iconAnchor || size && size.divideBy(2, true));
 
-        img.className = `leaflet-marker-${name} ${l.getSetting(cn) || ''} ${l.getSetting(cn, true) || ''} ${l.getSetting('group', ) || ''}`;
+            img[cn] = `leaflet-marker-${name} ${l.getSetting(cn) || ''} ${l.getSetting(cn, true) || ''} ${l.getSetting('group', ) || ''}`;
+
+        } else {
+
+            s = o[iz];
+            $.type(s) === 'number' && (s = [s, s]);
+
+            size = L.point(s);
+            anchor = L.point(name === 'shadow' && o.shadowAnchor || o.iconAnchor || size && size.divideBy(2, true));
+
+            img[cn] = `leaflet-marker-${name} ${o[cn] || ''}`;
+
+        }
 
         if (anchor) {
             img.style.marginLeft = (-anchor.x) + 'px';
@@ -730,12 +745,8 @@ L.SVG.include({
     _initPath: function(layer) {
         const path = layer._path = L.SVG.create('path'),
             o = layer.options;
-        !K.in('mode', o) && (o.mode = {
-            [K.mode]: {}
-        });
-        const m = K.in('o', o.mode[K.mode]) ? o.mode[K.mode].o : false,
-            cn = 'className',
-            c = K.in(cn, m) ? m[cn] : o[cn];
+
+        const c = layer.getSetting('className');
 
         c && L.DomUtil.addClass(path, c);
         o.interactive && L.DomUtil.addClass(path, 'leaflet-interactive');
@@ -747,13 +758,12 @@ L.SVG.include({
     _updateStyle: function(layer) {
         const path = layer._path,
             o = layer.options,
-            m = K.in('o', o.mode[K.mode]) ? o.mode[K.mode].o : false,
-            stroke = K.in('stroke', m) ? m.stroke : o.stroke,
-            color = K.in('color', m) ? m.color : o.color,
-            opacity = K.in('opacity', m) ? m.opacity : o.opacity,
-            weight = K.in('weight', m) ? m.weight : o.weight,
-            fillColor = K.in('fillColor', m) ? m.fillColor : o.fillColor,
-            fillOpacity = K.in('fillOpacity', m) ? m.fillOpacity : o.fillOpacity;
+            stroke = layer.getSetting('stroke'),
+            color = layer.getSetting('color'),
+            opacity = layer.getSetting('opacity'),
+            weight = layer.getSetting('weight'),
+            fillColor = layer.getSetting('fillColor'),
+            fillOpacity = layer.getSetting('fillOpacity');
 
         if (!path) { return; }
 
@@ -794,9 +804,7 @@ L.SVG.include(!L.Browser.vml ? {} : {
     _initPath: function(layer) {
         const container = layer._container = L.SVG.create('shape'),
             o = layer.options,
-            m = K.in('o', o.mode[K.mode]) ? o.mode[K.mode].o : false,
-            cn = 'className',
-            c = K.in(cn, m) ? m[cn] : o[cn];
+            c = layer.getSetting('className');
 
         L.DomUtil.addClass(container, 'leaflet-vml-shape ' + (c || ''));
 
@@ -814,14 +822,13 @@ L.SVG.include(!L.Browser.vml ? {} : {
             lFill = layer._fill;
         const o = layer.options,
             container = layer._container,
-            m = K.in('o', o.mode[K.mode]) ? o.mode[K.mode].o : false,
-            stroke = K.in('stroke', m) ? m.stroke : o.stroke,
-            color = K.in('color', m) ? m.color : o.color,
-            opacity = K.in('opacity', m) ? m.opacity : o.opacity,
-            weight = K.in('weight', m) ? m.weight : o.weight,
-            fill = K.in('fill', m) ? m.fill : o.fill,
-            fillColor = K.in('fillColor', m) ? m.fillColor : o.fillColor,
-            fillOpacity = K.in('fillOpacity', m) ? m.fillOpacity : o.fillOpacity;
+            stroke = layer.getSetting('stroke'),
+            color = layer.getSetting('color'),
+            opacity = layer.getSetting('opacity'),
+            weight = layer.getSetting('weight'),
+            fill = layer.getSetting('fill'),
+            fillColor = layer.getSetting('fillColor'),
+            fillOpacity = layer.getSetting('fillOpacity');
 
         container.stroked = !!stroke;
         container.filled = !!fill;
@@ -878,7 +885,25 @@ L.DivOverlay.include({
         let content = (typeof this._content === 'function') ? this._content(this._source || this) : this._content;
 
         if (typeof content === 'string') {
+
+            if (K.mode == 'World Tier') {
+                let rx = new RegExp('<p class="level">.+?<\/p>');
+                if (content.bMatch(rx)) {
+                    content = content.replace(rx, `<p class="level">
+                        Level: <img src="images/mode-world-tier-${K.getWorldTier()}.svg" class="tier">
+                    </p>`);
+                }
+
+                rx = new RegExp('<p.+>Level.+?<\/p>');
+                if (content.bMatch(rx)) {
+                    content = content.replace(rx, `<p class="description">
+                        Level: <img src="images/mode-world-tier-${K.getWorldTier()}.svg" class="tier">
+                    </p>`);
+                }
+            }
+
             node.innerHTML = content;
+
         } else {
             while (node.hasChildNodes()) {
                 node.removeChild(node.firstChild);
@@ -1022,11 +1047,13 @@ L.control.button = function(options) {
 /*=====  End of LEAFLET INCLUDES  ======*/
 
 // temporary to update to new mode names
-if (!K.local('mode') || K.has(K.local('mode'), ['normal', 'Story'])) K.local('mode', 'Story Mode');
+if (!K.local('mode') || K.has(K.local('mode'), ['normal', 'Story']) || !K.has(K.local('mode'), K.modes.get))
+    K.local('mode', 'Story Mode');
 
 Cookies.json = true;
 
 K.extend({ // MARK: K
+    loaded: false,
     lastCheck: false,
     pane: {},
     tool: {},
@@ -1057,14 +1084,14 @@ K.extend({ // MARK: K
         } else if (callback) callback();
     },
 
-    complete: {
+    complete: { // MARK: ^ Complete
         layers: [],
         add: function(layer) {
             let add = true;
             $.each(this.layers, function(i, l) {
                 if (layer.options.id === l.options.id) add = false;
             });
-            add && this.layers.push(layer);
+            add && !layer.options.onComplete && this.layers.push(layer);
 
             if (!K.timed.interval) K.timed.action();
         },
@@ -1081,7 +1108,9 @@ K.extend({ // MARK: K
             if ($.type(index) === 'number') this.layers.splice(index, 1);
         },
         is: function(layer) {
-            if (!layer.options.complete) return false;
+            if (K.type(layer) == 'string') layer = K.group.getLayer(layer);
+            if (!layer) return false;
+            if (!layer.getSetting('complete')) return false;
             let uD = K.user.data,
                 id = layer.options.id;
             if (!uD && !K.in('complete', K.local())) K.local('complete', {});
@@ -1164,7 +1193,8 @@ K.extend({ // MARK: K
 
             $.each(layers, function(x, layer) {
                 hidden = K.filters[layer.options.type];
-                g = K.group.mode[hidden ? 'groupHidden' : layer.options.group];
+                const gn = hidden ? 'groupHidden' : layer.options.group;
+                g = K.group.mode[gn];
                 i = layer._leaflet_id;
 
                 show = (h ? gC : g);
@@ -1173,6 +1203,8 @@ K.extend({ // MARK: K
                 if (hide.getLayer(i)) {
                     show.addLayer(hide.getLayer(i));
                     hide.removeLayer(i);
+
+                    layer.currentGroup = h ? 'groupComplete' : gn;
                 }
             });
 
@@ -1243,7 +1275,7 @@ K.extend({ // MARK: K
 
     drawControl: false,
 
-    group: {
+    group: { // MARK: ^ Group
         save: new L.FeatureGroup(),
 
         draw: new L.FeatureGroup([], {
@@ -1251,6 +1283,14 @@ K.extend({ // MARK: K
         }),
 
         feature: {},
+
+        getLayer: function(id) {
+            let r = null;
+            this.mode.everyLayer.eachLayer(function(l) {
+                if (l.options.id == id) r = l;
+            });
+            return r;
+        },
 
         addLayer: function(layer) {
             if (!(layer instanceof L.Layer)) return this;
@@ -1327,32 +1367,48 @@ K.extend({ // MARK: K
             group12: []
         },
         type: {
-            counts: {}
+            counts: {},
+            add: function(type) {
+                if (type) {
+                    !K.in(type, this.counts) && (this.counts[type] = 0);
+                    this.counts[type] += 1;
+                    this.updateButton(type);
+                }
+            },
+            remove: function(type) {
+                if (type) {
+                    this.counts[type] -= 1;
+                    this.updateButton(type);
+                }
+            },
+            updateButton: function(type) {
+                $(`.side-bar-button[label=${type}] .quantity`).text(`[ x${this.counts[type]} ]`);
+            }
         },
         mode: {},
         property: { // these are used to clear unwanted settings before saving
             polygon: [
                 'category', 'color', 'weight', 'opacity', 'fillColor',
                 'fill', 'fillOpacity', 'stroke', 'group',
-                'type', 'className', 'mode', 'complete'
+                'type', 'className', 'mode', 'complete', 'prerequisites', 'onComplete'
             ],
             circle: [
                 'category', 'color', 'weight', 'opacity', 'fillColor',
                 'fill', 'fillOpacity', 'stroke', 'group', 'type',
-                'className', 'mode', 'complete'
+                'className', 'mode', 'complete', 'prerequisites', 'onComplete'
             ],
             rectangle: [
                 'category', 'color', 'weight', 'opacity', 'fillColor',
                 'fill', 'fillOpacity', 'stroke', 'group', 'type',
-                'className', 'mode', 'complete'
+                'className', 'mode', 'complete', 'prerequisites', 'onComplete'
             ],
             polyline: [
                 'category', 'color', 'weight', 'opacity', 'stroke',
-                'complete', 'group', 'type', 'className', 'mode'
+                'complete', 'group', 'type', 'className', 'mode', 'prerequisites', 'onComplete'
             ],
             marker: [
-                'category', 'group', 'type', 'time', 'iconSize', 'html',
-                'mode', 'complete', 'link', 'iconUrl', 'className'
+                'category', 'group', 'type', 'time', 'iconSize', 'html', 'cycle',
+                'mode', 'complete', 'link', 'iconUrl', 'className', 'prerequisites', 'onComplete'
             ],
             popup: ['className']
         },
@@ -1569,12 +1625,30 @@ K.extend({ // MARK: K
             },
             time: {
                 values: {},
-                description: `Time is used in conjunction with Complete to only set a layer as complete for this length of time. This is helpful for things that can be collected again at a later date. For this to work Complete must be 'True'.`,
-                for: ['marker'],
+                description: `Time is used in conjunction with Complete to only set a layer as complete for this length of time. This is helpful for things that can be collected again at a later date. For this to work 'Complete' must be 'True'.`,
+                for: ['marker', 'polygon', 'polyline', 'circle', 'rectangle'],
                 type: 'number'
             },
             link: {
                 description: 'Link is used in conjunction with Complete to also hide the linked layer(s) after the this layer has been completed. The ID of the layers are required to link them. The list should be comma separated.',
+                for: ['marker', 'polygon', 'polyline', 'circle', 'rectangle'],
+                type: 'array'
+            },
+            onComplete: {
+                values: {
+                    toStoryMode: { shape: [] }
+                },
+                description: `Used along with complete, this is useless unless you use the preset actions, this just tells the javascript what to do with the layer once it is marked as complete.`,
+                for: ['marker', 'polygon', 'polyline', 'circle', 'rectangle'],
+                type: 'string'
+            },
+            prerequisites: {
+                description: `Used along with complete, if there are any layer ids here, then this cannot be compelted until they are first complete.`,
+                for: ['marker', 'polygon', 'polyline', 'circle', 'rectangle'],
+                type: 'array'
+            },
+            cycle: {
+                description: `Used to cycle visible marker, handy for when there are multiple, overlapping markers, like with the Activities and Resource Nodes.`,
                 for: ['marker'],
                 type: 'array'
             },
@@ -1729,7 +1803,7 @@ K.extend({ // MARK: K
         }
     },
 
-    updateMarker: function(icon) {
+    updateMarker: function(icon) { // MARK: ^ Update Marker
         const copy = K.local('copy') || {};
         icon = icon || (K.in('marker', copy) ? copy.marker.o : {});
 
@@ -1826,6 +1900,134 @@ K.extend({ // MARK: K
     getSetting: (obj, setting) => {
         const m = K.in('mode', obj) && K.in('o', obj.mode[K.mode]) ? obj.mode[K.mode].o : false;
         return m && K.in(setting, m) ? m[setting] : obj[setting];
+    },
+
+    strongholds: [
+        '_tthw137te',
+        '_hy004vpns',
+        '_isbq2fsd0',
+        '_zvuruwgpn'
+    ],
+
+    getWorldTier: () => {
+        let i = 1;
+        $.each(K.strongholds, function(j, id) {
+            K.complete.is(id) && i++;
+        });
+        return i;
+    },
+
+    setWorldTier: () => {
+        $('[mode="World Tier"] img').attr('src', `images/mode-world-tier-${K.getWorldTier()}.svg`);
+    },
+
+    cycle: {
+        init: false,
+        temp: [],
+        groups: [],
+        time: 5000,
+        interval: false,
+
+        start: function() {
+            this.init = true;
+
+            $.each(this.temp, function(i, layer) {
+                K.cycle.add(layer);
+                layer.showing = true;
+            });
+
+            this.interval = setInterval(() => K.cycle.action(), this.time);
+            this.action();
+        },
+
+        add: function(layer) {
+            if (!layer.options.cycle) return;
+
+            if (!this.init) {
+                this.temp.push(layer);
+                return;
+            }
+
+            let add = true;
+            $.each(this.groups, function(i, layers) {
+                $.each(layers, function(i, l) {
+                    l === layer && (add = false);
+                });
+            });
+
+            if (!add) return;
+
+            const group = [layer];
+            const addPoly = (layer) => {
+                layer.cyclePoly = false;
+                if ($.type(layer.options.link) != 'array') return;
+
+                $.each(layer.options.link, function(i, id) {
+                    const link = K.group.getLayer(id);
+                    if (!link) return;
+                    if (link.options.shape != 'marker') {
+                        layer.cyclePoly = link;
+                    }
+                });
+            };
+            addPoly(layer);
+            $.each(layer.options.cycle, function(i, id) {
+                const l = K.group.getLayer(id);
+                if (!l) return;
+                group.push(l);
+                addPoly(l);
+            });
+
+            this.groups.push(group);
+        },
+
+        action: function() {
+            for (let i = 0; i < this.groups.length; i++) {
+                const g = this.groups[i],
+                    group = [];
+
+                for (let j = 0; j < g.length; j++) {
+                    const layer = g[j];
+                    !K.in('currentGroup', layer) && (layer.currentGroup = layer.options.group);
+                    if (!K.in(layer.currentGroup, ['groupHidden', 'groupComplete']))
+                        group.push(layer);
+                }
+
+                if (group.length == 1) {
+                    group[0].showing = true;
+                    $(group[0]._icon).show();
+                    group[0].cyclePoly && $(group[0].cyclePoly._path).show();
+
+                    continue;
+                }
+
+                let first, next = false;
+                for (let j = 0; j < group.length; j++) {
+                    const layer = group[j];
+                    if (j == 0) first = layer;
+
+                    if (next) {
+                        layer.showing = true;
+                        $(layer._icon).show();
+                        layer.cyclePoly && $(layer.cyclePoly._path).show();
+                        next = false;
+
+                    } else if (layer.showing) {
+
+                        layer.showing = false;
+                        $(layer._icon).hide();
+                        layer.cyclePoly && $(layer.cyclePoly._path).hide();
+                        next = true;
+                    }
+
+                    if (next && group.length - 1 == j) {
+                        first.showing = true;
+                        $(first._icon).show();
+                        first.cyclePoly && $(first.cyclePoly._path).show();
+                    }
+                }
+            }
+        }
     }
 });
 
@@ -1834,7 +2036,13 @@ K.modes.create = function() {
         K.group.feature[mode] = {};
         K.map.type[mode] = {};
     });
-}
+};
+
+K.modes.clear = function() {
+    $.each(this.get, function(i, mode) {
+        K.map.type[mode] = {};
+    });
+};
 
 K.modes.create();
 $.each(K.group.feature, function(i, m) {
@@ -1966,11 +2174,7 @@ K.tool.marker = { // MARK: Marker Tools
             $(this).siblings('a').removeClass('enabled');
             $(this).addClass('enabled');
             K.local('markerToolIcon', typ);
-
-            let o = $(this).data('properties');
-            K.updateMarker($.extend(true, {}, o, {
-                className: o.className.add($('.outer.inputs input:checked').val())
-            }));
+            K.updateMarker($(this).data('properties'));
 
             K.bar.draw.Marker.enable();
         });
@@ -2053,7 +2257,7 @@ K.tool.layer = { // MARK: Layer Tools
 
             this.new.on('click', K.tool.layer.show);
             this.new.options.complete && this.new.options.shape === 'marker' && this.new.on('contextmenu', function() {
-                this.toggleCompleted(true);
+                this.toggleCompleted();
             });
 
             this.new.saved(false);
@@ -2125,34 +2329,74 @@ K.tool.layer = { // MARK: Layer Tools
             box = '.settings-tools.buttons',
             btns = [{
                 cls: 'copy',
-                title: 'Copy these settings'
+                title: 'Copy these settings',
+                action: function() {
+                    layer.copy();
+                }
             }, {
                 cls: 'paste',
-                title: 'Paste copied settings'
+                title: 'Paste copied settings',
+                action: function() {
+                    self._paste();
+                }
+            }, {
+                cls: 'copy-loc',
+                title: 'Copy this layers position',
+                action: function() {
+                    layer.copyLocation();
+
+                }
+            }, {
+                cls: 'paste-loc',
+                title: 'Paste copied position',
+                action: function() {
+                    self._pasteLocation();
+                }
             }, {
                 cls: 'edit' + (layer.editing.edit ? ' end' : ''),
-                title: 'Add this to editable layer'
+                title: 'Add this to editable layer',
+                action: function() {
+                    self._edit();
+                }
             }, {
                 cls: 'move' + (layer.dragging.enabled() ? ' end' : ''),
-                title: 'Drag this layer'
+                title: 'Drag this layer',
+                action: function() {
+                    self._move();
+                }
             }, {
                 cls: 'join',
                 title: 'Make another polygon a hole in this',
-                type: ['polygon']
+                type: ['polygon'],
+                action: function() {
+                    self._join();
+                }
             }, {
                 cls: 'split',
                 title: 'Split these polygons',
-                type: ['polygon']
+                type: ['polygon'],
+                action: function() {
+                    self._split();
+                }
             }, {
                 cls: 'dupe',
                 title: 'Duplicate this poly',
-                type: ['polygon']
+                type: ['polygon'],
+                action: function() {
+                    self._dupe();
+                }
             }, {
                 cls: 'delete',
-                title: 'Delete this layer'
+                title: 'Delete this layer',
+                action: function() {
+                    self._delete();
+                }
             }, {
                 cls: 'to-type',
-                title: 'Copy selected setting to all of Type'
+                title: 'Copy selected setting to all of Type',
+                action: function() {
+                    self._toType();
+                }
             }];
 
         for (i in btns) {
@@ -2161,7 +2405,7 @@ K.tool.layer = { // MARK: Layer Tools
                 btn.clone().attr({
                     'aria-label': b.cls,
                     title: b.title
-                }).addClass(b.cls).appendTo(box);
+                }).addClass(b.cls).appendTo(box).on('click', b.action);
             }
         }
 
@@ -2191,41 +2435,18 @@ K.tool.layer = { // MARK: Layer Tools
         // Apply the button click functions
         $('.settings-item').on('click', function() {
             self.element = $(this);
-            self.setting = $(this).attr('setting');
+            self.setting = layer.editing.window = $(this).attr('setting');
             self.isPopup = $(this).attr('popup');
             self._settingClick();
         });
-        // $('.settings-save').on('click', function() {
-        //     self._save.call(self);
-        // });
         $('.settings-cancel').on('click', function() {
             self._cancel();
         });
-        $('.settings.copy').on('click', function() {
-            layer.copy();
-        });
-        $('.settings.paste').on('click', function() {
-            self._paste();
-        }).on('mouseover', function() {
+        $('.settings.paste').on('mouseover', function() {
             self._pasteOver(layer);
         }).on('mouseout', function() {
             self._pasteOut(layer);
         });
-        $('.settings.delete').on('click', function() {
-            self._delete();
-        });
-        $('.settings.dupe').on('click', function() {
-            self._dupe();
-        });
-        $('.settings.join').on('click', function() {
-            self._join();
-        });
-        $('.settings.to-type').on('click', function() {
-            self._toType();
-        });
-        $('.settings.move').on('click', this._move);
-        $('.settings.edit').on('click', this._edit);
-
         if (K.in('_latlngs', layer) && layer._latlngs.length == 1)
             $('.settings.split').hide();
         else {
@@ -2234,8 +2455,7 @@ K.tool.layer = { // MARK: Layer Tools
             });
         }
 
-        if (layer.editing.window)
-            $(`[aria-label="${layer.editing.window}"]`).trigger('mousedown');
+        layer.editing.window && $(`.settings-item[setting="${layer.editing.window}"]`).trigger('click');
 
         $('.settings.icon[title!=""]').qtip({
             position: {
@@ -2252,11 +2472,6 @@ K.tool.layer = { // MARK: Layer Tools
             },
             hide: {
                 event: 'click mouseleave'
-            },
-            events: {
-                hide: function(e, api) {
-                    api.destroy(true);
-                }
             }
         });
 
@@ -2320,7 +2535,9 @@ K.tool.layer = { // MARK: Layer Tools
         bx.parent().removeClass('code');
 
         // add the mode switch
-        if (K.length(layer.options.mode) > 1 && !K.has(setting, ['mode', 'id', 'category', 'type', 'complete', 'time', 'link', 'group'])) {
+        if (K.length(layer.options.mode) > 1 && !K.has(setting, [
+                'mode', 'id', 'category', 'type', 'time', 'link', 'group', 'prerequisites', 'onComplete'
+            ])) {
 
             const mode = layer.getMode(isPopup);
 
@@ -2686,13 +2903,13 @@ K.tool.layer = { // MARK: Layer Tools
                 inputRenew();
             });
 
-        } else if (setting === 'link') {
+        } else if (K.in(setting, ['link', 'prerequisites', 'cycle'])) {
 
             $('.settings-tools.right-bar').append(
                 `<div class="scroll-box">
                     <div class="section links">
                         <a class="add links button" title="Add another paragraph">+</a>
-                        <span class="header">LINKED IDS</span><br>
+                        <span class="header">IDS</span><br>
                     </div>
 				</div>`
             );
@@ -2707,6 +2924,7 @@ K.tool.layer = { // MARK: Layer Tools
                 name: 'list-link',
                 type: 'text',
                 class: 'settings-item input link',
+                setting: setting,
                 placeholder: 'Layer ID'
             });
 
@@ -2976,7 +3194,7 @@ K.tool.layer = { // MARK: Layer Tools
 
             } else if ($(this).hasClass('link')) {
 
-                o.setting = 'link';
+                // o.setting = 'link';
                 o.value = [];
 
                 $('[name=list-link]').each(function(i, el) {
@@ -3093,11 +3311,6 @@ K.tool.layer = { // MARK: Layer Tools
             },
             hide: {
                 event: 'click mouseleave'
-            },
-            events: {
-                hide: function(e, api) {
-                    api.destroy(true);
-                }
             }
         });
 
@@ -3217,6 +3430,32 @@ K.tool.layer = { // MARK: Layer Tools
         });
 
         this._settingClick();
+    },
+
+    // Paste copied location 
+    _pasteLocation: function() {
+
+        let layer = this.layer,
+            copy = K.local('location') || {},
+            pos = copy[layer.options.shape] || false;
+
+        if (!pos) {
+            K.msg.show({
+                msg: 'You need to copy a position first!',
+                time: 2000
+            });
+            return;
+        }
+
+        console.log(layer.latLng);
+
+        layer.setLatLng && layer.setLatLng(pos);
+        layer.setLatLngs && layer.setLatLngs(pos);
+
+        K.msg.show({
+            msg: 'Position pasted!',
+            time: 2000
+        });
     },
 
     _pasteSingle: function() {
@@ -3545,10 +3784,10 @@ L.Layer.include({ // MARK: Layer Include
             }, options),
             group = this.options.group;
 
-        if (!this.backup && !o.skipSave) this.makeBackup();
+        !this.backup && !o.skipSave && this.makeBackup();
 
         // set oldType to check for changes and update objects
-        if (o.setting == 'type') this.oldType = this.options.type;
+        o.setting == 'type' && (this.oldType = this.options.type);
 
         let m = o.forMode ? this.getMode() : false;
         const mSp = this.getModeSettingPath(o.setting);
@@ -3569,7 +3808,7 @@ L.Layer.include({ // MARK: Layer Include
         } else if (m) m[o.setting] = o.value
         else this.options[o.setting] = o.value;
 
-        if (o.setting == 'group') switchLayerGroup(this, group);
+        o.setting == 'group' && switchLayerGroup(this, group);
 
         // Apply the settings to the original layer (not marker)
         this.options.shape != 'marker' && this.setStyle(this.options);
@@ -3581,9 +3820,8 @@ L.Layer.include({ // MARK: Layer Include
         // adjust the counts for the new and old types
         // also being aware that the new or old type may be blank
         if (type != this.oldType) {
-            type && !K.in(type, counts) && (counts[type] = 0);
-            type && (counts[type] += 1);
-            this.oldType && (counts[this.oldType] -= 1);
+            K.map.type.add(type);
+            K.map.type.remove(this.oldType);
         }
 
         // if we are changing the type, we need to apply all of the 
@@ -3607,6 +3845,11 @@ L.Layer.include({ // MARK: Layer Include
                     forMode: o.forMode
                 });
             });
+
+            if (!K.layer[type].p) {
+                this.unbindPopup();
+                this.popup = undefined;
+            }
         }
 
         if (K.empty(this.options.mode)) this.options.mode = {
@@ -3629,8 +3872,12 @@ L.Layer.include({ // MARK: Layer Include
     },
 
     // returns the setting from the mode object if it exists
-    getModeSetting: function(setting, isPopup) {
-        const m = this.options.mode[K.mode],
+    getModeSetting: function(setting, isPopup, mode = K.mode) {
+        // if (!this.options.mode) return null;
+
+        if (!this.options.mode) return null;
+
+        const m = this.options.mode[mode],
             t = isPopup ? 'p' : 'o';
 
         if (K.in(t, m) && K.in(setting, m[t]))
@@ -3651,8 +3898,11 @@ L.Layer.include({ // MARK: Layer Include
     },
 
     getSetting: function(setting, isPopup) {
-        const o = (isPopup ? this.popup : this.options) || {},
-            modeValue = this.getModeSetting(setting, isPopup);
+        const o = (isPopup ? this.popup : this.options) || {};
+        let modeValue = this.getModeSetting(setting, isPopup);
+
+        if (setting != 'complete' && this.complete && this.options.onComplete == 'toStoryMode')
+            modeValue = this.getModeSetting(setting, isPopup, 'Story Mode');
 
         if (modeValue !== null) return modeValue;
         // console.log(setting, '=', o[setting]);
@@ -3742,6 +3992,7 @@ L.Layer.include({ // MARK: Layer Include
     },
 
     delete: function() {
+        K.map.type.remove(this.options.type);
         K.save.delete(this);
     },
 
@@ -3762,7 +4013,26 @@ L.Layer.include({ // MARK: Layer Include
             time: 2000
         });
 
-        K.updateMarker();
+        // K.updateMarker();
+
+        return this;
+    },
+
+    // Copy location 
+    copyLocation: function() {
+
+        let copy = K.local('location') || {};
+
+        copy[this.options.shape] = this._latlng || this._latlngs;
+
+        K.local('location', copy);
+
+        K.msg.show({
+            msg: 'Position copied!',
+            time: 2000
+        });
+
+        // K.updateMarker();
 
         return this;
     },
@@ -4094,6 +4364,8 @@ $(function() { // MARK: Document Loaded
 =            PAGE LOAD            =
 =================================*/
 function pageLoad() { // MARK: Page Load
+
+    K.loaded = false;
 
     // Check for clean map params and cookies and hide everything
     if (K.urlParam('noIcon') == 'true')
@@ -4463,7 +4735,9 @@ function pageLoad() { // MARK: Page Load
             K.myMap.on('draw:deleted', function(e) {
                 $.each(e.layers._layers, function(i, l) {
                     K.group.draw.removeLayer(i);
-                    K.save.delete(l)
+                    K.save.delete(l);
+
+                    K.map.type.remove(l.options.type);
                 });
             })
 
@@ -4669,8 +4943,8 @@ function pageLoad() { // MARK: Page Load
             K.user.type && (K.user.type >= 4 || o.creator.toLowerCase() == K.user.name.toLowerCase()) &&
                 l.on('click', K.tool.layer.show);
 
-            o.complete && o.shape === 'marker' && l.on('contextmenu', function() {
-                this.toggleCompleted(true);
+            K.getSetting(o, 'complete') && o.shape === 'marker' && l.on('contextmenu', function() {
+                this.toggleCompleted();
             });
 
             // Add the new layer to the correct group
@@ -4858,30 +5132,30 @@ function pageLoad() { // MARK: Page Load
 
             polyHoverAnimation();
 
-            $('[title!=""]').qtip({
-                position: {
-                    viewport: $('#mapid'),
-                    my: 'left center',
-                    at: 'right center'
-                },
-                style: {
-                    classes: 'tooltip-style'
-                },
-                show: {
-                    delay: 250,
-                    solo: true
-                },
-                hide: {
-                    event: 'click mouseleave'
-                },
-                events: {
-                    hide: function(e, api) {
-                        api.destroy(true);
-                    }
-                }
-            });
+            // $('[title!=""]').qtip({
+            //     position: {
+            //         viewport: $('#mapid'),
+            //         my: 'left center',
+            //         at: 'right center'
+            //     },
+            //     style: {
+            //         classes: 'tooltip-style'
+            //     },
+            //     show: {
+            //         delay: 250,
+            //         solo: true
+            //     },
+            //     hide: {
+            //         event: 'click mouseleave'
+            //     },
+            //     events: {
+            //         hide: function(e, api) {
+            //             api.destroy(true);
+            //         }
+            //     }
+            // });
 
-            $(document).on('mouseover', '[title!=""]', function(e) {
+            $('body').on('mouseover', '[title!=""]', function(e) {
 
                 if ($(this).attr('title')) {
 
@@ -4903,11 +5177,11 @@ function pageLoad() { // MARK: Page Load
                         hide: {
                             event: 'click mouseleave'
                         },
-                        events: {
-                            hide: function(e, api) {
-                                api.destroy(true);
-                            }
-                        }
+                        // events: {
+                        //     hide: function(e, api) {
+                        //         api.destroy(true);
+                        //     }
+                        // }
                     });
                     $(this).qtip('toggle', true);
                 }
@@ -4966,6 +5240,7 @@ function pageLoad() { // MARK: Page Load
                                 });
                             });
 
+                            K.modes.clear();
                             K.map.type.counts = {};
                             K.complete.layers = [];
                             K.timed.layers = [];
@@ -4987,6 +5262,10 @@ function pageLoad() { // MARK: Page Load
 
                         }).done(function() {
                             populateMenus();
+                            K.setWorldTier();
+                            K.loaded = true;
+
+                            setTimeout(() => K.cycle.start(), 1000);
                         });
                     });
                 });
@@ -5286,8 +5565,7 @@ function drawEventCreated(e) { // MARK: Draw Event Created
         type = e.layerType,
         shape = K.settingShape(type),
         copy = (K.local('copy') || {})[shape] || {},
-        popup = copy.p || {},
-        color;
+        popup = copy.p || {};
 
     // Marker
     // ----------------------
@@ -5297,7 +5575,7 @@ function drawEventCreated(e) { // MARK: Draw Event Created
 
         if (K.tool.marker.enabled() && selected.length) {
 
-            let lvl = $('input[name="radio"]:checked').val(),
+            let lvl = $('.outer.inputs input:checked').val(),
                 cat = selected.attr('category'),
                 typ = selected.attr('type'),
                 j = K.tool.marker.layers[K.mode][cat][typ],
@@ -5305,12 +5583,11 @@ function drawEventCreated(e) { // MARK: Draw Event Created
 
             lvl = (lvl ? ' ' + lvl : '');
             popup = j.p;
-            color = !K.empty(popup) ? popup.className : '';
 
             layer = createMarker($.extend({}, p, {
                 id: ID(),
                 latlng: layer._latlng,
-                className: `${p.className}${lvl}`
+                className: `${p.className}${lvl}`,
             }));
 
         } else {
@@ -5356,12 +5633,14 @@ function drawEventCreated(e) { // MARK: Draw Event Created
     K.group.addLayer(layer);
 
     layer.on('click', K.tool.layer.show);
-    layer.options.complete && layer.options.shape === 'marker' && layer.on('contextmenu', function() {
-        this.toggleCompleted(true);
+    layer.getSetting('complete') && layer.options.shape === 'marker' && layer.on('contextmenu', function() {
+        this.toggleCompleted();
     });
 
     layer.saved(false);
     layer.storeSettings();
+
+    K.map.type.add(layer.options.type);
 
     switchLayerGroups();
     polyHoverAnimation();
@@ -5899,7 +6178,7 @@ function createGeoJSON() { // MARK: Create GeoJSON
             !K.empty(sets) && (feature.o = sets);
 
             // grab the popup if it is different from the original
-            if (layer.popup && layer.popup.content || !K.empty(layer.popup.list)) {
+            if (layer.popup && (layer.popup.content || (layer.popup.list && !K.empty(layer.popup.list)))) {
 
                 const p = layer.popup;
                 const sv = K.layer[type] ? K.layer[type].p : {};

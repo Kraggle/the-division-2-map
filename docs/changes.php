@@ -1,6 +1,25 @@
 <? ?>
 <span class="title">Change Log</span>
 
+<span class="sub title date">??<sup>th</sup> <span class="dnt">June</span> 2019</span>
+<ul>
+	<li class="dnt">Added a new setting to Markers so they can be cycled, this is better for Activities which may be one of many.</li>
+	<li class="dnt">A bug has been fixed where switching a layer type from a layer with a popup to without would cause it to not remove the previous popup.</li>
+	<li class="dnt">Now, when adding, removing or changing a layers type, the counts will be updated on the filter menu.</li>
+	<li class="dnt">When duplicating a poly, as long as the type changes, it can now be left in the same place without automatically deleting.</li>
+	<li class="dnt">You can now copy and paste layer positions, this is helpful for markers and their areas that are to be cycled.</li>
+	<li class="dnt"></li>
+	<li class="dnt"></li>
+</ul>
+
+<span class="sub title date">26<sup>th</sup> <span class="dnt">June</span> 2019</span>
+<ul>
+	<li class="dnt">Changed the way the World Tiers work, now all you have to do is complete the missions to progress, this automatically adjusts the mission descriptions, icons and levels of everything on the map. Basically it works the same as the game.</li>
+	<li class="dnt">Added a few more settings to layers for the new World Tier switching to work correctly.</li>
+	<li class="dnt">All Side Missions will now show when on World Tier Mode, in-case you didn't do them while in Story Mode.</li>
+	<li class="dnt">Been back over a few zones adding all of the missing materials, consumables and loot. There is still a lot more to do, but I'm getting there. Slowly!</li>
+</ul>
+
 <span class="sub title date">18<sup>th</sup> <span class="dnt">June</span> 2019</span>
 <ul>
 	<li class="dnt">Updated the marker panel to display the icons in a more stylish manner.</li>

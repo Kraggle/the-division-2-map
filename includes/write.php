@@ -85,7 +85,8 @@ if (login_check($mysqli) && isset($_POST['data'])) {
 	// Find any duplicates that may have snuck in and add them to the delete array
 	$temp = [];
 	foreach ($fileJSON['features'] as $key => $value) { 
-		$latlngs = $value['g']['c'];
+		$type = array_key_exists('t', $value) ? $value['t'] : 'other';
+		$latlngs = json_encode($value['g']['c']) . $type;
 		if (!in_array($latlngs, $temp)) $temp[] = $latlngs; 
 		else $postJSON['deleted'][] = $key;
 	} 

@@ -96,6 +96,8 @@ include_once 'includes/functions.php';
 	<script src="js/Leaflet/Path.Drag/SVG.VML.js?v=1.0.3"></script>
 
 	<script src="js/Leaflet/Bounds/Leaflet.Bounds.Aware.LayerGroup.js?v=1.0.3"></script>
+	<!-- <script src="js/Leaflet/Leaflet.Snap/leaflet.snap.js?v=1.0.3"></script>
+	<script src="js/Leaflet/Leaflet.Snap/leaflet.geometryutil.js?v=1.0.3"></script> -->
 
 	<link rel="stylesheet" href="sass/div.map.css?v=<? echo filemtime('sass/div.map.css') ?>" />
 </head>

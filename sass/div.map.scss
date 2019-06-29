@@ -1199,6 +1199,14 @@ hr {
             background-image: url(../images/menu-paste.svg);
         }
 
+        &.copy-loc {
+            background-image: url(../images/menu-copy-loc.svg);
+        }
+
+        &.paste-loc {
+            background-image: url(../images/menu-paste-loc.svg);
+        }
+
         &.edit {
             background-image: url(../images/menu-edit.svg);
 

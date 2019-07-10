@@ -883,6 +883,18 @@ hr {
                 background-image: url(../images/menu-group.svg);
             }
 
+            .leaflet-control-cancel {
+                background-image: url(../images/menu-cancel.svg?v=1);
+
+                &:not(.leaflet-disabled) {
+                    background-color: lighten(desaturate($power-red, 20%), 5%);
+
+                    &:hover {
+                        background-color: lighten(desaturate($power-red-hover, 20%), 5%);
+                    }
+                }
+            }
+
             .leaflet-control-drag {
                 background-image: url(../images/menu-drag.svg);
 
@@ -1560,7 +1572,7 @@ hr {
         justify-content: flex-end;
         border-bottom: 1px solid $border-hmm;
         transition: .4s all ease;
-        
+
         &.changes {
             &::before {
                 content: '*';
@@ -1570,7 +1582,7 @@ hr {
                 font-size: 20pt;
             }
         }
-        
+
         .name {
             color: $text;
             text-align: center;
@@ -3216,7 +3228,7 @@ path {
         flex: 0 0 calc(100% - 15px);
         padding: 10px 0 8px 15px;
         font-size: 11pt;
-        
+
         &::after {
             position: absolute;
             content: '';

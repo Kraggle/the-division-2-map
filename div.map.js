@@ -974,7 +974,7 @@ L.Control.Button = L.Control.extend({
         position: 'topleft',
         container: 'map',
         text: '',
-        title: 'Save to JSON',
+        title: 'Save all changes',
         css: 'save',
         clickFn: createGeoJSON
     },
@@ -1009,7 +1009,7 @@ L.Control.Button = L.Control.extend({
 
     _onClick: function(e) {
         if (!this._disabled)
-            this.options.clickFn(this);
+            this.options.clickFn();
     },
 
     _createButton: function(html, title, className, container, fn) {
@@ -1327,29 +1327,48 @@ K.extend({ // MARK: K
         r: 0
     },
 
-    save: {
+    save: { // MARK: ^ Save
         unsaved: new L.FeatureGroup(),
         deleted: [],
+        data: false,
         add: function(layer) {
             this.unsaved.addLayer(layer);
             this.check();
+            this.store();
         },
         remove: function(layer) {
             this.unsaved.removeLayer(layer._leaflet_id);
             this.check();
+            this.store();
         },
         delete: function(layer) {
             this.remove(layer);
             this.deleted.push(layer.options.id);
             K.group.removeLayer(layer);
             this.check();
+            this.store();
         },
         check: function() {
-            if (r = K.length(this.unsaved._layers) + this.deleted.length)
+            const r = K.length(this.unsaved._layers) + this.deleted.length;
+            if (r) {
                 K.bar.b.save.enable();
-            else
+                K.bar.b.cancel.enable();
+            } else {
                 K.bar.b.save.disable();
+                K.bar.b.cancel.disable();
+            }
             return r;
+        },
+        store: function() {
+            createGeoJSON(true);
+            K.local('unsaved', this.data);
+        },
+        clear: function() {
+            this.unsaved.clearLayers();
+            this.deleted = [];
+            this.data = false;
+            K.local('unsaved', this.data);
+            this.check();
         }
     },
 
@@ -1928,6 +1947,17 @@ K.extend({ // MARK: K
         time: 5000,
         interval: false,
 
+        reset: function() {
+            this.init = false;
+            this.temp = [];
+            this.groups = [];
+
+            if (this.interval) {
+                clearInterval(this.interval);
+                this.interval = false;
+            }
+        },
+
         start: function() {
             this.init = true;
 
@@ -1936,6 +1966,12 @@ K.extend({ // MARK: K
                 layer.showing = true;
             });
 
+            this.temp = [];
+
+            if (this.interval) {
+                clearInterval(this.interval);
+                this.interval = false;
+            }
             this.interval = setInterval(() => K.cycle.action(), this.time);
             this.action();
         },
@@ -1993,24 +2029,26 @@ K.extend({ // MARK: K
                         group.push(layer);
                 }
 
+                const first = group[0];
                 if (group.length == 1) {
-                    group[0].showing = true;
-                    $(group[0]._icon).show();
-                    group[0].cyclePoly && $(group[0].cyclePoly._path).show();
+                    first.showing = true;
+                    $(first._icon).show();
+                    first.cyclePoly && $(first.cyclePoly._path).show();
 
                     continue;
                 }
 
-                let first, next = false;
+                let next = false,
+                    done = false;
                 for (let j = 0; j < group.length; j++) {
                     const layer = group[j];
-                    if (j == 0) first = layer;
 
                     if (next) {
                         layer.showing = true;
                         $(layer._icon).show();
                         layer.cyclePoly && $(layer.cyclePoly._path).show();
                         next = false;
+                        done = true;
 
                     } else if (layer.showing) {
 
@@ -2020,7 +2058,8 @@ K.extend({ // MARK: K
                         next = true;
                     }
 
-                    if (next && group.length - 1 == j) {
+                    const len = group.length - 1;
+                    if (len == j && (next || !done)) {
                         first.showing = true;
                         $(first._icon).show();
                         first.cyclePoly && $(first.cyclePoly._path).show();
@@ -3447,8 +3486,6 @@ K.tool.layer = { // MARK: Layer Tools
             return;
         }
 
-        console.log(layer.latLng);
-
         layer.setLatLng && layer.setLatLng(pos);
         layer.setLatLngs && layer.setLatLngs(pos);
 
@@ -4325,21 +4362,21 @@ $(function() { // MARK: Document Loaded
     // });
 
     // Save changes warning
-    $(window).bind('beforeunload', function() {
-        if (K.save.check()) {
-            if (navigator.userAgent.toLowerCase().match(/msie|chrome/)) {
-                if (window.aysHasPrompted) {
-                    return;
-                }
-                window.aysHasPrompted = true;
-                window.setTimeout(function() {
-                    window.aysHasPrompted = false;
-                }, 900);
-            }
-            return 'are you sure';
-        }
-        return;
-    });
+    // $(window).bind('beforeunload', function() {
+    //     if (K.save.check()) {
+    //         if (navigator.userAgent.toLowerCase().match(/msie|chrome/)) {
+    //             if (window.aysHasPrompted) {
+    //                 return;
+    //             }
+    //             window.aysHasPrompted = true;
+    //             window.setTimeout(function() {
+    //                 window.aysHasPrompted = false;
+    //             }, 900);
+    //         }
+    //         return 'are you sure';
+    //     }
+    //     return;
+    // });
 
     if (K.local('powered') !== undefined)
         K.check.doOnce = !K.local('powered');
@@ -4366,6 +4403,7 @@ $(function() { // MARK: Document Loaded
 function pageLoad() { // MARK: Page Load
 
     K.loaded = false;
+    K.cycle.reset();
 
     // Check for clean map params and cookies and hide everything
     if (K.urlParam('noIcon') == 'true')
@@ -4472,7 +4510,7 @@ function pageLoad() { // MARK: Page Load
                 }
             }).addTo(K.myMap);
 
-            K.bar.b.power = $.extend(K.bar.b.power, {
+            $.extend(K.bar.b.power, {
                 enabled: function() {
                     return !$(this._button).hasClass('enabled');
                 },
@@ -4527,6 +4565,46 @@ function pageLoad() { // MARK: Page Load
             });
 
             K.bar.b.save = L.control.button().addTo(K.myMap).disable();
+
+            // MARK: Discard Button
+            K.bar.b.cancel = L.control.button({
+                text: '',
+                title: 'Discard all unsaved changes',
+                css: 'cancel',
+                clickFn: function() {
+                    
+                    $('<div />', {
+                        class: 'screen-blank',
+                        html: $('<div />', {
+                            class: 'confirm',
+                            html: $('<div />', {
+                                class: 'message',
+                                html: 'Are you sure you want to discard all changes?'
+                            })
+                        })
+                    }).appendTo('body');
+
+                    $('<a />', {
+                            class: 'button no',
+                            title: 'Cancel',
+                            html: 'Cancel'
+                        }).appendTo('.confirm')
+                        .on('click', function() {
+                            $('.screen-blank').remove();
+                        });
+
+                    $('<a />', {
+                            class: 'button yes',
+                            title: 'Discard',
+                            html: 'Discard'
+                        }).appendTo('.confirm')
+                        .on('click', function() {
+                            $('.screen-blank').remove();
+                            K.save.clear();
+                            pageLoad();
+                        });
+                }
+            }).addTo(K.myMap).disable();
 
             K.bar.b.group = L.control.button({
                 text: '',
@@ -4969,6 +5047,8 @@ function pageLoad() { // MARK: Page Load
 
             add && K.group.addLayer(l);
             l.markComplete();
+
+            e.unsaved && l.saved(false);
         };
 
         const populateMenus = function() { // MARK: ^ Populate Menus
@@ -5094,7 +5174,7 @@ function pageLoad() { // MARK: Page Load
                     K.completeHidden = true;
                 }
 
-                K.local('completeHidden', K.completeHidde);
+                K.local('completeHidden', K.completeHidden);
                 K.complete.showHide();
             });
 
@@ -5245,9 +5325,18 @@ function pageLoad() { // MARK: Page Load
                             K.complete.layers = [];
                             K.timed.layers = [];
 
-                            // merge the user data with the main data
+                            const unsaved = K.local('unsaved') || { features: {}, settings: {} };
+                            $.each(unsaved.features, function(id, feature) {
+                                feature.unsaved = true;
+                            });
+                            $.each(unsaved.settings, function(id, setting) {
+                                setting.unsaved = true;
+                            });
+
+                            // merge the user data & unsaved changes with the main data
                             userJSON.features && $.extend(geoJSON.features, userJSON.features);
-                            K.layer = $.extend({}, geoJSON.settings, userJSON.settings || {});
+                            $.extend(geoJSON.features, unsaved.features);
+                            K.layer = $.extend({}, geoJSON.settings, userJSON.settings || {}, unsaved.settings);
 
                             // change the incoming variables to the correct variable type
                             $.each(K.layer, function(type, obj) {
@@ -6078,7 +6167,7 @@ function switchLayerGroups(d) {
 //             Save to geoJSON
 //
 //////////////////////////////////////////////////////
-function createGeoJSON() { // MARK: Create GeoJSON
+function createGeoJSON(store = false) { // MARK: Create GeoJSON
 
     $('#settings-menu').remove();
 
@@ -6093,7 +6182,7 @@ function createGeoJSON() { // MARK: Create GeoJSON
             return;
         }
 
-        !development && K.msg.show({
+        !development && !store && K.msg.show({
             msg: 'SAVING...',
             dots: true
         });
@@ -6106,7 +6195,7 @@ function createGeoJSON() { // MARK: Create GeoJSON
         };
 
         // Switch the groups back to their correct homes first
-        switchLayerGroups(true);
+        // switchLayerGroups(true);
 
         // pull in the global settings that have changed
         $.each(K.layer, function(type, obj) {
@@ -6205,7 +6294,13 @@ function createGeoJSON() { // MARK: Create GeoJSON
 
         console.log('saved data...', geoData);
         // console.log(JSON.stringify(geoData));
+
         if (development) return;
+        if (store) {
+            K.save.data = geoData;
+            return geoData;
+        }
+
         // Save this all to a file
         $.ajax({
             type: 'POST',
@@ -6222,13 +6317,7 @@ function createGeoJSON() { // MARK: Create GeoJSON
 
             } else {
 
-                // Disable the save button and clear the editing from the modified layers
-                K.bar.b.save.disable();
-
-                K.save.unsaved.clearLayers();
-                K.save.deleted = [];
-
-                polyHoverAnimation();
+                K.save.clear();
                 K.msg.hide();
                 pageLoad();
             }

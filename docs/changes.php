@@ -1,8 +1,11 @@
 <? ?>
 <span class="title">Change Log</span>
 
-<span class="sub title date">??<sup>th</sup> <span class="dnt">June</span> 2019</span>
+<span class="sub title date">31<sup>st</sup> <span class="dnt">July</span> 2019</span>
 <ul>
+	<li class="dnt">You can now search for anything from a new menu. The search result can be sorted in a number of ways including my favorite, by distance, this creates a path through every result. Search results can be clicked which pans the map to that location. You can also search specifically by Type, Category, Content and Creator, this last one helps you to find your own layers.</li>
+	<li class="dnt">You can now share layers and your search results, which adds a link to your clipboard.</li>
+	<li class="dnt">There is now a context menu on all layers, this menu includes 'Search Similar', 'Share' and 'Complete' where applicable. There is also 'Settings', 'Edit' and 'Move' if you have access to do this.</li>
 	<li class="dnt">Added a new setting to Markers so they can be cycled, this is better for Activities and the shared Resource Nodes which may be one of many taking up the same space.</li>
 	<li class="dnt">All unsaved changes are now stored locally until you save them, this is persistent through disconnections, crashes and just forgetting to press save. Also with this there is also a cancel button, just in case you don't actually want to save your changes.</li>
 	<li class="dnt">A bug has been fixed where switching a layer type from a layer with a popup to without would cause it to not remove the previous popup.</li>
@@ -10,9 +13,8 @@
 	<li class="dnt">When duplicating a poly, as long as the type changes, it can now be left in the same place without automatically deleting.</li>
 	<li class="dnt">You can now copy and paste layer positions, this is helpful for markers and their areas that are to be cycled.</li>
 	<li class="dnt">Hiding Completed layers will now be persistent after reloading the page.</li>
-	<li class="dnt">When editing a poly, if you also enable dragging, dragging will no longer work in edit mode. This stops it messing up the drag markers.</li>
+	<li class="dnt">When editing a poly, if you also enable dragging, dragging will no longer work in edit mode. This stops it messing up the edit drag markers.</li>
 	<li class="dnt">Cancel now resets a dragged layer back to it's original position.</li>
-	<li class="dnt"></li>
 </ul>
 
 <span class="sub title date">26<sup>th</sup> <span class="dnt">June</span> 2019</span>

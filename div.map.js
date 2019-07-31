@@ -2117,6 +2117,16 @@ K.search = {
         content: 'layer._popup._content'
     },
 
+    line: L.polyline([
+        [50, 50],
+        [51, 50]
+    ], {
+        group: 'groupAll',
+        weight: 2,
+        color: '#724ab1',
+        opacity: 0.4
+    }),
+
     // elements
     elements: [{
         key: 'NONE',
@@ -2220,6 +2230,19 @@ K.search = {
         action: function(el) {
             K.local('search-match', $(el).is(':checked'));
             this.SEARCH.trigger('change').focus();
+        }
+    }, {
+        key: 'CHECK.PATH',
+        selector: '.search .checks input.path',
+        event: 'change',
+        value: K.local('search-path') || false,
+        action: function(el) {
+            K.local('search-path', $(el).is(':checked'));
+            if ($(el).is(':checked')) {
+                K.myMap.addLayer(K.search.line);
+            } else {
+                K.myMap.removeLayer(K.search.line);
+            }
         }
     }, {
         key: 'CHECK.ONLY',
@@ -2342,6 +2365,8 @@ K.search = {
                 });
             });
         });
+
+        this.CHECK.PATH.is(':checked') && K.myMap.addLayer(K.search.line);
     },
 
     results: function(string, options) {
@@ -2615,19 +2640,19 @@ K.search = {
                 });
 
                 if (this.list[smallest.index]) {
-                    if (distances.length > len / 2 && smallest.distance * 1.5 > Math.max.apply(Math, distances)) {
-                        placeAfterClosest(this.list[smallest.index]);
+                    if (distances.length > len / 4 && smallest.distance > Math.max.apply(Math, distances)) {
+                        placeBeforeClosest(this.list[smallest.index]);
                         return;
                     }
 
-                    n++;
+                    smallest.distance > 5 && n++;
                     distances.push(smallest.distance);
                     this.list[smallest.index].distance = n;
                     findFor(this.list[smallest.index]);
                 }
             };
 
-            const placeAfterClosest = (item) => {
+            const placeBeforeClosest = (item) => {
                 const latLng1 = item.layer._latlng || L.latLngBounds(item.layer._latlngs).getCenter(),
                     smallest = {
                         index: -1,
@@ -2647,7 +2672,7 @@ K.search = {
                 let increase = Infinity;
 
                 if (this.list[smallest.index]) {
-                    n = this.list[smallest.index].distance;
+                    n = this.list[smallest.index].distance - 1;
                     distances.push(smallest.distance);
                     n++;
                     item.distance = increase = n;
@@ -2689,11 +2714,11 @@ K.search = {
             }
         });
 
-        // const path = [];
-        // K.each(this.list, (i, item) => {
-        //     path.push(item.layer._latlng || L.latLngBounds(item.layer._latlngs).getCenter());
-        // });
-        // K.myMap.addLayer(L.polyline(path, { group: 'groupAll' }));
+        const path = [];
+        K.each(this.list, (i, item) => {
+            path.push(item.layer._latlng || L.latLngBounds(item.layer._latlngs).getCenter());
+        });
+        this.line.setLatLngs(path);
     },
 
     find: function(id) {

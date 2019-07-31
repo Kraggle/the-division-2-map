@@ -96,6 +96,10 @@ include_once 'includes/functions.php';
 	<script src="js/Leaflet/Path.Drag/SVG.js?v=1.0.3"></script>
 	<script src="js/Leaflet/Path.Drag/SVG.VML.js?v=1.0.3"></script>
 
+	<!-- <script src="js/Leaflet/Decorator/L.PolylineDecorator.js?v=1.0.4"></script>
+	<script src="js/Leaflet/Decorator/L.Symbol.js?v=1.0.4"></script>
+	<script src="js/Leaflet/Decorator/patternUtils.js?v=1.0.5"></script> -->
+
 	<script src="js/Leaflet/Bounds/Leaflet.Bounds.Aware.LayerGroup.js?v=1.0.3"></script>
 	<!-- <script src="js/Leaflet/Leaflet.Snap/leaflet.snap.js?v=1.0.3"></script>
 	<script src="js/Leaflet/Leaflet.Snap/leaflet.geometryutil.js?v=1.0.3"></script> -->

@@ -45,6 +45,7 @@
         "latex",
         "plaintext",
         "todo",
-        "php"
+        "php",
+        "html"
     ]
 }

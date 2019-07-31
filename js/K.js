@@ -51,6 +51,26 @@
 
     K.Util = {
 
+        formatLatLngs: function(latLngs, digits = 5) {
+            var pow = Math.pow(10, digits);
+
+            switch (K.Util.type(latLngs)) {
+                case 'object': // just a Lat, Lng object
+                    latLngs.lat = Math.round(latLngs.lat * pow) / pow;
+                    latLngs.lng = Math.round(latLngs.lng * pow) / pow;
+                    break;
+                case 'array': // could be array of arrays, or simply array of objects
+                    for (let i = 0; i < latLngs.length; i++)
+                        latLngs[i] = K.Util.formatLatLngs(latLngs[i], digits);
+                    break;
+                case 'number': // just a lat or a lng
+                    return Math.round(latLngs * pow) / pow;
+            }
+
+            return latLngs;
+        },
+
+
         // // @function extend(dest: Object, src?: Object): Object
         // // Merges the properties of the `src` object (or multiple objects) into `dest` object and returns the latter. Has an `K.extend` shortcut.
         extend: function() {
@@ -360,7 +380,7 @@
 
             K.Util.each(r, function(k, v) {
                 v = v.split('=');
-                a[v[0]] = v[1];
+                a[v[0]] = decodeURI(v[1]);
             });
 
             return a[name] || a;
@@ -532,6 +552,22 @@
                 default:
                     return !obj;
             }
+        },
+
+        getPropByString: (obj, string) => {
+            if (!string)
+                return obj;
+
+            const props = string.split('.');
+
+            for (var i = 0, iLen = props.length - 1; i < iLen; i++) {
+                const prop = props[i],
+                    candidate = obj[prop];
+
+                if (candidate !== undefined) obj = candidate;
+                else break;
+            }
+            return obj[props[i]];
         }
     };
 
@@ -555,6 +591,35 @@
     K.empty = K.Util.empty;
     K.local = K.Util.local;
     K.localRemove = K.Util.localRemove;
+    K.getPropByString = K.Util.getPropByString;
+
+    K.includeHTML = function() {
+        var z, i, elmnt, file, xhttp;
+        /* Loop through a collection of all HTML elements: */
+        z = document.getElementsByTagName("*");
+        for (i = 0; i < z.length; i++) {
+            elmnt = z[i];
+            /*search for elements with a certain atrribute:*/
+            file = elmnt.getAttribute("include");
+            if (file) {
+                /* Make an HTTP request using the attribute value as the file name: */
+                xhttp = new XMLHttpRequest();
+                xhttp.onreadystatechange = function() {
+                    if (this.readyState == 4) {
+                        if (this.status == 200) { elmnt.innerHTML = this.responseText; }
+                        if (this.status == 404) { elmnt.innerHTML = "Page not found."; }
+                        /* Remove the attribute, and call this function once more: */
+                        elmnt.removeAttribute("include");
+                        K.includeHTML();
+                    }
+                }
+                xhttp.open("GET", file, true);
+                xhttp.send();
+                /* Exit the function: */
+                return;
+            }
+        }
+    }
 
     // @class Class
     // @aka K.Class
@@ -987,7 +1052,7 @@ if (!Array.prototype.removeDupes) {
         var r = [],
             a = [];
 
-        $.each(this, function(i, v) {
+        K.each(this, function(i, v) {
             var vs = JSON.stringify(v);
             if (!K.isInArray(vs, r)) {
                 r.push(vs);
@@ -1009,7 +1074,7 @@ if (!String.prototype.filter) {
         if (s.length < 2)
             return s[0];
 
-        $.each(s, function(i, v) {
+        K.each(s, function(i, v) {
             if (!K.isInArray(v, r))
                 r.push(v);
         });
@@ -1030,6 +1095,17 @@ if (!Array.prototype.clean) {
     }
 }
 
+if (!Array.prototype.average) {
+    Array.prototype.average = function() {
+        if (this.length) {
+            let sum = this.reduce((a, b) => a + b);
+            return sum / this.length;
+        }
+
+        return 0;
+    }
+}
+
 if (!String.prototype.bMatch) {
     String.prototype.bMatch = function(regExp) {
         var s = this.toString();
@@ -1042,10 +1118,12 @@ if (!String.prototype.bMatch) {
 }
 
 if (!String.prototype.contains) {
-    String.prototype.contains = function(str) {
-        var s = this.toString().toLowerCase();
+    String.prototype.contains = function(str = '', matchCase = false) {
+        var s = this.toString();
 
-        if (s.indexOf((str || '').toLowerCase()) == -1)
+        !matchCase && (s = s.toLowerCase(), str = str.toLowerCase());
+
+        if (s.indexOf(str) == -1)
             return false;
 
         return true;
@@ -1076,6 +1154,20 @@ if (!String.prototype.firstToUpper) {
     String.prototype.firstToUpper = function() {
         var s = this.toString();
         return s.substr(0, 1).toUpperCase() + s.substr(1);
+    }
+}
+
+// Checks that two strings are equal, with optional case sensitivity
+if (!String.prototype.equals) {
+    String.prototype.equals = function(other, matchCase = false) {
+        if (K.type(other) != 'string') return false;
+
+        let me = this.toString();
+        if (!matchCase) {
+            me = me.toLowerCase();
+            other = other.toLowerCase();
+        }
+        return me == other;
     }
 }
 
@@ -1133,6 +1225,15 @@ if (!String.prototype.remove) {
         }
 
         return string;
+    }
+}
+
+// Get a string/regex value from another string
+if (!String.prototype.get) {
+    String.prototype.get = function(value) {
+        let string = this.toString();
+        let match = string.match(value);
+        return K.empty(match) ? '' : match[0];
     }
 }
 

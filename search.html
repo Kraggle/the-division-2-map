@@ -1,0 +1,132 @@
+<div class="no-scroll">
+	<span class="title">Search</span>
+
+	<div class="share all button" title="Copy a shareable link of this search to the clipboard." style="display:none"></div>
+
+	<!-- TODO: add a help popup -->
+	<!-- TODO: add tooltips to buttons -->
+
+	<div class="quick">
+		<div class="button type" type="type" title="Search in 'Type' only.">Type</div>
+		<div class="button creator" type="creator" title="Search in 'Creator' only.">Creator</div>
+		<div class="button category" type="category" title="Search in 'Category' only.">Category</div>
+		<div class="button content" type="content" title="Search in 'Content' only.">Content</div>
+	</div>
+
+	<div class="search-wrapper">
+		<input id="search" class="input search" type="text" placeholder="Search for?" />
+		<div id="search-clear" class="search-clear" title="Clear search."></div>
+	</div>
+
+	<div class="checks">
+		<label class="check exact" title="In 'Category', 'Type' and 'Creator', search only for an exact match.">
+			<input type="checkbox" class="checkbox exact" btn="exact">
+			<span class="text">Exact Match</span>
+			<div class="mark back"></div>
+			<div class="mark tick"></div>
+		</label>
+		<label class="check match" title="Makes your search case sensitive.">
+			<input type="checkbox" class="checkbox match" btn="match">
+			<span class="text">Match Case</span>
+			<div class="mark back"></div>
+			<div class="mark tick"></div>
+		</label>
+		<label class="check only" title="Shows only the results of your search on the map." style="display:none">
+			<input type="checkbox" class="checkbox only" btn="only">
+			<span class="text">Results Only</span>
+			<div class="mark back"></div>
+			<div class="mark tick"></div>
+		</label>
+	</div>
+
+	<div class="sort">
+		<div class="toggle-wrap">
+			<label class="toggle button distance asc" title="Sort by 'Distance' ascending.">
+				<input type="checkbox" class="checkbox distance asc" btn="distance" dir="asc">
+				<div class="back distance asc"></div>
+			</label>
+			<label class="toggle button distance desc" title="Sort by 'Distance' descending.">
+				<input type="checkbox" class="checkbox distance desc" btn="distance" dir="desc">
+				<div class="back distance desc"></div>
+			</label>
+		</div>
+		<div class="toggle-wrap">
+			<label class="toggle button category asc" title="Sort by 'Category' ascending.">
+				<input type="checkbox" class="checkbox category asc" btn="category" dir="asc">
+				<div class="back category asc"></div>
+			</label>
+			<label class="toggle button category desc" title="Sort by 'Category' descending.">
+				<input type="checkbox" class="checkbox category desc" btn="category" dir="desc">
+				<div class="back category desc"></div>
+			</label>
+		</div>
+		<div class="toggle-wrap">
+			<label class="toggle button type asc" title="Sort by 'Type' ascending.">
+				<input type="checkbox" class="checkbox type asc" btn="type" dir="asc">
+				<div class="back type asc"></div>
+			</label>
+			<label class="toggle button type desc" title="Sort by 'Type' descending.">
+				<input type="checkbox" class="checkbox type desc" btn="type" dir="desc">
+				<div class="back type desc"></div>
+			</label>
+		</div>
+		<div class="toggle-wrap">
+			<label class="toggle button content asc" title="Sort by 'Content' ascending.">
+				<input type="checkbox" class="checkbox content asc" btn="content" dir="asc">
+				<div class="back content asc"></div>
+			</label>
+			<label class="toggle button content desc" title="Sort by 'Content' descending.">
+				<input type="checkbox" class="checkbox content desc" btn="content" dir="desc">
+				<div class="back content desc"></div>
+			</label>
+		</div>
+		<div class="toggle-wrap">
+			<label class="toggle button date asc" title="Sort by 'Date' ascending.">
+				<input type="checkbox" class="checkbox date asc" btn="date" dir="asc">
+				<div class="back date asc"></div>
+			</label>
+			<label class="toggle button date desc" title="Sort by 'Date' descending.">
+				<input type="checkbox" class="checkbox date desc" btn="date" dir="desc">
+				<div class="back date desc"></div>
+			</label>
+		</div>
+	</div>
+</div>
+
+<div class="side-content">
+	<div class="no-results">
+		<p class="none">There are no results!</p>
+		<p class="try">You can try the following...</p>
+		<ul class="list">
+			<li>Check your spelling</li>
+			<li>Use fewer words</li>
+			<li>Browse the map :)</li>
+		</ul>
+	</div>
+
+	<div class="count"></div>
+
+	<div class="results"></div>
+
+	<div class="more">Load More</div>
+
+	<div class="result">
+		<span class="place">#<span class="num"></span></span>
+		<img class="icon" src="">
+		<div class="poly"></div>
+		<div class="creator back"></div>
+		<div class="creator head">Creator</div>
+		<div class="creator text"></div>
+		<div class="type back"></div>
+		<div class="type head">Type</div>
+		<div class="type text"></div>
+		<div class="category back"></div>
+		<div class="category head">Category</div>
+		<div class="category text"></div>
+		<div class="leaflet-popup-content content text"></div>
+		<hr>
+	</div>
+
+	<div include="includes/credits.php"></div>
+
+</div>

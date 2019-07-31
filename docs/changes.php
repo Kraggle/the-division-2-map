@@ -10,6 +10,8 @@
 	<li class="dnt">When duplicating a poly, as long as the type changes, it can now be left in the same place without automatically deleting.</li>
 	<li class="dnt">You can now copy and paste layer positions, this is helpful for markers and their areas that are to be cycled.</li>
 	<li class="dnt">Hiding Completed layers will now be persistent after reloading the page.</li>
+	<li class="dnt">When editing a poly, if you also enable dragging, dragging will no longer work in edit mode. This stops it messing up the drag markers.</li>
+	<li class="dnt">Cancel now resets a dragged layer back to it's original position.</li>
 	<li class="dnt"></li>
 </ul>
 

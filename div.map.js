@@ -1058,1017 +1058,1843 @@ K.extend({ // MARK: K
     pane: {},
     tool: {},
     expires: { expires: 28 },
-    classRemoval: '',
+    classRemoval: ''
+});
 
-    checkLogin: function(callback) {
-        let end = new Date(K.lastCheck || '').getTime(),
-            now = new Date().getTime(),
-            gap = now - end;
+K.checkLogin = function(callback) {
+    let end = new Date(K.lastCheck || '').getTime(),
+        now = new Date().getTime(),
+        gap = now - end;
 
-        if (!K.lastCheck || gap > 60000) {
-            $.ajax({
-                url: 'includes/check_login.php'
-            }).done(function(a) {
-                a = $.parseJSON(a);
-                K.user.name = a.username || false;
-                K.user.type = a.usertype || 0;
-                K.user.donate = a.donate || 0;
+    if (!K.lastCheck || gap > 60000) {
+        $.ajax({
+            url: 'includes/check_login.php'
+        }).done(function(a) {
+            a = $.parseJSON(a);
+            K.user.name = a.username || false;
+            K.user.type = a.usertype || 0;
+            K.user.donate = a.donate || 0;
 
-                K.user.data = false;
-                K.user.name && K.user.getData();
+            K.user.data = false;
+            K.user.name && K.user.getData();
 
-                if (callback) callback();
-                K.lastCheck = new Date();
+            if (callback) callback();
+            K.lastCheck = new Date();
+        });
+
+    } else if (callback) callback();
+};
+
+// MARK: Complete
+K.complete = {
+    layers: [],
+    add: function(layer) {
+        let add = true;
+        $.each(this.layers, function(i, l) {
+            if (layer.options.id === l.options.id) add = false;
+        });
+        add && !layer.options.onComplete && this.layers.push(layer);
+
+        if (!K.timed.interval) K.timed.action();
+    },
+    remove: function(id) {
+        let index = false;
+        for (let i = 0; i < this.layers.length; i++) {
+            const v = this.layers[i];
+            if (id === v.options.id) {
+                index = i;
+                break;
+            }
+        }
+
+        if ($.type(index) === 'number') this.layers.splice(index, 1);
+    },
+    is: function(layer) {
+        if (K.type(layer) == 'string') layer = K.group.getLayer(layer);
+        if (!layer) return false;
+        if (!layer.getSetting('complete')) return false;
+        let uD = K.user.data,
+            id = layer.options.id;
+        if (!uD && !K.in('complete', K.local())) K.local('complete', {});
+        if (uD) return K.in(id, uD);
+        return K.in(id, K.local('complete'));
+    },
+    time: function(layer) {
+        if (!this.is(layer)) return false;
+        let uD = K.user.data,
+            id = layer.options.id,
+            time = uD ? uD[id] : K.local('complete')[id];
+
+        if ($.type(time) === 'string') {
+            let end = new Date(time).getTime(),
+                now = new Date().getTime(),
+                gap = end - now,
+                hrs = Math.ceil((gap % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+                min = Math.ceil((gap % (1000 * 60 * 60)) / (1000 * 60));
+
+            if (gap < 0) {
+                this.set(false, layer);
+                time = false;
+            } else if (hrs) time = hrs + 'h';
+            else if (min) time = min + 'm';
+
+        } else time = false;
+
+        return time;
+    },
+    toggle: function(layer) {
+        return this.set(!layer.complete, layer);
+    },
+    set: function(done, layer) {
+
+        let uD = K.user.data,
+            id = layer.options.id,
+            time = layer.options.time;
+        if (!uD && !K.in('complete', localStorage)) K.local('complete', {});
+        let obj = uD ? uD : K.local('complete');
+
+        if (done) {
+            obj[id] = time ? new Date().addHours(time).toString() : true;
+            this.add(layer);
+        } else {
+            delete obj[id];
+            this.remove(layer.options.id);
+        }
+
+        layer.complete = done;
+
+        !uD && K.local('complete', obj);
+        if (uD) {
+            if (this.timeout) clearTimeout(this.timeout);
+            this.timeout = setTimeout(() => {
+                $.ajax({
+                    type: "POST",
+                    url: 'includes/write_complete.php',
+                    data: {
+                        data: JSON.stringify(K.user.data)
+                    }
+                }).done(() => {
+                    console.log("saved data!", K.user.data);
+                });
+            }, 1000);
+        }
+
+        return layer.complete;
+    },
+    timeout: false,
+    showHide: function() {
+
+        switchLayerGroups(true);
+
+        let h = K.completeHidden,
+            layers = K.complete.layers,
+            gC = K.group.mode.groupComplete,
+            g, show, hide, i, hidden;
+
+        K.filters = K.local('filters') || {};
+
+        $.each(layers, function(x, layer) {
+            hidden = K.filters[layer.options.type];
+            const gn = hidden ? 'groupHidden' : layer.options.group;
+            g = K.group.mode[gn];
+            i = layer._leaflet_id;
+
+            show = (h ? gC : g);
+            hide = (h ? g : gC);
+
+            if (hide.getLayer(i)) {
+                show.addLayer(hide.getLayer(i));
+                hide.removeLayer(i);
+
+                layer.currentGroup = h ? 'groupComplete' : gn;
+            }
+        });
+
+        switchLayerGroups();
+        polyHoverAnimation();
+    }
+};
+
+K.timed = {
+    layers: [],
+    interval: false,
+    add: function(layer) {
+        let add = true;
+        $.each(K.timed.layers, function(i, l) {
+            if (layer.options.id === l.options.id) add = false;
+        });
+        add && K.timed.layers.push(layer);
+    },
+    action: function() {
+        K.timed.interval = setInterval(() => {
+
+            if (!K.timed.layers.length) {
+                clearInterval(K.timed.interval);
+                K.timed.interval = false;
+                return;
+            }
+
+            $.each(K.timed.layers, function(i, layer) {
+                layer.markComplete();
             });
 
-        } else if (callback) callback();
+            K.complete.showHide();
+
+        }, 60000);
+    },
+    remove: function(id) {
+        let index = false;
+        for (let i = 0; i < K.timed.layers.length; i++) {
+            const v = K.timed.layers[i];
+            if (id === v.options.id) {
+                index = i;
+                break;
+            }
+        }
+
+        if ($.type(index) === 'number') K.timed.layers.splice(index, 1);
+    }
+};
+
+K.bar = {
+    b: {
+        save: false,
+        group: false,
+        grid: false,
+        tools: false
+    },
+    draw: {},
+    edit: {}
+};
+
+K.check = {
+    editing: false,
+    deleting: false,
+    disabled: false,
+    doOnce: true,
+    grabbing: false
+};
+
+K.drawControl = false;
+
+// MARK: ^ Group
+K.group = {
+    _search: {},
+
+    save: new L.FeatureGroup(),
+
+    draw: new L.FeatureGroup([], {
+        makeBoundsAware: false
+    }),
+
+    feature: {},
+
+    getLayer: function(id) {
+        let r = null;
+        this.mode.everyLayer.eachLayer(function(l) {
+            if (l.options.id == id) r = l;
+        });
+        return r;
     },
 
-    complete: { // MARK: ^ Complete
-        layers: [],
-        add: function(layer) {
-            let add = true;
-            $.each(this.layers, function(i, l) {
-                if (layer.options.id === l.options.id) add = false;
+    addLayer: function(layer) {
+        if (!(layer instanceof L.Layer)) return this;
+
+        layer.currentGroup = layer.options.group;
+
+        for (let mode in layer.options.mode) {
+            if (!K.in(mode, this.feature)) continue;
+            this.feature[mode][layer.options.group].addLayer(layer);
+            this.feature[mode].everyLayer.addLayer(layer);
+        }
+
+        return this;
+    },
+
+    removeLayer: function(layer, group) {
+        if (!(layer instanceof L.Layer)) return this;
+        !group && (group = layer.options.group);
+
+        for (let mode in layer.options.mode) {
+            this.feature[mode][group].removeLayer(layer);
+            this.feature[mode].everyLayer.removeLayer(layer);
+        }
+
+        return this;
+    },
+
+    all: function() {
+        return this.feature[K.mode].everyLayer._layers;
+    },
+
+    search: function() {
+        if (K.empty(this._search)) {
+            const search = this._search;
+            let i = 0;
+
+            this.feature[K.mode].everyLayer.eachLayer(function(l) {
+                K.in('type', l.options) && !K.empty(l.options.type) && (search[l.options.id] = {
+                    layer: l,
+                    creator: l.options.creator,
+                    type: l.options.type.space(),
+                    content: l._popup ? $('<div />', { html: l._popup._content }).text().replace(/[\s\n]+/g, ' ').space() : '',
+                    category: l.options.category,
+                    date: i++
+                });
             });
-            add && !layer.options.onComplete && this.layers.push(layer);
+        }
 
-            if (!K.timed.interval) K.timed.action();
-        },
-        remove: function(id) {
-            let index = false;
-            for (let i = 0; i < this.layers.length; i++) {
-                const v = this.layers[i];
-                if (id === v.options.id) {
-                    index = i;
-                    break;
-                }
+        return this._search;
+    },
+
+    clearSearch: function() {
+        this._search = {};
+    }
+};
+
+K.grid = {
+    overlay: L.imageOverlay('images/grid.svg', [
+        [-19.05, -19.05],
+        [19.05, 19.05]
+    ]),
+    x: 0,
+    y: 0,
+    r: 0
+};
+
+K.save = { // MARK: ^ Save
+    unsaved: new L.FeatureGroup(),
+    deleted: [],
+    data: false,
+    add: function(layer) {
+        this.unsaved.addLayer(layer);
+        this.check();
+        this.store();
+    },
+    remove: function(layer) {
+        this.unsaved.removeLayer(layer._leaflet_id);
+        this.check();
+        this.store();
+    },
+    delete: function(layer) {
+        this.remove(layer);
+        this.deleted.push(layer.options.id);
+        K.group.removeLayer(layer);
+        this.check();
+        this.store();
+    },
+    check: function() {
+        const r = K.length(this.unsaved._layers) + this.deleted.length;
+        if (r) {
+            K.bar.b.save.enable();
+            K.bar.b.cancel.enable();
+        } else {
+            K.bar.b.save.disable();
+            K.bar.b.cancel.disable();
+        }
+        return r;
+    },
+    store: function() {
+        createGeoJSON(true);
+        K.local('unsaved', this.data);
+    },
+    clear: function() {
+        this.unsaved.clearLayers();
+        this.deleted = [];
+        this.data = false;
+        K.local('unsaved', this.data);
+        this.check();
+    }
+};
+
+K.map = {
+    active: [],
+    group: {
+        everyLayer: [],
+        groupAll: [],
+        groupHidden: [],
+        groupComplete: [],
+        group08: [],
+        group09: [],
+        group10: [],
+        group11: [],
+        group12: []
+    },
+    type: {
+        counts: {},
+        add: function(type) {
+            if (type) {
+                !K.in(type, this.counts) && (this.counts[type] = 0);
+                this.counts[type] += 1;
+                this.updateButton(type);
             }
-
-            if ($.type(index) === 'number') this.layers.splice(index, 1);
         },
-        is: function(layer) {
-            if (K.type(layer) == 'string') layer = K.group.getLayer(layer);
-            if (!layer) return false;
-            if (!layer.getSetting('complete')) return false;
-            let uD = K.user.data,
-                id = layer.options.id;
-            if (!uD && !K.in('complete', K.local())) K.local('complete', {});
-            if (uD) return K.in(id, uD);
-            return K.in(id, K.local('complete'));
-        },
-        time: function(layer) {
-            if (!this.is(layer)) return false;
-            let uD = K.user.data,
-                id = layer.options.id,
-                time = uD ? uD[id] : K.local('complete')[id];
-
-            if ($.type(time) === 'string') {
-                let end = new Date(time).getTime(),
-                    now = new Date().getTime(),
-                    gap = end - now,
-                    hrs = Math.ceil((gap % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-                    min = Math.ceil((gap % (1000 * 60 * 60)) / (1000 * 60));
-
-                if (gap < 0) {
-                    this.set(false, layer);
-                    time = false;
-                } else if (hrs) time = hrs + 'h';
-                else if (min) time = min + 'm';
-
-            } else time = false;
-
-            return time;
-        },
-        toggle: function(layer) {
-            return this.set(!layer.complete, layer);
-        },
-        set: function(done, layer) {
-
-            let uD = K.user.data,
-                id = layer.options.id,
-                time = layer.options.time;
-            if (!uD && !K.in('complete', localStorage)) K.local('complete', {});
-            let obj = uD ? uD : K.local('complete');
-
-            if (done) {
-                obj[id] = time ? new Date().addHours(time).toString() : true;
-                this.add(layer);
-            } else {
-                delete obj[id];
-                this.remove(layer.options.id);
+        remove: function(type) {
+            if (type) {
+                this.counts[type] -= 1;
+                this.updateButton(type);
             }
+        },
+        updateButton: function(type) {
+            $(`.side-bar-button[label=${type}] .quantity`).text(`[ x${this.counts[type]} ]`);
+        }
+    },
+    mode: {},
+    property: { // these are used to clear unwanted settings before saving
+        polygon: [
+            'category', 'color', 'weight', 'opacity', 'fillColor',
+            'fill', 'fillOpacity', 'stroke', 'group',
+            'type', 'className', 'mode', 'complete', 'prerequisites', 'onComplete'
+        ],
+        circle: [
+            'category', 'color', 'weight', 'opacity', 'fillColor',
+            'fill', 'fillOpacity', 'stroke', 'group', 'type',
+            'className', 'mode', 'complete', 'prerequisites', 'onComplete'
+        ],
+        rectangle: [
+            'category', 'color', 'weight', 'opacity', 'fillColor',
+            'fill', 'fillOpacity', 'stroke', 'group', 'type',
+            'className', 'mode', 'complete', 'prerequisites', 'onComplete'
+        ],
+        polyline: [
+            'category', 'color', 'weight', 'opacity', 'stroke',
+            'complete', 'group', 'type', 'className', 'mode', 'prerequisites', 'onComplete'
+        ],
+        marker: [
+            'category', 'group', 'type', 'time', 'iconSize', 'html', 'cycle',
+            'mode', 'complete', 'link', 'iconUrl', 'className', 'prerequisites', 'onComplete'
+        ],
+        popup: ['className']
+    },
+    defaults: { // speaks for itself, these are the defaults when creating a layer
+        marker: {
+            category: 'default',
+            className: 'anim-icon',
+            group: 'group08',
+            iconSize: [22, 22],
+            iconUrl: 'images/marker-poi-contaminated.svg',
+            mode: {
+                [K.mode]: {}
+            },
+            shape: 'marker',
+            type: 'Contaminated'
+        },
+        polygon: {
+            category: 'default',
+            className: '',
+            color: '#c22e2e',
+            fill: 1,
+            fillColor: '#672f2f',
+            fillOpacity: 0.05,
+            group: 'group08',
+            mode: {
+                [K.mode]: {}
+            },
+            opacity: 0.4,
+            pane: 'overlayPane',
+            shape: 'polygon',
+            smoothFactor: 1,
+            stroke: 1,
+            type: 'ContaminatedZone',
+            weight: 1
+        },
+        rectangle: {
+            category: 'default',
+            className: '',
+            color: '#c22e2e',
+            fill: 1,
+            fillColor: '#672f2f',
+            fillOpacity: 0.05,
+            group: 'group08',
+            mode: {
+                [K.mode]: {}
+            },
+            opacity: 0.4,
+            pane: 'overlayPane',
+            shape: 'rectangle',
+            smoothFactor: 1,
+            stroke: 1,
+            type: 'ContaminatedZone',
+            weight: 1
+        },
+        circle: {
+            category: 'default',
+            className: '',
+            color: '#c22e2e',
+            fill: 1,
+            fillColor: '#672f2f',
+            fillOpacity: 0.05,
+            group: 'group08',
+            mode: {
+                [K.mode]: {}
+            },
+            opacity: 0.4,
+            pane: 'overlayPane',
+            shape: 'circle',
+            smoothFactor: 1,
+            stroke: 1,
+            type: 'ContaminatedZone',
+            weight: 1
+        },
+        polyline: {
+            category: 'default',
+            color: '#207e70',
+            group: 'groupAll',
+            mode: {
+                [K.mode]: {}
+            },
+            opacity: 1,
+            pane: 'overlayPane',
+            shape: 'polyline',
+            smoothFactor: 1,
+            stroke: 1,
+            type: '',
+            weight: 5
+        }
+    },
+    zIndex: ['PointOfInterest', 'Hideout', 'Contaminated', 'Landmark', 'CrashSite'],
+};
 
-            layer.complete = done;
+// MARK: ^ Settings
+K.settings = { // these are for the layer tools, so it knows which settings to show
 
-            !uD && K.local('complete', obj);
-            if (uD) {
-                if (this.timeout) clearTimeout(this.timeout);
-                this.timeout = setTimeout(() => {
+    add: function(setting, value, shape, popup) {
+
+        K.isArray(value) && (value = value.join(','));
+
+        let i = this[popup ? 'popup' : 'main'][setting] || false;
+        i && K.in('values', i) && (i = i.values);
+
+        // Check if the key is in the object then place it if not
+        if (!K.empty(value) && i) {
+            shape = K.settingShape(shape);
+            !(value in i) && (i[value] = { shape: [] });
+            !K.has(shape, i[value].shape) && i[value].shape.push(shape);
+        }
+    },
+
+    main: {
+        category: {
+            values: {},
+            description: 'Categories are used to organize the filter menu.',
+            for: ['marker', 'polygon', 'polyline', 'circle', 'rectangle'],
+            type: 'string'
+        },
+        type: {
+            values: {},
+            description: 'Type is used for both the filter menu and to make it easier to change settings in bulk.',
+            for: ['marker', 'polygon', 'polyline', 'circle', 'rectangle'],
+            type: 'string'
+        },
+        mode: {
+            description: 'Mode is used to suggest what map mode the layers are for.\n\nAs the modes are created they will be added to the list bellow.\n\nWhen more than one mode is selected, most other options will have a new mode switch to allow that option to be changed leaving the original the same.',
+            for: ['marker', 'polygon', 'polyline', 'circle', 'rectangle'],
+            type: 'object'
+        },
+        group: {
+            values: {},
+            description: 'Group is used to set what zoom level of the map the layer will appear on.\nThere are set options from Group08 to Group12 with a GroupAll to never hide the layer.',
+            for: ['marker', 'polygon', 'polyline', 'circle', 'rectangle'],
+            type: 'string'
+        },
+        className: {
+            values: {},
+            description: 'Class Name is the element class added to the layer, this is used for the marker level (overground/underground) and the hover effect.',
+            for: ['marker', 'polygon', 'polyline', 'circle', 'rectangle'],
+            type: 'string'
+        },
+        fill: {
+            values: {
+                true: { shape: [] },
+                false: { shape: [] }
+            },
+            description: 'Fill is used to say if a shape has a fill color.',
+            for: ['polygon', 'circle', 'rectangle'],
+            type: 'boolean'
+        },
+        fillColor: {
+            values: {},
+            description: 'Fill Color is used to set the color of the filled shape.',
+            for: ['polygon', 'circle', 'rectangle'],
+            type: 'string'
+        },
+        fillOpacity: {
+            values: {},
+            description: 'Fill Opacity is used to set the opacity of the filled shape.',
+            for: ['polygon', 'circle', 'rectangle'],
+            type: 'number'
+        },
+        iconUrl: {
+            values: {},
+            description: 'Icon URL is to set the URL of the required icon, although you can use external icons, it is recommended to use one from the list bellow.',
+            for: ['marker'],
+            type: 'string'
+        },
+        iconSize: {
+            values: {},
+            description: 'Icon Size is used to set the icon size, it should always be two of the same number, e.g. \'26, 26\'.',
+            for: ['marker'],
+            type: 'array'
+        },
+        html: {
+            description: 'HTML shouldn\'t be used unless you know what you are doing, this is used to create the layers that show the street names.',
+            for: ['marker'],
+            type: 'string'
+        },
+        stroke: {
+            values: {
+                true: { shape: [] },
+                false: { shape: [] }
+            },
+            description: 'Stroke is used to set if the shape has a stroke or not.',
+            for: ['polygon', 'circle', 'rectangle'],
+            type: 'boolean'
+        },
+        color: {
+            values: {},
+            description: 'Color is the stroke color for the shape.',
+            for: ['polygon', 'polyline', 'circle', 'rectangle'],
+            type: 'string'
+        },
+        opacity: {
+            values: {},
+            description: 'Opacity is used to set the opacity of the Stroke.',
+            for: ['polygon', 'polyline', 'circle', 'rectangle'],
+            type: 'number'
+        },
+        weight: {
+            values: {},
+            description: 'Weight is used to set the thickness of the Stroke.',
+            for: ['polygon', 'polyline', 'circle', 'rectangle'],
+            type: 'number'
+        },
+        complete: {
+            values: {
+                true: { shape: [] },
+                false: { shape: [] }
+            },
+            description: 'Complete is used to show that a layer can be marked by the user as completed.',
+            for: ['marker', 'polygon', 'polyline', 'circle', 'rectangle'],
+            type: 'boolean'
+        },
+        time: {
+            values: {},
+            description: `Time is used in conjunction with Complete to only set a layer as complete for this length of time. This is helpful for things that can be collected again at a later date. For this to work 'Complete' must be 'True'.`,
+            for: ['marker', 'polygon', 'polyline', 'circle', 'rectangle'],
+            type: 'number'
+        },
+        link: {
+            description: 'Link is used in conjunction with Complete to also hide the linked layer(s) after the this layer has been completed. The ID of the layers are required to link them. The list should be comma separated.',
+            for: ['marker', 'polygon', 'polyline', 'circle', 'rectangle'],
+            type: 'array'
+        },
+        onComplete: {
+            values: {
+                toStoryMode: { shape: [] }
+            },
+            description: `Used along with complete, this is useless unless you use the preset actions, this just tells the javascript what to do with the layer once it is marked as complete.`,
+            for: ['marker', 'polygon', 'polyline', 'circle', 'rectangle'],
+            type: 'string'
+        },
+        prerequisites: {
+            description: `Used along with complete, if there are any layer ids here, then this cannot be compelted until they are first complete.`,
+            for: ['marker', 'polygon', 'polyline', 'circle', 'rectangle'],
+            type: 'array'
+        },
+        cycle: {
+            description: `Used to cycle visible marker, handy for when there are multiple, overlapping markers, like with the Activities and Resource Nodes.`,
+            for: ['marker'],
+            type: 'array'
+        },
+        id: {
+            description: 'The ID is set automatically and should never be changed. It is used to identify the layer in the data file to update it with changes.',
+            for: ['marker', 'polygon', 'polyline', 'circle', 'rectangle'],
+            type: 'string'
+        },
+    },
+    popup: {
+        className: {
+            values: {},
+            description: 'Class Name is used to set the color of the title in the Popup and it also sets the popup to be in the top left corner with the poly-hover class.',
+            for: ['marker', 'polygon', 'polyline', 'circle', 'rectangle'],
+            type: 'string'
+        },
+        content: {
+            description: 'Content can be used for the Popups Content, it is preferred to use the List for this though as that uses less storage space and automatically creates the HTML content for the Popup. Any HTML can be used here.',
+            for: ['marker', 'polygon', 'polyline', 'circle', 'rectangle'],
+            type: 'string'
+        },
+        list: {
+            description: 'This is an alternative to content, with this it will automatically arrange the content to display correctly in the html tags with images included. Filling this out will remove whatever is in content.',
+            for: ['marker', 'polygon', 'polyline', 'circle', 'rectangle'],
+            type: 'object'
+        },
+    }
+};
+
+K.mode = K.local('mode') || 'Story Mode';
+
+K.msg = {
+    note: $('.notification'),
+    show: function(options) {
+
+        $.proxy(K.msg._show(options), K.msg);
+    },
+    _show: function(options) {
+
+        options = $.extend({
+            msg: '',
+            time: 0,
+            dots: false
+        }, options);
+
+        let dot = '<div class="dot"></div>';
+
+        if (!this.note.length) {
+            $('body').append('<div class="notification"></div>');
+            this.note = $('.notification');
+        }
+
+        if (!options.msg)
+            return;
+
+        this.timeout && clearTimeout(this.timeout);
+
+        this.note.removeClass('dots');
+        options.dots && this.note.addClass('dots');
+        this.note.html(options.msg + (options.dots ? '<div class="dot-box">' + dot + dot + dot + dot + dot + '</div>' : ''));
+
+        this.note.fadeIn(500);
+
+        if (options.time) this.timeout = setTimeout(this.hide, options.time);
+    },
+    hide: function() {
+        $.proxy(K.msg._hide(), K.msg);
+    },
+    _hide: function() {
+        this.note.fadeOut(500);
+        this.timeout = false;
+    },
+    timeout: false
+};
+
+K.myMap = L.map('mapid', {
+    center: K.local('pan') || [0, 0],
+    zoom: K.local('zoom') || 7,
+    minZoom: 7,
+    maxZoom: 15,
+    maxBounds: [
+        [8.3, -14.9],
+        [-8.3, 14.9]
+    ],
+    zoomSnap: 0.25,
+    zoomDelta: 0.5,
+    wheelPxPerZoomLevel: 100,
+    zoomControl: false,
+    attributionControl: true
+});
+
+K.popupContent = {};
+
+K.shortcuts = {
+    Draw: {
+        M: 'Marker',
+        P: 'Polygon',
+        R: 'Rectangle',
+        L: 'Polyline'
+    },
+    QuickMarker: {
+        1: 'Airdrop',
+        2: 'ComponentZone',
+        3: 'FoodZone',
+        4: 'WaterZone',
+        5: 'Artifact',
+        E: 'Comms',
+        A: 'Echo',
+        F: 'Food',
+        D: 'Water',
+        S: 'Component',
+        W: 'Weapon',
+        Q: 'Gear',
+        Z: 'GroundLevel',
+        X: 'Underground',
+        C: 'Overground'
+    }
+};
+
+K.user = {
+    name: false,
+    type: 0,
+    error: false,
+    data: false,
+    getData: function() {
+        if (!K.user.name) return;
+
+        $.ajax({
+            url: 'includes/data_exists.php'
+        }).done(function(data) {
+            K.user.data = {}
+            data = $.parseJSON(data);
+            if (!data) return;
+
+            $.getJSON(`data/${K.user.name}/complete.json?v=${data}`, function(data) {
+                if (K.local('complete')) {
+                    $.extend(data, K.local('complete'));
+                    localStorage.removeItem('complete');
+
                     $.ajax({
                         type: "POST",
                         url: 'includes/write_complete.php',
                         data: {
-                            data: JSON.stringify(K.user.data)
+                            data: JSON.stringify(data)
                         }
-                    }).done(() => {
-                        console.log("saved data!", K.user.data);
                     });
-                }, 1000);
-            }
-
-            return layer.complete;
-        },
-        timeout: false,
-        showHide: function() {
-
-            switchLayerGroups(true);
-
-            let h = K.completeHidden,
-                layers = K.complete.layers,
-                gC = K.group.mode.groupComplete,
-                g, show, hide, i, hidden;
-
-            K.filters = K.local('filters') || {};
-
-            $.each(layers, function(x, layer) {
-                hidden = K.filters[layer.options.type];
-                const gn = hidden ? 'groupHidden' : layer.options.group;
-                g = K.group.mode[gn];
-                i = layer._leaflet_id;
-
-                show = (h ? gC : g);
-                hide = (h ? g : gC);
-
-                if (hide.getLayer(i)) {
-                    show.addLayer(hide.getLayer(i));
-                    hide.removeLayer(i);
-
-                    layer.currentGroup = h ? 'groupComplete' : gn;
                 }
+
+                K.user.data = data;
             });
+        });
+    }
+};
 
-            switchLayerGroups();
-            polyHoverAnimation();
-        }
-    },
+K.updateMarker = function(icon) { // MARK: ^ Update Marker
+    const copy = K.local('copy') || {};
+    icon = icon || (K.in('marker', copy) ? copy.marker.o : {});
 
-    timed: {
-        layers: [],
-        interval: false,
-        add: function(layer) {
-            let add = true;
-            $.each(K.timed.layers, function(i, l) {
-                if (layer.options.id === l.options.id) add = false;
-            });
-            add && K.timed.layers.push(layer);
-        },
-        action: function() {
-            K.timed.interval = setInterval(() => {
+    let o = icon || {},
+        url = 'images/marker-poi-contaminated.svg',
+        options = {
+            iconSize: o.iconSize || [22, 22],
+            iconUrl: o.iconUrl || url,
+            html: o.html || `<img class='halo' src='images/_a.svg'><img src='${o.iconUrl || url}' class='icon'>`,
+            className: o.className || 'anim-icon'
+        };
 
-                if (!K.timed.layers.length) {
-                    clearInterval(K.timed.interval);
-                    K.timed.interval = false;
-                    return;
-                }
+    if (!K.drawIcon) {
 
-                $.each(K.timed.layers, function(i, layer) {
-                    layer.markComplete();
-                });
+        // L.Control.Draw
+        let icon = L.Icon.extend({ options: options });
 
-                K.complete.showHide();
-
-            }, 60000);
-        },
-        remove: function(id) {
-            let index = false;
-            for (let i = 0; i < K.timed.layers.length; i++) {
-                const v = K.timed.layers[i];
-                if (id === v.options.id) {
-                    index = i;
-                    break;
+        // Create the drawControl for adding and editing new layers with default settings
+        K.drawControl = new L.Control.Draw({
+            draw: {
+                marker: {
+                    icon: new icon()
+                },
+                // circle: false
+            },
+            edit: {
+                featureGroup: K.group.draw,
+                selectedPathOptions: {
+                    maintainColor: true,
+                    moveMarkers: true
                 }
             }
+        });
 
-            if ($.type(index) === 'number') K.timed.layers.splice(index, 1);
-        }
-    },
+        K.drawIcon = K.drawControl.options.draw.marker.icon;
 
-    bar: {
-        b: {
-            save: false,
-            group: false,
-            grid: false,
-            tools: false
-        },
-        draw: {},
-        edit: {}
-    },
+    } else $.extend(K.drawIcon.options, options);
+};
 
-    check: {
-        editing: false,
-        deleting: false,
-        disabled: false,
-        doOnce: true,
-        grabbing: false
-    },
+K.svg = {
+    dot: `<svg class="bg-dot" viewBox="0 0 64 64"><path class="dot-color" d="M32,3.1C16.039,3.1,3.1,16.039,3.1,32c0,15.961,12.939,28.9,28.9,28.9c15.961,0,28.9-12.939,28.9-28.9 C60.9,16.039,47.961,3.1,32,3.1z M32,48.5c-9.113,0-16.5-7.387-16.5-16.5S22.887,15.5,32,15.5S48.5,22.887,48.5,32 S41.113,48.5,32,48.5z"/></svg>`,
+    'black tusk': `<svg class="icon-npc black-tusk" viewBox="0 0 64 64"><path class="st0" d="M32 1.5l-30.5 30.5 30.5 30.5 30.5-30.5-30.5-30.5zm-20.57 30.5l17.94-17.94v18.06l-4.71 4.71 7.34 7.34 7.34-7.34-4.71-4.71v-18.06l17.94 17.94-20.57 20.57-20.57-20.57z"/></svg>`,
+    'true sons': `<svg class="icon-npc true-sons" viewBox="0 0 64 64"><path d="M4.5 55.6h34.8l-13.4-33.1h-21.4zm27.1-37.9l3 5.6h24.9v-5.6zm5.3 10l3 5.6h19.6v-5.6zm-10.2-19.3l2.6 5h30.2v-5zm15.5 29.3l3 5.7h14.3v-5.7z"/></svg>`,
+    'hyenas': `<svg class="icon-npc hyenas" viewBox="0 0 64 64"><path d="M48 24.1l11.5-4.5-1.4-3.5-7.1 2.9 3.8-7-3.2-1.8-6 11-13.6 5.3-14.2-4.8-5.5-9.6-3.4 1.9 3.4 6-6.6-2.3-1.2 3.5 10.6 3.6 4 6.9-11.7 4.6 1.4 3.5 12.1-4.9 10.8 19 10.9-19.9 12 4 1.1-3.5-11.3-3.8 3.7-6.7zm-5.4 2.2l-1.8 3.3-3.5-1.2 5.3-2.1zm-22.1.3l6 2-4 1.7-2-3.7zm11.2 19.6l-7.3-12.7 7.6-3 7 2.4-7.3 13.3z"/></svg>`,
+    'outcasts': `<svg class="icon-npc outcasts" viewBox="0 0 64 64"><path d="M59.109 18.941a.986.986 0 0 0-.114-.296c-.262-.441-.821-.592-1.248-.338a.898.898 0 0 0-.427.864c.53 4.26-1.419 8.621-5.331 10.947-5.279 3.139-12.115 1.385-15.267-3.917-3.152-5.302-1.428-12.145 3.85-15.284 3.912-2.326 8.675-1.955 12.163.546.284.192.657.22.963.037.428-.254.562-.817.299-1.258a1 1 0 0 0-.205-.242c-4.76-4.16-11.48-5.174-16.808-2.007a13.165 13.165 0 0 0-4.37 4.242 1.186 1.186 0 0 1-1.967.07 13.16 13.16 0 0 0-4.489-3.817c-5.503-2.851-12.153-1.444-16.661 2.987a.982.982 0 0 0-.19.253c-.235.455-.07 1.01.372 1.238a.895.895 0 0 0 .959-.094c3.337-2.701 8.069-3.349 12.111-1.256 5.454 2.825 7.575 9.556 4.738 15.033s-9.559 7.629-15.013 4.804c-4.041-2.094-6.242-6.333-5.962-10.617a.893.893 0 0 0-.477-.837c-.441-.229-.99-.044-1.227.411a.999.999 0 0 0-.097.301c-1.018 6.238 1.67 12.481 7.174 15.332a13.108 13.108 0 0 0 4.183 1.337 1.17 1.17 0 0 1 .921 1.587 13.862 13.862 0 0 0-.934 4.999c0 6.394 4.306 11.819 10.315 13.847a.93.93 0 0 0 .718-1.708c-3.933-1.776-6.685-5.803-6.685-10.499 0-3.951 1.945-7.435 4.903-9.499v8.551a1.443 1.443 0 0 0 2.884 0v-9.989a10.9 10.9 0 0 1 1.83-.415v11.189a1.647 1.647 0 1 0 3.294 0v-11.161c.629.101 1.241.252 1.83.456v9.272a1.442 1.442 0 1 0 2.884 0v-7.76c2.849 2.08 4.714 5.489 4.714 9.353 0 4.696-2.752 8.724-6.685 10.499a.93.93 0 1 0 .718 1.708c6.007-2.028 10.315-7.454 10.315-13.847 0-2.053-.452-4.003-1.256-5.777a1.185 1.185 0 0 1 1.016-1.691 13.214 13.214 0 0 0 5.998-1.83c5.323-3.166 7.642-9.555 6.261-15.724zm-25.193 12.743h-4.196a1.048 1.048 0 0 1-.911-1.564l2.098-3.705a1.048 1.048 0 0 1 1.823 0l2.098 3.705a1.048 1.048 0 0 1-.912 1.564zM12.618 29.146l4.804-5.045 4.58 4.434 2.291-2.366-4.6-4.453 4.904-5.15-2.384-2.273-4.886 5.131-4.756-4.606-2.291 2.366 4.776 4.626-4.822 5.063zm38.473-15.853l-4.887 5.131-4.756-4.606-2.291 2.366 4.776 4.625-4.822 5.064 2.384 2.272 4.805-5.045 4.58 4.435 2.291-2.366-4.6-4.454 4.904-5.149z"/></svg>`,
 
-    drawControl: false,
+};
 
-    group: { // MARK: ^ Group
-        save: new L.FeatureGroup(),
+K.stripClasses = function(value) {
+    let classes = classesToArray(K.classRemoval),
+        cur, curValue, clazz, j, finalValue,
+        className = value;
 
-        draw: new L.FeatureGroup([], {
-            makeBoundsAware: false
-        }),
+    if (classes.length) {
+        curValue = className || '';
+        cur = ` ${stripAndCollapse(curValue)} `;
 
-        feature: {},
+        if (cur) {
+            j = 0;
+            while ((clazz = classes[j++])) {
 
-        getLayer: function(id) {
-            let r = null;
-            this.mode.everyLayer.eachLayer(function(l) {
-                if (l.options.id == id) r = l;
-            });
-            return r;
-        },
-
-        addLayer: function(layer) {
-            if (!(layer instanceof L.Layer)) return this;
-
-            for (let mode in layer.options.mode) {
-                if (!K.in(mode, this.feature)) continue;
-                this.feature[mode][layer.options.group].addLayer(layer);
-                this.feature[mode].everyLayer.addLayer(layer);
-            }
-
-            return this;
-        },
-
-        removeLayer: function(layer, group) {
-            if (!(layer instanceof L.Layer)) return this;
-            !group && (group = layer.options.group);
-
-            for (let mode in layer.options.mode) {
-                this.feature[mode][group].removeLayer(layer);
-                this.feature[mode].everyLayer.removeLayer(layer);
-            }
-
-            return this;
-        }
-    },
-
-    grid: {
-        overlay: L.imageOverlay('images/grid.svg', [
-            [-19.05, -19.05],
-            [19.05, 19.05]
-        ]),
-        x: 0,
-        y: 0,
-        r: 0
-    },
-
-    save: { // MARK: ^ Save
-        unsaved: new L.FeatureGroup(),
-        deleted: [],
-        data: false,
-        add: function(layer) {
-            this.unsaved.addLayer(layer);
-            this.check();
-            this.store();
-        },
-        remove: function(layer) {
-            this.unsaved.removeLayer(layer._leaflet_id);
-            this.check();
-            this.store();
-        },
-        delete: function(layer) {
-            this.remove(layer);
-            this.deleted.push(layer.options.id);
-            K.group.removeLayer(layer);
-            this.check();
-            this.store();
-        },
-        check: function() {
-            const r = K.length(this.unsaved._layers) + this.deleted.length;
-            if (r) {
-                K.bar.b.save.enable();
-                K.bar.b.cancel.enable();
-            } else {
-                K.bar.b.save.disable();
-                K.bar.b.cancel.disable();
-            }
-            return r;
-        },
-        store: function() {
-            createGeoJSON(true);
-            K.local('unsaved', this.data);
-        },
-        clear: function() {
-            this.unsaved.clearLayers();
-            this.deleted = [];
-            this.data = false;
-            K.local('unsaved', this.data);
-            this.check();
-        }
-    },
-
-    map: {
-        active: [],
-        group: {
-            everyLayer: [],
-            groupAll: [],
-            groupHidden: [],
-            groupComplete: [],
-            group08: [],
-            group09: [],
-            group10: [],
-            group11: [],
-            group12: []
-        },
-        type: {
-            counts: {},
-            add: function(type) {
-                if (type) {
-                    !K.in(type, this.counts) && (this.counts[type] = 0);
-                    this.counts[type] += 1;
-                    this.updateButton(type);
+                // Remove *all* instances
+                while (cur.indexOf(` ${clazz} `) > -1) {
+                    cur = cur.replace(` ${clazz} `, " ");
                 }
-            },
-            remove: function(type) {
-                if (type) {
-                    this.counts[type] -= 1;
-                    this.updateButton(type);
-                }
-            },
-            updateButton: function(type) {
-                $(`.side-bar-button[label=${type}] .quantity`).text(`[ x${this.counts[type]} ]`);
             }
-        },
-        mode: {},
-        property: { // these are used to clear unwanted settings before saving
-            polygon: [
-                'category', 'color', 'weight', 'opacity', 'fillColor',
-                'fill', 'fillOpacity', 'stroke', 'group',
-                'type', 'className', 'mode', 'complete', 'prerequisites', 'onComplete'
-            ],
-            circle: [
-                'category', 'color', 'weight', 'opacity', 'fillColor',
-                'fill', 'fillOpacity', 'stroke', 'group', 'type',
-                'className', 'mode', 'complete', 'prerequisites', 'onComplete'
-            ],
-            rectangle: [
-                'category', 'color', 'weight', 'opacity', 'fillColor',
-                'fill', 'fillOpacity', 'stroke', 'group', 'type',
-                'className', 'mode', 'complete', 'prerequisites', 'onComplete'
-            ],
-            polyline: [
-                'category', 'color', 'weight', 'opacity', 'stroke',
-                'complete', 'group', 'type', 'className', 'mode', 'prerequisites', 'onComplete'
-            ],
-            marker: [
-                'category', 'group', 'type', 'time', 'iconSize', 'html', 'cycle',
-                'mode', 'complete', 'link', 'iconUrl', 'className', 'prerequisites', 'onComplete'
-            ],
-            popup: ['className']
-        },
-        defaults: { // speaks for itself, these are the defaults when creating a layer
-            marker: {
-                category: 'default',
-                className: 'anim-icon',
-                group: 'group08',
-                iconSize: [22, 22],
-                iconUrl: 'images/marker-poi-contaminated.svg',
-                mode: {
-                    [K.mode]: {}
-                },
-                shape: 'marker',
-                type: 'Contaminated'
-            },
-            polygon: {
-                category: 'default',
-                className: '',
-                color: '#c22e2e',
-                fill: 1,
-                fillColor: '#672f2f',
-                fillOpacity: 0.05,
-                group: 'group08',
-                mode: {
-                    [K.mode]: {}
-                },
-                opacity: 0.4,
-                pane: 'overlayPane',
-                shape: 'polygon',
-                smoothFactor: 1,
-                stroke: 1,
-                type: 'ContaminatedZone',
-                weight: 1
-            },
-            rectangle: {
-                category: 'default',
-                className: '',
-                color: '#c22e2e',
-                fill: 1,
-                fillColor: '#672f2f',
-                fillOpacity: 0.05,
-                group: 'group08',
-                mode: {
-                    [K.mode]: {}
-                },
-                opacity: 0.4,
-                pane: 'overlayPane',
-                shape: 'rectangle',
-                smoothFactor: 1,
-                stroke: 1,
-                type: 'ContaminatedZone',
-                weight: 1
-            },
-            circle: {
-                category: 'default',
-                className: '',
-                color: '#c22e2e',
-                fill: 1,
-                fillColor: '#672f2f',
-                fillOpacity: 0.05,
-                group: 'group08',
-                mode: {
-                    [K.mode]: {}
-                },
-                opacity: 0.4,
-                pane: 'overlayPane',
-                shape: 'circle',
-                smoothFactor: 1,
-                stroke: 1,
-                type: 'ContaminatedZone',
-                weight: 1
-            },
-            polyline: {
-                category: 'default',
-                color: '#207e70',
-                group: 'groupAll',
-                mode: {
-                    [K.mode]: {}
-                },
-                opacity: 1,
-                pane: 'overlayPane',
-                shape: 'polyline',
-                smoothFactor: 1,
-                stroke: 1,
-                type: '',
-                weight: 5
-            }
-        },
-        zIndex: ['PointOfInterest', 'Hideout', 'Contaminated', 'Landmark', 'CrashSite'],
-    },
 
-    // MARK: ^ Settings
-    settings: { // these are for the layer tools, so it knows which settings to show
-
-        add: function(setting, value, shape, popup) {
-
-            K.isArray(value) && (value = value.join(','));
-
-            let i = this[popup ? 'popup' : 'main'][setting] || false;
-            i && K.in('values', i) && (i = i.values);
-
-            // Check if the key is in the object then place it if not
-            if (!K.empty(value) && i) {
-                shape = K.settingShape(shape);
-                !(value in i) && (i[value] = { shape: [] });
-                !K.has(shape, i[value].shape) && i[value].shape.push(shape);
-            }
-        },
-
-        main: {
-            category: {
-                values: {},
-                description: 'Categories are used to organize the filter menu.',
-                for: ['marker', 'polygon', 'polyline', 'circle', 'rectangle'],
-                type: 'string'
-            },
-            type: {
-                values: {},
-                description: 'Type is used for both the filter menu and to make it easier to change settings in bulk.',
-                for: ['marker', 'polygon', 'polyline', 'circle', 'rectangle'],
-                type: 'string'
-            },
-            mode: {
-                description: 'Mode is used to suggest what map mode the layers are for.\n\nAs the modes are created they will be added to the list bellow.\n\nWhen more than one mode is selected, most other options will have a new mode switch to allow that option to be changed leaving the original the same.',
-                for: ['marker', 'polygon', 'polyline', 'circle', 'rectangle'],
-                type: 'object'
-            },
-            group: {
-                values: {},
-                description: 'Group is used to set what zoom level of the map the layer will appear on.\nThere are set options from Group08 to Group12 with a GroupAll to never hide the layer.',
-                for: ['marker', 'polygon', 'polyline', 'circle', 'rectangle'],
-                type: 'string'
-            },
-            className: {
-                values: {},
-                description: 'Class Name is the element class added to the layer, this is used for the marker level (overground/underground) and the hover effect.',
-                for: ['marker', 'polygon', 'polyline', 'circle', 'rectangle'],
-                type: 'string'
-            },
-            fill: {
-                values: {
-                    true: { shape: [] },
-                    false: { shape: [] }
-                },
-                description: 'Fill is used to say if a shape has a fill color.',
-                for: ['polygon', 'circle', 'rectangle'],
-                type: 'boolean'
-            },
-            fillColor: {
-                values: {},
-                description: 'Fill Color is used to set the color of the filled shape.',
-                for: ['polygon', 'circle', 'rectangle'],
-                type: 'string'
-            },
-            fillOpacity: {
-                values: {},
-                description: 'Fill Opacity is used to set the opacity of the filled shape.',
-                for: ['polygon', 'circle', 'rectangle'],
-                type: 'number'
-            },
-            iconUrl: {
-                values: {},
-                description: 'Icon URL is to set the URL of the required icon, although you can use external icons, it is recommended to use one from the list bellow.',
-                for: ['marker'],
-                type: 'string'
-            },
-            iconSize: {
-                values: {},
-                description: 'Icon Size is used to set the icon size, it should always be two of the same number, e.g. \'26, 26\'.',
-                for: ['marker'],
-                type: 'array'
-            },
-            html: {
-                description: 'HTML shouldn\'t be used unless you know what you are doing, this is used to create the layers that show the street names.',
-                for: ['marker'],
-                type: 'string'
-            },
-            stroke: {
-                values: {
-                    true: { shape: [] },
-                    false: { shape: [] }
-                },
-                description: 'Stroke is used to set if the shape has a stroke or not.',
-                for: ['polygon', 'circle', 'rectangle'],
-                type: 'boolean'
-            },
-            color: {
-                values: {},
-                description: 'Color is the stroke color for the shape.',
-                for: ['polygon', 'polyline', 'circle', 'rectangle'],
-                type: 'string'
-            },
-            opacity: {
-                values: {},
-                description: 'Opacity is used to set the opacity of the Stroke.',
-                for: ['polygon', 'polyline', 'circle', 'rectangle'],
-                type: 'number'
-            },
-            weight: {
-                values: {},
-                description: 'Weight is used to set the thickness of the Stroke.',
-                for: ['polygon', 'polyline', 'circle', 'rectangle'],
-                type: 'number'
-            },
-            complete: {
-                values: {
-                    true: { shape: [] },
-                    false: { shape: [] }
-                },
-                description: 'Complete is used to show that a layer can be marked by the user as completed.',
-                for: ['marker', 'polygon', 'polyline', 'circle', 'rectangle'],
-                type: 'boolean'
-            },
-            time: {
-                values: {},
-                description: `Time is used in conjunction with Complete to only set a layer as complete for this length of time. This is helpful for things that can be collected again at a later date. For this to work 'Complete' must be 'True'.`,
-                for: ['marker', 'polygon', 'polyline', 'circle', 'rectangle'],
-                type: 'number'
-            },
-            link: {
-                description: 'Link is used in conjunction with Complete to also hide the linked layer(s) after the this layer has been completed. The ID of the layers are required to link them. The list should be comma separated.',
-                for: ['marker', 'polygon', 'polyline', 'circle', 'rectangle'],
-                type: 'array'
-            },
-            onComplete: {
-                values: {
-                    toStoryMode: { shape: [] }
-                },
-                description: `Used along with complete, this is useless unless you use the preset actions, this just tells the javascript what to do with the layer once it is marked as complete.`,
-                for: ['marker', 'polygon', 'polyline', 'circle', 'rectangle'],
-                type: 'string'
-            },
-            prerequisites: {
-                description: `Used along with complete, if there are any layer ids here, then this cannot be compelted until they are first complete.`,
-                for: ['marker', 'polygon', 'polyline', 'circle', 'rectangle'],
-                type: 'array'
-            },
-            cycle: {
-                description: `Used to cycle visible marker, handy for when there are multiple, overlapping markers, like with the Activities and Resource Nodes.`,
-                for: ['marker'],
-                type: 'array'
-            },
-            id: {
-                description: 'The ID is set automatically and should never be changed. It is used to identify the layer in the data file to update it with changes.',
-                for: ['marker', 'polygon', 'polyline', 'circle', 'rectangle'],
-                type: 'string'
-            },
-        },
-        popup: {
-            className: {
-                values: {},
-                description: 'Class Name is used to set the color of the title in the Popup and it also sets the popup to be in the top left corner with the poly-hover class.',
-                for: ['marker', 'polygon', 'polyline', 'circle', 'rectangle'],
-                type: 'string'
-            },
-            content: {
-                description: 'Content can be used for the Popups Content, it is preferred to use the List for this though as that uses less storage space and automatically creates the HTML content for the Popup. Any HTML can be used here.',
-                for: ['marker', 'polygon', 'polyline', 'circle', 'rectangle'],
-                type: 'string'
-            },
-            list: {
-                description: 'This is an alternative to content, with this it will automatically arrange the content to display correctly in the html tags with images included. Filling this out will remove whatever is in content.',
-                for: ['marker', 'polygon', 'polyline', 'circle', 'rectangle'],
-                type: 'object'
-            },
+            finalValue = stripAndCollapse(cur);
         }
-    },
+    }
 
-    mode: K.local('mode') || 'Story Mode',
+    return finalValue;
+};
 
-    msg: {
-        note: $('.notification'),
-        show: function(options) {
+// this changes values in arrays to strings and ignores functions
+K.valuesToString = function(obj) {
 
-            $.proxy(K.msg._show(options), K.msg);
-        },
-        _show: function(options) {
+    if (K.has($.type(obj), ['object', 'array'])) {
+        $.each(obj, function(i, v) {
+            if ($.type(v) == 'function') return;
+            obj[i] = K.has($.type(v), ['object', 'array']) ? K.valuesToString(v) : v.toString();
+        });
+    } else return obj.toString();
 
-            options = $.extend({
-                msg: '',
-                time: 0,
-                dots: false
-            }, options);
+    return obj;
+};
 
-            let dot = '<div class="dot"></div>';
+K.data = {
+    types: {}
+};
 
-            if (!this.note.length) {
-                $('body').append('<div class="notification"></div>');
-                this.note = $('.notification');
-            }
+K.settingShape = shape => K.has(shape, ['polyline', 'rectangle']) ? 'polygon' : shape,
 
-            if (!options.msg)
-                return;
-
-            this.timeout && clearTimeout(this.timeout);
-
-            this.note.removeClass('dots');
-            options.dots && this.note.addClass('dots');
-            this.note.html(options.msg + (options.dots ? '<div class="dot-box">' + dot + dot + dot + dot + dot + '</div>' : ''));
-
-            this.note.fadeIn(500);
-
-            if (options.time) this.timeout = setTimeout(this.hide, options.time);
-        },
-        hide: function() {
-            $.proxy(K.msg._hide(), K.msg);
-        },
-        _hide: function() {
-            this.note.fadeOut(500);
-            this.timeout = false;
-        },
-        timeout: false
-    },
-
-    myMap: L.map('mapid', {
-        center: K.local('pan') || [0, 0],
-        zoom: K.local('zoom') || 7,
-        minZoom: 7,
-        maxZoom: 15,
-        maxBounds: [
-            [8.3, -14.9],
-            [-8.3, 14.9]
-        ],
-        zoomSnap: 0.25,
-        zoomDelta: 0.5,
-        wheelPxPerZoomLevel: 100,
-        zoomControl: false,
-        attributionControl: true
-    }),
-
-    popupContent: {},
-
-    shortcuts: {
-        Draw: {
-            M: 'Marker',
-            P: 'Polygon',
-            R: 'Rectangle',
-            L: 'Polyline'
-        },
-        QuickMarker: {
-            1: 'Airdrop',
-            2: 'ComponentZone',
-            3: 'FoodZone',
-            4: 'WaterZone',
-            5: 'Artifact',
-            E: 'Comms',
-            A: 'Echo',
-            F: 'Food',
-            D: 'Water',
-            S: 'Component',
-            W: 'Weapon',
-            Q: 'Gear',
-            Z: 'GroundLevel',
-            X: 'Underground',
-            C: 'Overground'
-        }
-    },
-
-    user: {
-        name: false,
-        type: 0,
-        error: false,
-        data: false,
-        getData: function() {
-            if (!K.user.name) return;
-
-            $.ajax({
-                url: 'includes/data_exists.php'
-            }).done(function(data) {
-                K.user.data = {}
-                data = $.parseJSON(data);
-                if (!data) return;
-
-                $.getJSON(`data/${K.user.name}/complete.json?v=${data}`, function(data) {
-                    if (K.local('complete')) {
-                        $.extend(data, K.local('complete'));
-                        localStorage.removeItem('complete');
-
-                        $.ajax({
-                            type: "POST",
-                            url: 'includes/write_complete.php',
-                            data: {
-                                data: JSON.stringify(data)
-                            }
-                        });
-                    }
-
-                    K.user.data = data;
-                });
-            });
-        }
-    },
-
-    updateMarker: function(icon) { // MARK: ^ Update Marker
-        const copy = K.local('copy') || {};
-        icon = icon || (K.in('marker', copy) ? copy.marker.o : {});
-
-        let o = icon || {},
-            url = 'images/marker-poi-contaminated.svg',
-            options = {
-                iconSize: o.iconSize || [22, 22],
-                iconUrl: o.iconUrl || url,
-                html: o.html || `<img class='halo' src='images/_a.svg'><img src='${o.iconUrl || url}' class='icon'>`,
-                className: o.className || 'anim-icon'
-            };
-
-        if (!K.drawIcon) {
-
-            // L.Control.Draw
-            let icon = L.Icon.extend({ options: options });
-
-            // Create the drawControl for adding and editing new layers with default settings
-            K.drawControl = new L.Control.Draw({
-                draw: {
-                    marker: {
-                        icon: new icon()
-                    },
-                    // circle: false
-                },
-                edit: {
-                    featureGroup: K.group.draw,
-                    selectedPathOptions: {
-                        maintainColor: true,
-                        moveMarkers: true
-                    }
-                }
-            });
-
-            K.drawIcon = K.drawControl.options.draw.marker.icon;
-
-        } else $.extend(K.drawIcon.options, options);
-    },
-
-    svg: {
-        dot: `<svg class="bg-dot" viewBox="0 0 64 64"><path class="dot-color" d="M32,3.1C16.039,3.1,3.1,16.039,3.1,32c0,15.961,12.939,28.9,28.9,28.9c15.961,0,28.9-12.939,28.9-28.9 C60.9,16.039,47.961,3.1,32,3.1z M32,48.5c-9.113,0-16.5-7.387-16.5-16.5S22.887,15.5,32,15.5S48.5,22.887,48.5,32 S41.113,48.5,32,48.5z"/></svg>`,
-        'black tusk': `<svg class="icon-npc black-tusk" viewBox="0 0 64 64"><path class="st0" d="M32 1.5l-30.5 30.5 30.5 30.5 30.5-30.5-30.5-30.5zm-20.57 30.5l17.94-17.94v18.06l-4.71 4.71 7.34 7.34 7.34-7.34-4.71-4.71v-18.06l17.94 17.94-20.57 20.57-20.57-20.57z"/></svg>`,
-        'true sons': `<svg class="icon-npc true-sons" viewBox="0 0 64 64"><path d="M4.5 55.6h34.8l-13.4-33.1h-21.4zm27.1-37.9l3 5.6h24.9v-5.6zm5.3 10l3 5.6h19.6v-5.6zm-10.2-19.3l2.6 5h30.2v-5zm15.5 29.3l3 5.7h14.3v-5.7z"/></svg>`,
-        'hyenas': `<svg class="icon-npc hyenas" viewBox="0 0 64 64"><path d="M48 24.1l11.5-4.5-1.4-3.5-7.1 2.9 3.8-7-3.2-1.8-6 11-13.6 5.3-14.2-4.8-5.5-9.6-3.4 1.9 3.4 6-6.6-2.3-1.2 3.5 10.6 3.6 4 6.9-11.7 4.6 1.4 3.5 12.1-4.9 10.8 19 10.9-19.9 12 4 1.1-3.5-11.3-3.8 3.7-6.7zm-5.4 2.2l-1.8 3.3-3.5-1.2 5.3-2.1zm-22.1.3l6 2-4 1.7-2-3.7zm11.2 19.6l-7.3-12.7 7.6-3 7 2.4-7.3 13.3z"/></svg>`,
-        'outcasts': `<svg class="icon-npc outcasts" viewBox="0 0 64 64"><path d="M59.109 18.941a.986.986 0 0 0-.114-.296c-.262-.441-.821-.592-1.248-.338a.898.898 0 0 0-.427.864c.53 4.26-1.419 8.621-5.331 10.947-5.279 3.139-12.115 1.385-15.267-3.917-3.152-5.302-1.428-12.145 3.85-15.284 3.912-2.326 8.675-1.955 12.163.546.284.192.657.22.963.037.428-.254.562-.817.299-1.258a1 1 0 0 0-.205-.242c-4.76-4.16-11.48-5.174-16.808-2.007a13.165 13.165 0 0 0-4.37 4.242 1.186 1.186 0 0 1-1.967.07 13.16 13.16 0 0 0-4.489-3.817c-5.503-2.851-12.153-1.444-16.661 2.987a.982.982 0 0 0-.19.253c-.235.455-.07 1.01.372 1.238a.895.895 0 0 0 .959-.094c3.337-2.701 8.069-3.349 12.111-1.256 5.454 2.825 7.575 9.556 4.738 15.033s-9.559 7.629-15.013 4.804c-4.041-2.094-6.242-6.333-5.962-10.617a.893.893 0 0 0-.477-.837c-.441-.229-.99-.044-1.227.411a.999.999 0 0 0-.097.301c-1.018 6.238 1.67 12.481 7.174 15.332a13.108 13.108 0 0 0 4.183 1.337 1.17 1.17 0 0 1 .921 1.587 13.862 13.862 0 0 0-.934 4.999c0 6.394 4.306 11.819 10.315 13.847a.93.93 0 0 0 .718-1.708c-3.933-1.776-6.685-5.803-6.685-10.499 0-3.951 1.945-7.435 4.903-9.499v8.551a1.443 1.443 0 0 0 2.884 0v-9.989a10.9 10.9 0 0 1 1.83-.415v11.189a1.647 1.647 0 1 0 3.294 0v-11.161c.629.101 1.241.252 1.83.456v9.272a1.442 1.442 0 1 0 2.884 0v-7.76c2.849 2.08 4.714 5.489 4.714 9.353 0 4.696-2.752 8.724-6.685 10.499a.93.93 0 1 0 .718 1.708c6.007-2.028 10.315-7.454 10.315-13.847 0-2.053-.452-4.003-1.256-5.777a1.185 1.185 0 0 1 1.016-1.691 13.214 13.214 0 0 0 5.998-1.83c5.323-3.166 7.642-9.555 6.261-15.724zm-25.193 12.743h-4.196a1.048 1.048 0 0 1-.911-1.564l2.098-3.705a1.048 1.048 0 0 1 1.823 0l2.098 3.705a1.048 1.048 0 0 1-.912 1.564zM12.618 29.146l4.804-5.045 4.58 4.434 2.291-2.366-4.6-4.453 4.904-5.15-2.384-2.273-4.886 5.131-4.756-4.606-2.291 2.366 4.776 4.626-4.822 5.063zm38.473-15.853l-4.887 5.131-4.756-4.606-2.291 2.366 4.776 4.625-4.822 5.064 2.384 2.272 4.805-5.045 4.58 4.435 2.291-2.366-4.6-4.454 4.904-5.149z"/></svg>`,
-
-    },
-
-    stripClasses: function(value) {
-        let classes = classesToArray(K.classRemoval),
-            cur, curValue, clazz, j, finalValue,
-            className = value;
-
-        if (classes.length) {
-            curValue = className || '';
-            cur = ` ${stripAndCollapse(curValue)} `;
-
-            if (cur) {
-                j = 0;
-                while ((clazz = classes[j++])) {
-
-                    // Remove *all* instances
-                    while (cur.indexOf(` ${clazz} `) > -1) {
-                        cur = cur.replace(` ${clazz} `, " ");
-                    }
-                }
-
-                finalValue = stripAndCollapse(cur);
-            }
-        }
-
-        return finalValue;
-    },
-
-    // this changes values in arrays to strings and ignores functions
-    valuesToString(obj) {
-
-        if (K.has($.type(obj), ['object', 'array'])) {
-            $.each(obj, function(i, v) {
-                if ($.type(v) == 'function') return;
-                obj[i] = K.has($.type(v), ['object', 'array']) ? K.valuesToString(v) : v.toString();
-            });
-        } else return obj.toString();
-
-        return obj;
-    },
-
-    data: {
-        types: {}
-    },
-
-    settingShape: shape => K.has(shape, ['polyline', 'rectangle']) ? 'polygon' : shape,
-
-    getSetting: (obj, setting) => {
+    K.getSetting = (obj, setting) => {
         const m = K.in('mode', obj) && K.in('o', obj.mode[K.mode]) ? obj.mode[K.mode].o : false;
         return m && K.in(setting, m) ? m[setting] : obj[setting];
+    };
+
+K.strongholds = [
+    '_tthw137te',
+    '_hy004vpns',
+    '_isbq2fsd0',
+    '_zvuruwgpn'
+];
+
+K.getWorldTier = () => {
+    let i = 1;
+    $.each(K.strongholds, function(j, id) {
+        K.complete.is(id) && i++;
+    });
+    return i;
+};
+
+K.setWorldTier = () => {
+    $('[mode="World Tier"] img').attr('src', `images/mode-world-tier-${K.getWorldTier()}.svg`);
+};
+
+K.cycle = {
+    init: false,
+    temp: [],
+    groups: [],
+    time: 5000,
+    interval: false,
+
+    reset: function() {
+        this.init = false;
+        this.temp = [];
+        this.groups = [];
+
+        if (this.interval) {
+            clearInterval(this.interval);
+            this.interval = false;
+        }
     },
 
-    strongholds: [
-        '_tthw137te',
-        '_hy004vpns',
-        '_isbq2fsd0',
-        '_zvuruwgpn'
-    ],
+    start: function() {
+        this.init = true;
 
-    getWorldTier: () => {
-        let i = 1;
-        $.each(K.strongholds, function(j, id) {
-            K.complete.is(id) && i++;
+        $.each(this.temp, function(i, layer) {
+            K.cycle.add(layer);
+            layer.showing = true;
         });
-        return i;
+
+        this.temp = [];
+
+        if (this.interval) {
+            clearInterval(this.interval);
+            this.interval = false;
+        }
+        this.interval = setInterval(() => K.cycle.action(), this.time);
+        this.action();
     },
 
-    setWorldTier: () => {
-        $('[mode="World Tier"] img').attr('src', `images/mode-world-tier-${K.getWorldTier()}.svg`);
+    add: function(layer) {
+        if (!layer.options.cycle) return;
+
+        if (!this.init) {
+            this.temp.push(layer);
+            return;
+        }
+
+        let add = true;
+        $.each(this.groups, function(i, layers) {
+            $.each(layers, function(i, l) {
+                l === layer && (add = false);
+            });
+        });
+
+        if (!add) return;
+
+        const group = [layer];
+        const addPoly = (layer) => {
+            layer.cyclePoly = false;
+            if ($.type(layer.options.link) != 'array') return;
+
+            $.each(layer.options.link, function(i, id) {
+                const link = K.group.getLayer(id);
+                if (!link) return;
+                if (link.options.shape != 'marker') {
+                    layer.cyclePoly = link;
+                }
+            });
+        };
+        addPoly(layer);
+        $.each(layer.options.cycle, function(i, id) {
+            const l = K.group.getLayer(id);
+            if (!l) return;
+            group.push(l);
+            addPoly(l);
+        });
+
+        this.groups.push(group);
     },
 
-    cycle: {
-        init: false,
-        temp: [],
-        groups: [],
-        time: 5000,
-        interval: false,
+    action: function() {
+        for (let i = 0; i < this.groups.length; i++) {
+            const g = this.groups[i],
+                group = [];
 
-        reset: function() {
-            this.init = false;
-            this.temp = [];
-            this.groups = [];
-
-            if (this.interval) {
-                clearInterval(this.interval);
-                this.interval = false;
-            }
-        },
-
-        start: function() {
-            this.init = true;
-
-            $.each(this.temp, function(i, layer) {
-                K.cycle.add(layer);
-                layer.showing = true;
-            });
-
-            this.temp = [];
-
-            if (this.interval) {
-                clearInterval(this.interval);
-                this.interval = false;
-            }
-            this.interval = setInterval(() => K.cycle.action(), this.time);
-            this.action();
-        },
-
-        add: function(layer) {
-            if (!layer.options.cycle) return;
-
-            if (!this.init) {
-                this.temp.push(layer);
-                return;
+            for (let j = 0; j < g.length; j++) {
+                const layer = g[j];
+                !K.in('currentGroup', layer) && (layer.currentGroup = layer.options.group);
+                if (!K.in(layer.currentGroup, ['groupHidden', 'groupComplete']))
+                    group.push(layer);
             }
 
-            let add = true;
-            $.each(this.groups, function(i, layers) {
-                $.each(layers, function(i, l) {
-                    l === layer && (add = false);
-                });
-            });
+            const first = group[0];
+            if (group.length == 1) {
+                first.showing = true;
+                $(first._icon).show();
+                first.cyclePoly && $(first.cyclePoly._path).show();
 
-            if (!add) return;
+                continue;
+            }
 
-            const group = [layer];
-            const addPoly = (layer) => {
-                layer.cyclePoly = false;
-                if ($.type(layer.options.link) != 'array') return;
+            let next = false,
+                done = false;
+            for (let j = 0; j < group.length; j++) {
+                const layer = group[j];
 
-                $.each(layer.options.link, function(i, id) {
-                    const link = K.group.getLayer(id);
-                    if (!link) return;
-                    if (link.options.shape != 'marker') {
-                        layer.cyclePoly = link;
-                    }
-                });
-            };
-            addPoly(layer);
-            $.each(layer.options.cycle, function(i, id) {
-                const l = K.group.getLayer(id);
-                if (!l) return;
-                group.push(l);
-                addPoly(l);
-            });
+                if (next) {
+                    layer.showing = true;
+                    $(layer._icon).show();
+                    layer.cyclePoly && $(layer.cyclePoly._path).show();
+                    next = false;
+                    done = true;
 
-            this.groups.push(group);
-        },
+                } else if (layer.showing) {
 
-        action: function() {
-            for (let i = 0; i < this.groups.length; i++) {
-                const g = this.groups[i],
-                    group = [];
-
-                for (let j = 0; j < g.length; j++) {
-                    const layer = g[j];
-                    !K.in('currentGroup', layer) && (layer.currentGroup = layer.options.group);
-                    if (!K.in(layer.currentGroup, ['groupHidden', 'groupComplete']))
-                        group.push(layer);
+                    layer.showing = false;
+                    $(layer._icon).hide();
+                    layer.cyclePoly && $(layer.cyclePoly._path).hide();
+                    next = true;
                 }
 
-                const first = group[0];
-                if (group.length == 1) {
+                const len = group.length - 1;
+                if (len == j && (next || !done)) {
                     first.showing = true;
                     $(first._icon).show();
                     first.cyclePoly && $(first.cyclePoly._path).show();
-
-                    continue;
-                }
-
-                let next = false,
-                    done = false;
-                for (let j = 0; j < group.length; j++) {
-                    const layer = group[j];
-
-                    if (next) {
-                        layer.showing = true;
-                        $(layer._icon).show();
-                        layer.cyclePoly && $(layer.cyclePoly._path).show();
-                        next = false;
-                        done = true;
-
-                    } else if (layer.showing) {
-
-                        layer.showing = false;
-                        $(layer._icon).hide();
-                        layer.cyclePoly && $(layer.cyclePoly._path).hide();
-                        next = true;
-                    }
-
-                    const len = group.length - 1;
-                    if (len == j && (next || !done)) {
-                        first.showing = true;
-                        $(first._icon).show();
-                        first.cyclePoly && $(first.cyclePoly._path).show();
-                    }
                 }
             }
         }
     }
-});
+};
+
+// MARK: ^ Search
+K.search = {
+    options: {
+        keys: ['creator', 'type', 'category', 'content']
+    },
+
+    paths: {
+        creator: 'layer.options.creator',
+        type: 'layer.options.type',
+        category: 'layer.options.category',
+        content: 'layer._popup._content'
+    },
+
+    // elements
+    elements: [{
+        key: 'NONE',
+        selector: '.search .no-results'
+    }, {
+        key: 'LIST',
+        selector: '.search .results'
+    }, {
+        key: 'SEARCH',
+        selector: '#search',
+        event: 'input change paste',
+        action: function(el) {
+            const val = $(el).val().trim().replace(/\s{2,}/, ' ').replace(/:\s+(\w+ )/, ':$1');
+
+            if (this.timeout) clearTimeout(this.timeout);
+            this.timeout = setTimeout(() => {
+                this.populate(val);
+            }, 400);
+        }
+    }, {
+        key: 'CLEAR',
+        selector: '#search-clear',
+        action: function() {
+            this.SEARCH.val('').trigger('change').focus();
+        }
+    }, {
+        key: 'MORE',
+        selector: '.search .more',
+        action: function() {
+            this.display();
+        }
+    }, {
+        key: 'ITEM',
+        selector: '.search .result',
+        call: ['detach']
+    }, {
+        key: 'COUNT',
+        selector: '.search .count'
+    }, {
+        key: 'SHARE',
+        selector: '.search .share',
+        action: function() {
+            K.share(['search']);
+        }
+    }, {
+        key: 'BTN.CATEGORY',
+        selector: '.search .quick .category'
+    }, {
+        key: 'BTN.TYPE',
+        selector: '.search .quick .type'
+    }, {
+        key: 'BTN.CREATOR',
+        selector: '.search .quick .creator'
+    }, {
+        key: 'BTN.CONTENT',
+        selector: '.search .quick .content'
+    }, {
+        key: 'SORT.CATEGORY.ASC',
+        selector: '.search .sort input.category.asc'
+    }, {
+        key: 'SORT.CATEGORY.DESC',
+        selector: '.search .sort input.category.desc'
+    }, {
+        key: 'SORT.TYPE.ASC',
+        selector: '.search .sort input.type.asc'
+    }, {
+        key: 'SORT.TYPE.DESC',
+        selector: '.search .sort input.type.desc'
+    }, {
+        key: 'SORT.CONTENT.ASC',
+        selector: '.search .sort input.content.asc'
+    }, {
+        key: 'SORT.CONTENT.DESC',
+        selector: '.search .sort input.content.desc'
+    }, {
+        key: 'SORT.DATE.ASC',
+        selector: '.search .sort input.date.asc'
+    }, {
+        key: 'SORT.DATE.DESC',
+        selector: '.search .sort input.date.desc'
+    }, {
+        key: 'SORT.DISTANCE.ASC',
+        selector: '.search .sort input.distance.asc'
+    }, {
+        key: 'SORT.DISTANCE.DESC',
+        selector: '.search .sort input.distance.desc'
+    }, {
+        key: 'CHECK.EXACT',
+        selector: '.search .checks input.exact',
+        event: 'change',
+        value: K.local('search-exact') || false,
+        action: function(el) {
+            K.local('search-exact', $(el).is(':checked'));
+            this.SEARCH.trigger('change').focus();
+        }
+    }, {
+        key: 'CHECK.MATCH',
+        selector: '.search .checks input.match',
+        event: 'change',
+        value: K.local('search-match') || false,
+        action: function(el) {
+            K.local('search-match', $(el).is(':checked'));
+            this.SEARCH.trigger('change').focus();
+        }
+    }, {
+        key: 'CHECK.ONLY',
+        selector: '.search .checks input.only',
+        event: 'change',
+        value: K.local('search-only') || false,
+        action: function(el) {
+
+        }
+    }, {
+        key: 'MENU',
+        selector: '.side-menu-toggle.search'
+    }],
+
+    // used for the display list
+    list: null,
+    loaded: 0,
+    terms: false,
+    keySearch: false,
+    timeout: false,
+
+    attach: function() {
+        K.group.clearSearch();
+        K.group.search();
+
+        const _this = this;
+
+        K.each(this.elements, function() {
+            const split = this.key.split('.');
+            let path = _this;
+            for (let i = 0, l = split.length; i < l; i++) {
+                const key = split[i];
+                if (i != l - 1) {
+                    !path[key] && (path[key] = {});
+                    path = path[key];
+                } else {
+                    path[key] = $(this.selector);
+                    const $el = path[key];
+
+                    // do any attached function calls on the jQuery element
+                    if (this.call)
+                        for (const call of this.call) $el[call]();
+
+                    if (K.type(this.value) == 'boolean')
+                        $el.prop('checked', this.value);
+
+                    // add any attached actions with events if declared
+                    const event = this.event || 'click',
+                        action = this.action;
+                    action && $el.off(event).on(event, function() {
+                        action.call(_this, this);
+                    });
+                }
+            }
+        });
+
+        K.each(this.BTN, function() {
+
+            $(this).off('click').on('click', function() {
+                let val = _this.SEARCH.val().trim().replace(/\s{2,}/, ' ').replace(/:\s+(\w+ )/, ':$1');
+                const type = $(this).attr('type');
+
+                if (!val.contains(type)) {
+                    const text = `${val} ${type}:${type == 'creator' && K.user.name ? K.user.name : ''}`;
+                    val = text.trim();
+                }
+
+                _this.SEARCH.val(val);
+
+                const words = val.split(' ');
+                let key = false,
+                    start = -1,
+                    end = val.length - 1;
+
+                for (let i = 0; i < words.length; i++) {
+                    const word = words[i];
+                    if (word.contains(':')) {
+                        const split = word.split(':');
+                        if (split[0] == type) {
+                            if (split[1] != '') {
+                                key = split[0];
+                                start = val.indexOf(type + ':' + split[1]) + type.length + 1;
+                                end = start + split[1].length;
+                            } else
+                                start = end = val.indexOf(type + ':') + type.length + 1;
+                        } else key = false;
+                    } else if (key)
+                        end = end + 1 + word.length;
+                }
+
+                _this.SEARCH.selectRange(start, end).trigger('change');
+            });
+        });
+
+        const sort = K.local('searchSort') || {
+            btn: 'date',
+            dir: 'asc'
+        };
+        $(`.search .sort input[btn=${sort.btn}][dir=${sort.dir}]`).prop('checked', true);
+
+        K.each(this.SORT, function() {
+            K.each(this, function() {
+
+                $(this).off('change').on('change', function() {
+                    const checked = $(this).is(':checked'),
+                        all = '.search .sort input';
+
+                    $(all).prop('checked', false);
+                    $(this).prop('checked', checked);
+
+                    !$(all + ':checked').length && _this.SORT.DATE.ASC.prop('checked', true);
+
+                    _this.trigger();
+
+                    const active = $(all + ':checked');
+                    K.local('searchSort', {
+                        btn: active.attr('btn'),
+                        dir: active.attr('dir')
+                    });
+                });
+            });
+        });
+    },
+
+    results: function(string, options) {
+        if (!string) return [];
+
+        options = this.options = $.extend(this.options, options);
+
+        const keySearch = this.keySearch = {},
+            getQuoted = /((?<=[\^\s:]')\w[^']+\w(?=')|(?<=[\^\s:]")\w[^"]+\w(?="))/g,
+            removeQuoted = /['"]\w[^"']+\w["']/g;
+
+        // find and remove the key searches
+        const keys = string.match(/(\w+:[^:]{0,}(?= \w+:)|\w+:.{0,}$)/g) || [];
+        string = string.replace(/ ?\w+:.*/g, '').trim();
+
+        // find and remove quoted strings
+        const terms = this.terms = string.match(getQuoted) || [];
+        string = string.replace(removeQuoted, '').replace(/\s{2,}/, ' ').trim();
+
+        let words = string.split(' ');
+        for (let i = 0; i < words.length; i++)
+            words[i] && terms.push(words[i]);
+
+        for (const value of keys) {
+            const keyVal = value.split(':'),
+                key = keyVal[0];
+
+            keySearch[key] = {
+                key: key,
+                values: keyVal[1].match(getQuoted) || []
+            };
+
+            words = keyVal[1].replace(removeQuoted, '').replace(/\s{2,}/, ' ').trim();
+            !options.exactMatch && (words = words.split(' '));
+            options.exactMatch && (words = [words]);
+            for (let i = 0; i < words.length; i++)
+                words[i] && keySearch[key].values.push(key == 'type' ? words[i].space() : words[i]);
+        }
+
+        const results = [];
+
+        K.each(K.group.search(), function() {
+            let skip = false;
+
+            this.matches = [];
+
+            // first check the keySearches are a match
+            for (const key in keySearch) {
+                if (!K.in(key, options.keys)) continue;
+                const k = keySearch[key];
+                !K.length(k.values) && (skip = true);
+                for (let i = 0; i < k.values.length; i++) {
+                    const v = k.values[i] || 'ignorer',
+                        c = options.matchCase;
+                    if (options.exactMatch && key != 'content')
+                        !(this[key] || '').equals(v, c) && (skip = true);
+                    else !(this[key] || '').contains(v, c) && (skip = true);
+                }
+            }
+
+            // skip if the keySearch didn't match 
+            if (skip) return;
+
+            for (let key in keySearch) this.matches.push(key);
+
+            // now we check the other search terms match any other keys
+            let match = true;
+            if (terms.length) {
+                match = false;
+                for (let i = 0; i < options.keys.length; i++) {
+                    const key = options.keys[i];
+                    let found = 0;
+
+                    for (let j = 0; j < terms.length; j++) {
+                        const word = terms[j];
+                        K.type(this[key]) == 'string' && this[key].contains(word, options.matchCase) && found++;
+                    }
+
+                    if (found == terms.length) {
+                        match = true;
+                        this.matches.push(key);
+                    }
+                }
+            }
+
+            match && results.push(this);
+        });
+
+        return results;
+    },
+
+    populate: function(string) {
+        $('.pan-pointer').removeClass('pan-pointer');
+
+        const options = {
+            matchCase: this.CHECK.MATCH.is(':checked'),
+            exactMatch: this.CHECK.EXACT.is(':checked'),
+            resultsOnly: this.CHECK.ONLY.is(':checked')
+        };
+
+        this.list = this.results(string, options);
+        this.sort();
+        this.loaded = 0;
+
+        if (!K.length(this.list)) {
+            this.LIST.hide();
+            this.NONE.show();
+            this.COUNT.html('');
+            this.SHARE.hide();
+            return;
+        }
+
+        this.NONE.hide();
+        this.LIST.show().html('');
+        this.SHARE.show();
+        this.LIST.animate({ scrollTop: 0 }, 400);
+
+        this.counter.set(this.list.length);
+
+        this.display();
+    },
+
+    counter: {
+        set: function(to) {
+            this.to = to;
+            if (this.time) clearTimeout(this.time);
+            this.action();
+        },
+        time: false,
+        to: false,
+        on: 0,
+        action: function() {
+            if (this.on == this.to) return;
+
+            const gap = Math.abs(this.to - this.on),
+                by = gap > 500 ? 50 : gap > 250 ? 25 : gap > 100 ? 10 : gap > 25 ? 5 : 1;
+
+            this.to < this.on ? (this.on -= by) : (this.on += by);
+            K.search.COUNT.html(`There ${this.on == 1 ? 'is only' : 'are'} <span class="num">${this.on}</span> result${this.on == 1 ? '' : 's'}!`);
+
+
+            this.time = setTimeout(() => {
+                this.action()
+            }, 3);
+        }
+    },
+
+    display: function() {
+        const max = this.loaded + 50;
+        this.MORE.hide();
+
+
+        for (; this.loaded < this.list.length; this.loaded++) {
+            if (this.loaded == max) {
+                this.MORE.show();
+                break;
+            }
+
+            const result = this.list[this.loaded],
+                item = this.ITEM.clone().appendTo(this.LIST),
+                icon = result.layer.options.iconUrl;
+
+            $('.num', item).text(this.loaded + 1);
+
+            if (icon)
+                $('.icon', item).attr('src', icon);
+            else {
+                $('.poly', item).css({
+                    backgroundColor: result.layer.options.fillColor,
+                    borderColor: result.layer.options.color
+                });
+
+                $('.content', item).addClass('poly-info');
+            }
+
+            for (let i = 0; i < this.options.keys.length; i++) {
+
+                const key = this.options.keys[i];
+                let text = K.getPropByString(result, this.paths[key]);
+
+                $(`.${key}.text`, item).html(key == 'type' ? text.space() : text);
+            }
+
+            if (K.empty(result.content)) $('.content.text', item).hide();
+
+            for (let i = 0; i < result.matches.length; i++) {
+
+                const key = result.matches[i],
+                    el = $(`.${key}.text`, item);
+
+                for (let j = 0; j < this.terms.length; j++) {
+                    const term = this.terms[j];
+                    el.replaceAll(new RegExp(`(${term})`, `${this.options.matchCase ? '' : 'i'}g`), '<strong>$1</strong>');
+                }
+
+                let kS;
+                if (kS = this.keySearch[key]) {
+                    for (let j = 0; j < kS.values.length; j++) {
+                        const term = kS.values[j];
+                        el.replaceAll(new RegExp(`(${term})`, `${this.options.matchCase ? '' : 'i'}g`), '<strong>$1</strong>');
+                    }
+                }
+            }
+
+            item.on('click', function() {
+
+                // console.log(result);
+
+                $('.pan-pointer').removeClass('pan-pointer');
+
+                const layer = K.group.getLayer(result.layer.options.id);
+                let zoom = layer.options.group.replace('group', '').replace(/^0/, '');
+                zoom = (isNaN(zoom) ? 9 : parseInt(zoom)) + 2;
+
+                if (layer._latlng) {
+                    K.myMap.flyTo(result.layer._latlng, zoom, {
+                        maxZoom: 15
+                    });
+
+                    K.myMap.once('moveend', () => {
+                        $(layer._icon).addClass('pan-pointer');
+                    });
+
+                } else K.myMap.flyToBounds(result.layer._latlngs, {
+                    animate: true,
+                    padding: L.point([250, 250]),
+                    maxZoom: 15
+                });
+            });
+
+            item.show();
+        }
+    },
+
+    map: false,
+    // MARK: ^^ Sort
+    sort: function() {
+
+        if (!K.length(this.list)) return;
+
+        const values = {};
+        $('.search .sort input:checked').each(function() {
+            values[$(this).attr('btn')] = $(this).attr('dir');
+        });
+
+        if (K.in('distance', values)) {
+            let n = 1,
+                distances = [],
+                len = this.list.length;
+
+            const findFor = (item) => {
+                const latLng1 = item.layer._latlng || L.latLngBounds(item.layer._latlngs).getCenter();
+                let smallest = {
+                    index: -1,
+                    distance: Infinity,
+                    latLng: [0, 0]
+                };
+
+                K.each(this.list, (i, item2) => {
+
+                    if (K.in('distance', item2) || item === item2) return;
+
+                    const latLng2 = item2.layer._latlng || L.latLngBounds(item2.layer._latlngs).getCenter(),
+                        distance = latLng1.distanceTo(latLng2) / 1000;
+
+                    distance < smallest.distance && (smallest = {
+                        distance: distance,
+                        index: i,
+                        latLng: latLng2
+                    });
+                });
+
+                if (this.list[smallest.index]) {
+                    if (distances.length > len / 2 && smallest.distance * 1.5 > Math.max.apply(Math, distances)) {
+                        placeAfterClosest(this.list[smallest.index]);
+                        return;
+                    }
+
+                    n++;
+                    distances.push(smallest.distance);
+                    this.list[smallest.index].distance = n;
+                    findFor(this.list[smallest.index]);
+                }
+            };
+
+            const placeAfterClosest = (item) => {
+                const latLng1 = item.layer._latlng || L.latLngBounds(item.layer._latlngs).getCenter(),
+                    smallest = {
+                        index: -1,
+                        distance: Infinity
+                    };
+
+                K.each(this.list, (i, item2) => {
+
+                    if (item === item2 || !K.in('distance', item2)) return;
+
+                    const latLng2 = item2.layer._latlng || L.latLngBounds(item2.layer._latlngs).getCenter(),
+                        distance = latLng1.distanceTo(latLng2) / 1000;
+
+                    distance < smallest.distance && (smallest.distance = distance, smallest.index = i);
+                });
+
+                let increase = Infinity;
+
+                if (this.list[smallest.index]) {
+                    n = this.list[smallest.index].distance;
+                    distances.push(smallest.distance);
+                    n++;
+                    item.distance = increase = n;
+                }
+
+                let findItem;
+
+                K.each(this.list, (i, item1) => {
+                    if (item !== item1 && item1.distance >= increase) {
+                        item1.distance++;
+                        item1.distance > n && (n = item1.distance, findItem = item1);
+                    }
+                });
+
+                findItem && findFor(findItem);
+            };
+
+            let northWest, value = Infinity;
+            K.each(this.list, (i, item) => {
+                const lls = item.layer._latlng || L.latLngBounds(item.layer._latlngs).getCenter(),
+                    distance = lls.distanceTo([8.3, -14.9]);
+                distance < value && (value = distance, northWest = i);
+            });
+
+            this.list[northWest].distance = 0;
+            findFor(this.list[northWest]);
+
+        }
+
+        this.list.sort((a, b) => {
+            for (const key in values) {
+                const dir = values[key] == 'asc';
+
+                if (K.empty(a[key])) return 1
+                if (K.empty(b[key])) return -1
+
+                if ((dir && a[key] > b[key]) || (!dir && a[key] < b[key])) return 1;
+                if ((dir && a[key] < b[key]) || (!dir && a[key] > b[key])) return -1;
+            }
+        });
+
+        // const path = [];
+        // K.each(this.list, (i, item) => {
+        //     path.push(item.layer._latlng || L.latLngBounds(item.layer._latlngs).getCenter());
+        // });
+        // K.myMap.addLayer(L.polyline(path, { group: 'groupAll' }));
+    },
+
+    find: function(id) {
+        for (let i = 0; i < this.list.length; i++) {
+            const item = this.list[i];
+            if (item.layer.options.id == id) {
+                // this.list.splice(i, 1);
+                return item;
+            }
+        }
+    },
+
+    trigger: function() {
+        this.SEARCH.trigger('change');
+    },
+
+    by: function(type, string) {
+        this.MENU.not('.active').trigger('click');
+        this.SORT.DISTANCE.ASC.prop('checked', true).trigger('change');
+        this.CHECK.EXACT.prop('checked', true);
+        this.CHECK.MATCH.prop('checked', true);
+        this.SEARCH.val(`${type}:${string.space()}`).trigger('change');
+    }
+};
+
+// MARK: ^ Perform URI Tasks
+K.performURITasks = function() {
+    const params = K.urlParam() || {};
+
+    // TODO: search
+    if (K.in('search', params)) {
+        $('.side-menu-toggle.search:not(.active)').trigger('click');
+
+        K.search.CHECK.EXACT.prop('checked', !!params.searchExact);
+        K.search.CHECK.MATCH.prop('checked', !!params.searchMatch);
+        K.search.CHECK.ONLY.prop('checked', !!params.searchOnly);
+
+        if (K.in('searchSort', params)) {
+            $('.search .sort input').prop('checked', false);
+            const type = params.searchSort.toUpperCase(),
+                dir = (params.searchDir || 'asc').toUpperCase();
+            K.search.SORT[type][dir].prop('checked', true);
+        }
+
+        K.search.SEARCH.val(params.search).trigger('change');
+    }
+
+    if (K.in('layer', params)) {
+        const layer = K.group.getLayer(params.layer);
+        if (layer instanceof L.Layer) {
+            if (layer._latlng) {
+                K.myMap.flyTo(layer._latlng, zoom, {
+                    maxZoom: 15
+                });
+
+                K.myMap.once('moveend', () => {
+                    $(layer._icon).addClass('pan-pointer');
+                });
+
+            } else K.myMap.flyToBounds(layer._latlngs, {
+                animate: true,
+                padding: L.point([250, 250]),
+                maxZoom: 15
+            });
+        }
+    }
+
+    // TODO: pan + zoom
+    if (K.in('pan', params)) {
+
+    }
+
+    if (K.in('zoom', params)) {
+
+    }
+
+    window.history.replaceState({}, document.title, window.location.origin);
+};
+
+// MARK: ^ Share
+K.share = function(tasks, layer) {
+    const uri = [];
+
+    if (K.in('search', tasks)) {
+        uri.push(encodeURI(`search=${K.search.SEARCH.val()}`));
+
+        for (const key in K.search.CHECK) {
+            const el = K.search.CHECK[key];
+            el.is(':checked') && uri.push(`search${el.attr('btn').titleCase()}=true`);
+        }
+
+        const sort = $('.search .sort input:checked');
+        sort.length && (uri.push(`searchSort=${sort.attr('btn')}`), uri.push(`searchDir=${sort.attr('dir')}`));
+    }
+
+    if (K.in('layer', tasks) && layer instanceof L.Layer)
+        uri.push(`layer=${layer.options.id}`);
+
+    $('#copy-input').val(`${window.location.origin}?${uri.join('&')}`);
+    const copy = document.getElementById('copy-input');
+    copy.select();
+    document.execCommand('copy');
+
+    K.msg.show({
+        msg: 'Shareable link copied to the clipboard!',
+        time: 2000
+    });
+};
+
+// MARK: ^ Context Menu
+K.contextMenu = {
+    items: {
+        complete: {
+            value: (layer) => layer.complete ? 'Un-Complete' : 'Complete',
+            icon: 'images/menu-complete-solo.svg',
+            check: (layer) => layer.options.shape == 'marker' && !!layer.options.complete,
+            action: (layer) => layer.toggleCompleted()
+        },
+        share: {
+            value: 'Share',
+            icon: 'images/menu-share.svg',
+            check: (layer) => !!layer.options.type,
+            action: (layer) => K.share(['layer'], layer)
+        },
+        search: {
+            value: 'Search Similar',
+            icon: 'images/menu-search.svg',
+            check: (layer) => !!layer.options.type,
+            action: (layer) => K.search.by('type', layer.options.type)
+        },
+        settings: {
+            value: 'Settings',
+            icon: 'images/menu-settings.svg',
+            check: (layer) => K.bar.b.power.enabled() && (K.user.name == layer.options.creator || K.user.type > 3),
+            action: (layer) => K.tool.layer._show(layer)
+        },
+        move: {
+            value: (layer) => layer.dragging.enabled() ? 'End Move' : 'Move',
+            icon: 'images/menu-move-solo.svg',
+            check: (layer) => K.bar.b.power.enabled() && (K.user.name == layer.options.creator || K.user.type > 3),
+            action: (layer) => {
+
+                if (layer.dragging.enabled()) {
+                    layer.dragging.disable();
+                } else {
+                    layer.dragging.enable();
+                    layer.on('dragend', function() {
+                        this.saved(false);
+                    });
+                }
+            }
+        },
+        edit: {
+            value: (layer) => layer.editing.edit ? 'End Edit' : 'Edit',
+            icon: 'images/menu-edit-solo.svg',
+            check: (layer) => K.bar.b.power.enabled() && (K.user.name == layer.options.creator || K.user.type > 3),
+            action: (layer) => {
+                layer.editing.edit = !layer.editing.edit;
+                switchLayerGroups();
+            }
+        }
+    },
+
+    build: function(event, layer) {
+        // console.log(event, layer);
+
+        const menu = $('<div />', {
+            class: 'context-menu'
+        }).css({
+            top: event.containerPoint.y,
+            left: event.containerPoint.x
+        });
+
+        K.each(this.items, function() {
+            if (!this.check(layer)) return;
+
+            menu.children().length && this.value == 'Settings' && $('<hr>').appendTo(menu);
+
+            const $item = $('<div />', {
+                class: 'menu-item'
+            });
+
+            $('<img />', {
+                src: this.icon || '',
+                class: 'menu-icon'
+            }).appendTo($item);
+
+            $('<span />', {
+                class: 'menu-text',
+                text: K.type(this.value) == 'function' ? this.value(layer) : this.value
+            }).appendTo($item);
+
+            $item.appendTo(menu).on('click', () => {
+                $('.context-menu').remove();
+                this.action(layer);
+            });
+        });
+
+        menu.children().length && menu.appendTo($('body'));
+    }
+};
 
 K.modes.create = function() {
     $.each(this.get, function(i, mode) {
@@ -2383,7 +3209,6 @@ K.tool.layer = { // MARK: Layer Tools
                 title: 'Copy this layers position',
                 action: function() {
                     layer.copyLocation();
-
                 }
             }, {
                 cls: 'paste-loc',
@@ -3693,10 +4518,10 @@ K.tool.layer = { // MARK: Layer Tools
 
         if (layer.dragging.enabled()) {
             layer.dragging.disable();
-            $(this).removeClass('end');
+            $('.settings.icon.move').removeClass('end');
         } else {
             layer.dragging.enable();
-            $(this).addClass('end');
+            $('.settings.icon.move').addClass('end');
             layer.on('dragend', function() {
                 this.saved(false);
             });
@@ -3710,7 +4535,7 @@ K.tool.layer = { // MARK: Layer Tools
             layer = fn.layer;
 
         layer.editing.edit = !layer.editing.edit;
-        $(this).toggleClass('end');
+        $('.settings.icon.edit').toggleClass('end');
         switchLayerGroups();
     },
 
@@ -4179,17 +5004,12 @@ $(function() { // MARK: Document Loaded
         let sb = $('#side-bar'),
             c = 'active',
             a = $(this).attr('button'),
-            o = K.local('sideMenu'),
-            setCookies = function() {
-                K.local('sideBar', sb.hasClass(c));
-                K.local('sideMenu', a);
-            };
+            o = K.local('sideMenu');
 
         if ($(this).hasClass(c)) {
             sb.removeClass(`${c} ${a}`);
             setTimeout(function() {
                 sb.children().removeClass(c);
-                setCookies();
             }, 1000);
         } else if (sb.hasClass(c)) {
             sb.removeClass(`${c} ${o}`);
@@ -4197,13 +5017,14 @@ $(function() { // MARK: Document Loaded
                 sb.children().removeClass(c);
                 sb.addClass(`${c} ${a}`);
                 sb.children(`.${a}`).addClass(c);
-                setCookies();
             }, 1000);
         } else {
             sb.addClass(`${c} ${a}`);
             sb.children(`.${a}`).addClass(c);
-            setCookies();
         }
+
+        K.local('sideBar', sb.hasClass(c));
+        K.local('sideMenu', a);
     });
 
     // Correctly position the menu buttons
@@ -4302,7 +5123,7 @@ $(function() { // MARK: Document Loaded
     // Hide Menus on no click
     $(document).mousedown(function(e) { // MARK: ^ Hide Menus
         if (K.check.grabbing) return;
-        const container = $('.settings-divider, .switch-active-group, #slider-box, .group-switch');
+        const container = $('.settings-divider, .switch-active-group, #slider-box, .group-switch, .context-menu');
         if (!container.is(e.target) && container.has(e.target).length === 0) {
             $(container).remove();
         }
@@ -4404,6 +5225,7 @@ function pageLoad() { // MARK: Page Load
 
     K.loaded = false;
     K.cycle.reset();
+    K.group.draw.clearLayers();
 
     // Check for clean map params and cookies and hide everything
     if (K.urlParam('noIcon') == 'true')
@@ -4572,7 +5394,7 @@ function pageLoad() { // MARK: Page Load
                 title: 'Discard all unsaved changes',
                 css: 'cancel',
                 clickFn: function() {
-                    
+
                     $('<div />', {
                         class: 'screen-blank',
                         html: $('<div />', {
@@ -4656,7 +5478,7 @@ function pageLoad() { // MARK: Page Load
 
                     let gridTools = ['rotate', 'x-pos', 'y-pos'];
 
-                    $(el).after('<div id="slider-box"></div>');
+                    $(el).after('<div id="slider-box" class="slider-panel"></div>');
                     $.each(gridTools, function(i, type) {
                         $('#slider-box').append(`<div class="leaflet-menu-slider">
                             <div id="slider-${type}" class="slider-class ${type}">
@@ -4759,6 +5581,13 @@ function pageLoad() { // MARK: Page Load
 
                 K.check.editing = true;
                 editIconMessage();
+
+                K.group.draw.eachLayer(function(l) {
+                    if (l.dragging.enabled()) {
+                        l.dragging.disable();
+                        l.editing.wasDragging = true;
+                    }
+                });
             })
 
             // L.Control.Draw Edited
@@ -4788,7 +5617,15 @@ function pageLoad() { // MARK: Page Load
                 K.check.editing = false;
 
                 polyHoverAnimation();
-                onZoomEnd(true);
+                // onZoomEnd(true);
+                K.myMap.panBy([0, 0]);
+
+                K.group.draw.eachLayer(function(l) {
+                    if (l.editing.wasDragging) {
+                        l.dragging.enable();
+                        l.editing.wasDragging = false;
+                    }
+                });
             })
 
             // L.Control.Draw DeleteStart
@@ -4832,7 +5669,8 @@ function pageLoad() { // MARK: Page Load
                     type.enabler();
                 });
 
-                onZoomEnd(true);
+                // onZoomEnd(true);
+                K.myMap.panBy([0, 0]);
             });
 
             K.myMap.on('draw:drawstop', function(e) {
@@ -5021,8 +5859,10 @@ function pageLoad() { // MARK: Page Load
             K.user.type && (K.user.type >= 4 || o.creator.toLowerCase() == K.user.name.toLowerCase()) &&
                 l.on('click', K.tool.layer.show);
 
-            K.getSetting(o, 'complete') && o.shape === 'marker' && l.on('contextmenu', function() {
-                this.toggleCompleted();
+            // K.getSetting(o, 'complete') && o.shape === 'marker' && 
+            l.on('contextmenu', function(e) {
+                // this.toggleCompleted();
+                K.contextMenu.build(e, this);
             });
 
             // Add the new layer to the correct group
@@ -5052,7 +5892,8 @@ function pageLoad() { // MARK: Page Load
         };
 
         const populateMenus = function() { // MARK: ^ Populate Menus
-            onZoomEnd();
+            // onZoomEnd();
+            K.myMap.panBy([0, 0]);
 
             // Only switch layers, remove duplicates and add draw control if we are superuser
             K.user.type && switchLayerGroups();
@@ -5212,6 +6053,24 @@ function pageLoad() { // MARK: Page Load
 
             polyHoverAnimation();
 
+            $('.search [title!=""]').qtip({
+                position: {
+                    viewport: $('#mapid'),
+                    my: 'top right',
+                    at: 'bottom center'
+                },
+                style: {
+                    classes: 'tooltip-style'
+                },
+                show: {
+                    delay: 250,
+                    solo: true
+                },
+                hide: {
+                    event: 'click mouseleave'
+                }
+            });
+
             // $('[title!=""]').qtip({
             //     position: {
             //         viewport: $('#mapid'),
@@ -5355,12 +6214,20 @@ function pageLoad() { // MARK: Page Load
                             K.loaded = true;
 
                             setTimeout(() => K.cycle.start(), 1000);
+
+                            // MARK : Test Search
+                            // console.log(K.search(`type:locked box category:cache`));
+                            K.search.attach();
+
+                            K.performURITasks();
                         });
                     });
                 });
             });
         });
     });
+
+    K.includeHTML();
 } /*=====  End of PAGE LOAD  ======*/
 
 // Donate
@@ -5528,7 +6395,7 @@ function randomInt(min, max) {
 //////////////////////////////////////////////////////   
 function keypressEvent(e) {
 
-    if (!K.user.type || K.tool.layer.isOpen() || !K.bar.b.power.enabled())
+    if (!K.user.type || K.tool.layer.isOpen() || !K.bar.b.power.enabled() || $(e.target).is('input'))
         return;
 
     // Marker :---> M
@@ -6134,24 +7001,23 @@ function createPoint(e, f) {
 }
 
 // Used to add whole groups to and from the Draw Control layer
-function switchLayerGroups(d) {
+function switchLayerGroups(skip) {
 
     // Remove current layers in the K.group.draw to original group
-    $.each(K.group.draw._layers, function(i, l) {
+    K.group.draw.eachLayer(function(l) {
 
-        l.editing.currentGroup = l.options.group;
-        K.group.addLayer(K.group.draw.getLayer(i));
-        K.group.draw.removeLayer(i);
+        K.group.addLayer(l);
+        K.group.draw.removeLayer(l._leaflet_id);
     });
 
     // Move layers to drawLayer
-    !d && $.each(K.group.mode, function(j, g) {
+    !skip && $.each(K.group.mode, function(j, g) {
 
         g.eachLayer(function(l) {
             if ((K.map.active[l.options.type] && (l.options.creator == K.user.name || K.user.type > 3)) || l.editing.edit) {
                 l.editing.currentGroup = 'drawLayer';
                 K.group.draw.addLayer(l);
-                K.group.mode[l.options.group].removeLayer(l._leaflet_id);
+                K.group.removeLayer(l._leaflet_id);
             }
         });
     });
@@ -6159,7 +7025,8 @@ function switchLayerGroups(d) {
     K.myMap.removeLayer(K.group.draw).addLayer(K.group.draw).addLayer(K.group.mode.groupAll);
 
     // Show and hide layers after the change
-    onZoomEnd(true);
+    // onZoomEnd(true);
+    K.myMap.panBy([0, 0]);
 }
 
 //////////////////////////////////////////////////////
@@ -6169,7 +7036,7 @@ function switchLayerGroups(d) {
 //////////////////////////////////////////////////////
 function createGeoJSON(store = false) { // MARK: Create GeoJSON
 
-    $('#settings-menu').remove();
+    !store && $('#settings-menu').remove();
 
     K.backup = K.user.name;
 
@@ -6187,15 +7054,14 @@ function createGeoJSON(store = false) { // MARK: Create GeoJSON
             dots: true
         });
 
+        !store && switchLayerGroups(true);
+
         let feature;
         const geoData = {
             features: {},
             settings: {},
             deleted: K.save.deleted
         };
-
-        // Switch the groups back to their correct homes first
-        // switchLayerGroups(true);
 
         // pull in the global settings that have changed
         $.each(K.layer, function(type, obj) {
@@ -6232,14 +7098,14 @@ function createGeoJSON(store = false) { // MARK: Create GeoJSON
             if (o.shape == 'circle') { // Circle
                 feature.g = {
                     t: 'circle',
-                    c: K.valuesToString(layer._latlng),
-                    r: layer._mRadius.toString()
+                    c: K.valuesToString(K.Util.formatLatLngs(layer._latlng)),
+                    r: K.Util.formatLatLngs(layer._mRadius).toString()
                 };
 
             } else if (o.shape == 'marker') { // Marker
                 feature.g = {
                     t: 'marker',
-                    c: K.valuesToString(layer._latlng)
+                    c: K.valuesToString(K.Util.formatLatLngs(layer._latlng))
                 };
 
                 o.iconUrl && delete o.html;
@@ -6248,7 +7114,7 @@ function createGeoJSON(store = false) { // MARK: Create GeoJSON
             } else { // Polyline, Polygon and Rectangle
                 feature.g = {
                     t: o.shape,
-                    c: K.valuesToString(layer._latlngs)
+                    c: K.valuesToString(K.Util.formatLatLngs(layer._latlngs))
                 };
             }
 

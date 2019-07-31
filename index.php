@@ -34,6 +34,7 @@ include_once 'includes/functions.php';
 	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js" integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU=" crossorigin="anonymous"></script>
 
 	<script src="js/K.js?v=<? echo filemtime('js/K.js') ?>"></script>
+	<script src="js/jquery-kraggle.js?v=<? echo filemtime('js/jquery-kraggle.js') ?>"></script>
 
 	<script src="js/Leaflet/leaflet-src1.0.3.js?v=1.0.3"></script>
 
@@ -105,14 +106,15 @@ include_once 'includes/functions.php';
 <body>
 
 	<div id="mapid"></div>
-	<div id="side-bar">
+	<div id="side-bar" class="side-menu">
 		<div class="map-mode-box">
 			<div class="map-mode"><img src="" class="img" /><span class="desc"></span></div>
 		</div>
 
-		<a href='#' class="side-menu-toggle filters" button="filters">Filters Menu</a>
 		<a href='#' class="side-menu-toggle login" button="login">User Account</a>
-		<a href='#' class="side-menu-toggle full" button="full">Toggle Fullscreen</a>
+		<a href='#' class="side-menu-toggle filters" button="filters">Filters</a>
+		<a href='#' class="side-menu-toggle search" button="search">Search</a>
+		<a href='#' class="side-menu-toggle full" button="full">Toggle Full Screen</a>
 		<a href='#' class="side-menu-toggle changes" button="changes">Recent Changes</a>
 		<!-- <a href='#' class="side-menu-toggle gear" button="gear">Gear Set Collection Tracker</a> -->
 		<a href='#' class="side-menu-toggle shorts" button="shorts">Keyboard Shortcuts</a>
@@ -129,6 +131,10 @@ include_once 'includes/functions.php';
 
 		<div class="side-menu-box filters">
 			<div class="side-content"></div>
+		</div>
+
+		<div class="side-menu-box search">
+			<? include 'search.html'; ?>
 		</div>
 
 		<div class="side-menu-box changes">
@@ -148,10 +154,10 @@ include_once 'includes/functions.php';
 		</div>
 	</div>
 
-	<div id="logo"></div>
-	<div id="message"></div>
+	<div id="logo" class="logo-panel"></div>
+	<div id="message" class="message-panel"></div>
 
-	<div id="survival-logo" title="">
+	<div id="survival-logo" title="" class="survival-logo">
 		<img class="logo" src="images/survival-logo.svg">
 		<img class="in-back" src="images/survival-logo-in-ring-back.svg">
 		<img class="in" src="images/survival-logo-in-ring.svg">
@@ -166,7 +172,7 @@ include_once 'includes/functions.php';
 	<a href="/tracker" title="Gear Set Collection Tracker" style="position:absolute; left:10000px;">Gear Set Collection
 		Tracker</a>
 
-	<!-- <div id="alert" style="display:none">
+	<!-- <div id="alert" style="display:none" class="alert-panel">
 		<a class="alert-close" onclick="hideAlert()">Close</a>
 		<p>If you would hate to see this awesome site go as much as I would, and would like to contribute both to keep
 			it going and any future additions, including a Division 2 Map, then please click the button bellow to
@@ -188,6 +194,8 @@ include_once 'includes/functions.php';
 			transfered the domain to the same vendor as the servers host. This is what took a week.</p>
 		<p>Thank you for your patience and thank you GoDaddy!</p>
 	</div> -->
+
+	<input type="text" id="copy-input">
 </body>
 
 <script src="div.map.js?v=<? echo filemtime('div.map.js') ?>"></script>

@@ -18,13 +18,14 @@
 	<!-- <a class="credits beer" target="_blank" href="https://www.paypal.me/kraggle">Buy me a beer!</a> -->
 	<a href="https://discord.gg/5gag92h" target="_blank"><img class="credit-icon" src="images/icon-discord.svg"></a>
 	<a href="https://www.overwolf.com/app/kraggle-the_division_map" target="_blank"><img class="credit-icon" src="images/icon-overwolf.svg"></a>
-	<a href="https://division-builds.com/" target="_blank"><img class="credit-icon" src="images/icon-builds.svg?v=0.1"></a>
+	<!-- <a href="https://division-builds.com/" target="_blank"><img class="credit-icon" src="images/icon-builds.svg?v=0.1"></a> -->
 
 	<? if (@$seal) { ?>
-	<span id="siteseal">
+	<span id="siteseal" class="site-seal">
 		<script async type="text/javascript" src="https://seal.godaddy.com/getSeal?sealID=tN6HXw9rg0bmRN4Xwkgq2UPHXMG6uYgrh1Q7wvv5v9DEAmrCgSpYXQt7m7xP"></script>
 	</span>
 	<? } ?>
 
+	<br>
 	<span class="credits">by: </span><a class="credits name dnt" href="mailto:kraggle27@gmail.com" target="_top">Kraggle</a><br>
 </div>

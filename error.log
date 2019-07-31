@@ -3,3 +3,15 @@
 [17-Jun-2019 10:49:54 Europe/London] PHP Warning:  session_destroy(): Session object destruction failed in D:\Dropbox\laragon\www\the-division-2-map\includes\session_start.php on line 8
 [25-Jun-2019 16:45:54 Europe/London] PHP Warning:  session_destroy(): Session object destruction failed in D:\Dropbox\laragon\www\the-division-2-map\includes\session_start.php on line 8
 [09-Jul-2019 16:34:18 Europe/London] PHP Warning:  session_destroy(): Session object destruction failed in D:\Dropbox\laragon\www\the-division-2-map\includes\session_start.php on line 8
+[12-Jul-2019 15:22:26 Europe/London] PHP Warning:  session_destroy(): Session object destruction failed in D:\Dropbox\laragon\www\the-division-2-map\includes\session_start.php on line 8
+[14-Jul-2019 20:56:26 Europe/London] PHP Warning:  include(search.html): failed to open stream: No such file or directory in D:\Dropbox\laragon\www\the-division-2-map\index.php on line 137
+[14-Jul-2019 20:56:26 Europe/London] PHP Warning:  include(): Failed opening 'search.html' for inclusion (include_path='.;D:/Dropbox/laragon/etc/php/pear') in D:\Dropbox\laragon\www\the-division-2-map\index.php on line 137
+[14-Jul-2019 20:56:41 Europe/London] PHP Warning:  include(search.html): failed to open stream: No such file or directory in D:\Dropbox\laragon\www\the-division-2-map\index.php on line 137
+[14-Jul-2019 20:56:41 Europe/London] PHP Warning:  include(): Failed opening 'search.html' for inclusion (include_path='.;D:/Dropbox/laragon/etc/php/pear') in D:\Dropbox\laragon\www\the-division-2-map\index.php on line 137
+[20-Jul-2019 09:01:19 Europe/London] PHP Warning:  session_destroy(): Session object destruction failed in D:\Dropbox\laragon\www\the-division-2-map\includes\session_start.php on line 8
+[23-Jul-2019 18:30:41 Europe/London] PHP Warning:  session_destroy(): Session object destruction failed in D:\Dropbox\laragon\www\the-division-2-map\includes\session_start.php on line 8
+[24-Jul-2019 19:30:09 Europe/London] PHP Warning:  session_destroy(): Session object destruction failed in D:\Dropbox\laragon\www\the-division-2-map\includes\session_start.php on line 8
+[26-Jul-2019 14:16:33 Europe/London] PHP Warning:  session_destroy(): Session object destruction failed in D:\Dropbox\laragon\www\the-division-2-map\includes\session_start.php on line 8
+[27-Jul-2019 18:21:45 Europe/London] PHP Warning:  session_destroy(): Session object destruction failed in D:\Dropbox\laragon\www\the-division-2-map\includes\session_start.php on line 8
+[29-Jul-2019 16:42:12 Europe/London] PHP Warning:  session_destroy(): Session object destruction failed in D:\Dropbox\laragon\www\the-division-2-map\includes\session_start.php on line 8
+[30-Jul-2019 18:21:07 Europe/London] PHP Warning:  session_destroy(): Session object destruction failed in D:\Dropbox\laragon\www\the-division-2-map\includes\session_start.php on line 8

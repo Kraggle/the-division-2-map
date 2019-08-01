@@ -2117,6 +2117,11 @@ K.search = {
         content: 'layer._popup._content'
     },
 
+    defaultPath: [
+        [50, 50],
+        [51, 50]
+    ],
+
     line: L.polyline([
         [50, 50],
         [51, 50]
@@ -2467,6 +2472,7 @@ K.search = {
             resultsOnly: this.CHECK.ONLY.is(':checked')
         };
 
+        this.line.setLatLngs(this.defaultPath);
         this.list = this.results(string, options);
         this.sort();
         this.loaded = 0;
@@ -2476,6 +2482,7 @@ K.search = {
             this.NONE.show();
             this.COUNT.html('');
             this.SHARE.hide();
+            this.line.setLatLngs(this.defaultPath);
             return;
         }
 

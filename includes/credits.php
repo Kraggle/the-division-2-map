@@ -16,7 +16,6 @@
 
 	<!-- <span class="credits tag">Discord: </span><a class="credits tag dnt" target="_blank" href="https://discord.gg/5gag92h">Kraggle Cartel</a><br> -->
 	<!-- <a class="credits beer" target="_blank" href="https://www.paypal.me/kraggle">Buy me a beer!</a> -->
-	<a href="https://discord.gg/5gag92h" target="_blank"><img class="credit-icon" src="images/icon-discord.svg"></a>
 	<a href="https://www.overwolf.com/app/kraggle-the_division_map" target="_blank"><img class="credit-icon" src="images/icon-overwolf.svg"></a>
 	<!-- <a href="https://division-builds.com/" target="_blank"><img class="credit-icon" src="images/icon-builds.svg?v=0.1"></a> -->
 
@@ -26,6 +25,6 @@
 	</span>
 	<? } ?>
 
-	<br>
-	<span class="credits">by: </span><a class="credits name dnt" href="mailto:kraggle27@gmail.com" target="_top">Kraggle</a><br>
+	<a href="https://discord.gg/5gag92h" target="_blank"><img class="credit-icon" src="images/icon-discord.svg"></a>
+	<a href="mailto:kraggle27@gmail.com" target="_top"><img class="credit-icon" src="images/icon-kraggle-sites.svg?v=2"></a>
 </div>

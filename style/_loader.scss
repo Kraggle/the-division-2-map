@@ -1,0 +1,229 @@
+@keyframes outer-ring-rotate {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    11.1111% {
+        transform: rotate(0deg);
+    }
+
+    11.1112% {
+        transform: rotate(40deg);
+    }
+
+    22.2222% {
+        transform: rotate(40deg);
+    }
+
+    22.2223% {
+        transform: rotate(80deg);
+    }
+
+    33.3333% {
+        transform: rotate(80deg);
+    }
+
+    33.3334% {
+        transform: rotate(120deg);
+    }
+
+    44.4444% {
+        transform: rotate(120deg);
+    }
+
+    44.4445% {
+        transform: rotate(160deg);
+    }
+
+    55.5556% {
+        transform: rotate(160deg);
+    }
+
+    55.5557% {
+        transform: rotate(200deg);
+    }
+
+    66.6667% {
+        transform: rotate(200deg);
+    }
+
+    66.6668% {
+        transform: rotate(240deg);
+    }
+
+    77.7778% {
+        transform: rotate(240deg);
+    }
+
+    77.7779% {
+        transform: rotate(280deg);
+    }
+
+    88.8889% {
+        transform: rotate(280deg);
+    }
+
+    88.8890% {
+        transform: rotate(320deg);
+    }
+
+    100% {
+        transform: rotate(320deg);
+    }
+}
+
+@keyframes inner-ring-clip {
+    0% {
+        clip-path: polygon(100% 0, 50% 0, 50% 50%, 50% 0, 0 0, 0 100%, 100% 100%);
+    }
+
+    6.25% {
+        clip-path: polygon(100% 0, 50% 0, 50% 50%, 0 0, 0 0, 0 100%, 100% 100%);
+    }
+
+    18.75% {
+        clip-path: polygon(100% 0, 50% 0, 50% 50%, 0 100%, 0 100%, 0 100%, 100% 100%);
+    }
+
+    31.25% {
+        clip-path: polygon(100% 0, 50% 0, 50% 50%, 100% 100%, 100% 100%, 100% 100%, 100% 100%);
+    }
+
+    43.75% {
+        clip-path: polygon(100% 0, 50% 0, 50% 50%, 100% 0, 100% 0, 100% 0, 100% 0);
+    }
+
+    50% {
+        clip-path: polygon(0 0, 50% 0, 50% 50%, 50% 0, 50% 0, 50% 0, 50% 0);
+    }
+
+    56.25% {
+        clip-path: polygon(0 0, 0 0, 50% 50%, 50% 0, 0 0, 0 0, 0 0);
+    }
+
+    68.75% {
+        clip-path: polygon(0 100%, 0 100%, 50% 50%, 50% 0, 0 0, 0 100%, 0 100%);
+    }
+
+    81.25% {
+        clip-path: polygon(100% 100%, 100% 100%, 50% 50%, 50% 0, 0 0, 0 100%, 100% 100%);
+    }
+
+    93.75% {
+        clip-path: polygon(100% 0, 100% 0, 50% 50%, 50% 0, 0 0, 0 100%, 100% 100%);
+    }
+
+    100% {
+        clip-path: polygon(100% 0, 50% 0, 50% 50%, 50% 0, 0 0, 0 100%, 100% 100%);
+    }
+}
+
+@keyframes logo-wobble {
+    0% {
+        transform: rotate(-10deg);
+    }
+
+    25% {
+        transform: rotate(-20deg);
+    }
+
+    75% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(-10deg);
+    }
+}
+
+@keyframes logo-dots {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    16.6667% {
+        transform: rotate(0deg);
+    }
+
+    16.6668% {
+        transform: rotate(-8.4deg);
+    }
+
+    33.3334% {
+        transform: rotate(-8.4deg);
+    }
+
+    33.3335% {
+        transform: rotate(-16.8deg);
+    }
+
+    50.0001% {
+        transform: rotate(-16.8deg);
+    }
+
+    50.0002% {
+        transform: rotate(-25.2deg);
+    }
+
+    66.6668% {
+        transform: rotate(-25.2deg);
+    }
+
+    66.6669% {
+        transform: rotate(-33.6deg);
+    }
+
+    83.3335% {
+        transform: rotate(-33.6deg);
+    }
+
+    83.3336% {
+        transform: rotate(-42deg);
+    }
+
+    99.9999% {
+        transform: rotate(-42deg);
+    }
+
+    100% {
+        transform: rotate(0deg);
+    }
+}
+
+.survival-logo {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 25vw;
+    max-width: 160px;
+    min-width: 70px;
+    height: 25vw;
+    max-height: 160px;
+    min-height: 70px;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 1001;
+
+    img {
+        position: absolute;
+        animation-iteration-count: infinite;
+        animation-timing-function: linear;
+    }
+
+    .out {
+        animation: outer-ring-rotate 2s infinite linear;
+    }
+
+    .logo {
+        animation: logo-wobble 10s infinite linear;
+    }
+
+    .dot {
+        animation: logo-dots 2s infinite linear;
+    }
+
+    .in {
+        animation: inner-ring-clip 4s infinite linear reverse;
+        clip-path: polygon(50% 0, 50% 50%, 50% 0, 0 0, 0 100%, 100% 100%, 100% 0);
+    }
+}

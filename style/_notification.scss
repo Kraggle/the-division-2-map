@@ -1,0 +1,169 @@
+@import './variables';
+
+$animation-speed: 1500ms;
+$dot-size: 6px;
+
+@keyframes fx {
+    50% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+@mixin animation($delay) {
+    animation: fx $animation-speed ease infinite $delay;
+}
+
+.notification {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2000;
+    font-size: 22px;
+    color: $text;
+    background-color: $background;
+    padding: 15px 30px;
+    border-radius: 15px 0;
+    border: 1px solid $border;
+    box-sizing: border-box;
+    text-align: center;
+    pointer-events: none;
+
+    &.dots {
+        padding-bottom: 30px;
+        min-width: 150px;
+    }
+
+    .dot-box {
+        position: absolute;
+        left: 50%;
+        bottom: 13px;
+        transform: translate(-50%, -50%);
+    }
+
+    .dot {
+        @include animation(0ms);
+
+        width: $dot-size;
+        height: $dot-size;
+        border: ($dot-size / 5) solid $save-hover;
+        border-radius: 50%;
+        float: left;
+        margin: 0 ($dot-size / 2);
+        transform: scale(0);
+
+        &:nth-of-type(2) {
+            @include animation($animation-speed * 0.15);
+        }
+
+        &:nth-of-type(3) {
+            @include animation($animation-speed * 0.3);
+        }
+
+        &:nth-of-type(4) {
+            @include animation($animation-speed * 0.45);
+        }
+
+        &:nth-of-type(5) {
+            @include animation($animation-speed * 0.6);
+        }
+    }
+}
+
+.screen-blank {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 2000;
+    background: rgba(36, 55, 61, 0.3);
+
+    .confirm {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        background-color: $background;
+        border-radius: 5px;
+        border: $border 1px solid;
+        color: $text;
+    }
+
+    .message {
+        max-width: 200px;
+        padding: 10px;
+        text-align: center;
+        font-size: 17px;
+    }
+
+    .button {
+        padding: 5px 10px;
+        font-size: 15px;
+        float: right;
+        margin: 0 10px 10px 0;
+        border-radius: 5px;
+        border: $border 1px solid;
+        background: $button-back;
+
+        &:hover {
+            &.yes {
+                background: $error;
+            }
+
+            &.no {
+                background: $power-green;
+            }
+        }
+    }
+}
+
+.alert-panel {
+    z-index: 1002;
+    color: $text;
+    background-color: $background;
+    border: 1px solid $border;
+    padding: 10px 35px;
+    width: 45%;
+    min-width: 280px;
+    position: relative;
+    margin: auto;
+    margin-top: 20px;
+
+    .alert-close {
+        font-size: 10px;
+        position: absolute;
+        right: 10px;
+        top: 10px;
+        display: block;
+        color: $text;
+        text-decoration: none;
+        line-height: 1;
+        transition: linear 0.1s color;
+
+        &:hover {
+            color: $attribute-hover;
+        }
+    }
+
+    .alert-donate {
+        color: $save;
+        text-decoration: none;
+
+        &:hover {
+            color: $save-hover;
+        }
+    }
+
+    [name='submit'] {
+        position: relative;
+        left: 50%;
+        transform: translateX(-50%);
+        cursor: pointer;
+    }
+}

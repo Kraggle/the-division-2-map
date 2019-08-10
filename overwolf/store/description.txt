@@ -1,8 +1,0 @@
-<h3>The Division Map</h3>
-Now you can have <a href="https://the-division-map.com">the-division-map</a> 
-in game as an overlay.<br>
-This has all functionality of the website, including Normal, Survival 
-and Last Stand map modes, filters, editing tools and of course the Gear 
-Set Collection Tracker.<br>
-The window can be set to almost any size and position and has a toggle
-hotkey to show and hide.

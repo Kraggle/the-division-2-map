@@ -1,3 +1,5 @@
+import { L } from '../leaflet1.0.3.js';
+
 /**
  * Drag handler
  * @class L.Path.Drag

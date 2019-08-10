@@ -46,5 +46,6 @@
         "plaintext",
         "todo",
         "php"
-    ]
+    ],
+    "eslint.enable": true
 }

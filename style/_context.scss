@@ -1,0 +1,46 @@
+@import './variables';
+
+.context-menu {
+    position: absolute;
+    background: $background;
+    color: $text;
+    border: 1px solid $border;
+    border-radius: 10px 0;
+    overflow: hidden;
+    padding: 5px 0;
+
+    .menu-item {
+        display: grid;
+        grid-template-columns: 25px 1fr;
+        grid-template-rows: 25px;
+        grid-column-gap: 5px;
+        cursor: pointer;
+        transition: background-color .3s ease;
+        padding: 0 10px;
+
+        &:hover {
+            background-color: $background-hover;
+        }
+
+        &:last-of-type {
+            margin-bottom: 0;
+        }
+    }
+
+    .menu-text {
+        align-self: center;
+    }
+
+    .menu-icon {
+        width: 22px;
+        align-self: center;
+        justify-self: center;
+    }
+
+    hr {
+        margin: 5px 0;
+        border-color: darken($background, 5%);
+        border-style: solid hidden hidden hidden;
+        border-width: 1px;
+    }
+}

@@ -1,3 +1,5 @@
+import { L } from '../../../leaflet1.0.3.js';
+
 L.Draw = L.Draw || {};
 
 /**
@@ -5,94 +7,94 @@ L.Draw = L.Draw || {};
  * @aka Draw.Feature
  */
 L.Draw.Feature = L.Handler.extend({
-	includes: L.Mixin.Events,
+    includes: L.Mixin.Events,
 
-	// @method initialize(): void
-	initialize: function (map, options) {
-		this._map = map;
-		this._container = map._container;
-		this._overlayPane = map._panes.overlayPane;
-		this._popupPane = map._panes.popupPane;
+    // @method initialize(): void
+    initialize: function(map, options) {
+        this._map = map;
+        this._container = map._container;
+        this._overlayPane = map._panes.overlayPane;
+        this._popupPane = map._panes.popupPane;
 
-		// Merge default shapeOptions options with custom shapeOptions
-		if (options && options.shapeOptions) {
-			options.shapeOptions = L.Util.extend({}, this.options.shapeOptions, options.shapeOptions);
-		}
-		L.setOptions(this, options);
-	},
+        // Merge default shapeOptions options with custom shapeOptions
+        if (options && options.shapeOptions) {
+            options.shapeOptions = L.Util.extend({}, this.options.shapeOptions, options.shapeOptions);
+        }
+        L.setOptions(this, options);
+    },
 
-	// @method enable(): void
-	// Enables this handler
-	enable: function () {
-		
-		if (this._enabled) {
-			return;
-		}
+    // @method enable(): void
+    // Enables this handler
+    enable: function() {
 
-		L.Handler.prototype.enable.call(this);
+        if (this._enabled) {
+            return;
+        }
 
-		this.fire('enabled', { handler: this.type });
+        L.Handler.prototype.enable.call(this);
 
-		this._map.fire(L.Draw.Event.DRAWSTART, { layerType: this.type });
-	},
+        this.fire('enabled', { handler: this.type });
 
-	// @method initialize(): void
-	disable: function () {
-		if (!this._enabled) {
-			return;
-		}
+        this._map.fire(L.Draw.Event.DRAWSTART, { layerType: this.type });
+    },
 
-		L.Handler.prototype.disable.call(this);
+    // @method initialize(): void
+    disable: function() {
+        if (!this._enabled) {
+            return;
+        }
 
-		this._map.fire(L.Draw.Event.DRAWSTOP, { layerType: this.type });
+        L.Handler.prototype.disable.call(this);
 
-		this.fire('disabled', { handler: this.type });
-	},
+        this._map.fire(L.Draw.Event.DRAWSTOP, { layerType: this.type });
 
-	// @method addHooks(): void
-	// Add's event listeners to this handler
-	addHooks: function () {
-		var map = this._map;
+        this.fire('disabled', { handler: this.type });
+    },
 
-		if (map) {
-			L.DomUtil.disableTextSelection();
+    // @method addHooks(): void
+    // Add's event listeners to this handler
+    addHooks: function() {
+        var map = this._map;
 
-			map.getContainer().focus();
+        if (map) {
+            L.DomUtil.disableTextSelection();
 
-			this._tooltip = new L.Draw.Tooltip(this._map);
+            map.getContainer().focus();
 
-			L.DomEvent.on(this._container, 'keyup', this._cancelDrawing, this);
-		}
-	},
+            this._tooltip = new L.Draw.Tooltip(this._map);
 
-	// @method removeHooks(): void
-	// Removes event listeners from this handler
-	removeHooks: function () {
-		if (this._map) {
-			L.DomUtil.enableTextSelection();
+            L.DomEvent.on(this._container, 'keyup', this._cancelDrawing, this);
+        }
+    },
 
-			this._tooltip.dispose();
-			this._tooltip = null;
+    // @method removeHooks(): void
+    // Removes event listeners from this handler
+    removeHooks: function() {
+        if (this._map) {
+            L.DomUtil.enableTextSelection();
 
-			L.DomEvent.off(this._container, 'keyup', this._cancelDrawing, this);
-		}
-	},
+            this._tooltip.dispose();
+            this._tooltip = null;
 
-	// @method setOptions(object): void
-	// Sets new options to this handler
-	setOptions: function (options) {
-		L.setOptions(this, options);
-	},
+            L.DomEvent.off(this._container, 'keyup', this._cancelDrawing, this);
+        }
+    },
 
-	_fireCreatedEvent: function (layer) {
-		this._map.fire(L.Draw.Event.CREATED, { layer: layer, layerType: this.type });
-	},
+    // @method setOptions(object): void
+    // Sets new options to this handler
+    setOptions: function(options) {
+        L.setOptions(this, options);
+    },
 
-	// Cancel drawing when the escape key is pressed
-	_cancelDrawing: function (e) {
-		this._map.fire('draw:canceled', { layerType: this.type });
-		if (e.keyCode === 27) {
-			this.disable();
-		}
-	}
+    _fireCreatedEvent: function(layer) {
+        this._map.fire(L.Draw.Event.CREATED, { layer: layer, layerType: this.type });
+    },
+
+    // Cancel drawing when the escape key is pressed
+    _cancelDrawing: function(e) {
+        this._map.fire('draw:canceled', { layerType: this.type });
+        if (e.keyCode === 27) {
+            this.disable();
+        }
+    }
 });

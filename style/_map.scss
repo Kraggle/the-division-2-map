@@ -1,0 +1,800 @@
+@import './variables';
+
+%div-marker {
+    color: $street-name;
+    display: block;
+    font-size: 14px;
+    position: absolute;
+    text-align: center;
+    text-shadow: $text-shadow 0 0 5px;
+    transform: translate(-50%, -50%);
+    white-space: nowrap;
+}
+
+%div-marker-base {
+    height: 20px;
+    width: 20px;
+    z-index: -10000 !important;
+}
+
+.leaflet-interactive {
+    &.hide {
+        display: none;
+    }
+}
+
+.leaflet-control,
+.leaflet-popup-pane {
+    cursor: -webkit-grab;
+}
+
+.leaflet-container {
+    font-family: $font-0;
+    background: $mapbg;
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    .garden-name {
+        pointer-events: none;
+    }
+
+    .leaflet-map-pane {
+        z-index: 0;
+    }
+
+    .leaflet-zone-pane {
+        z-index: 200;
+    }
+
+    .leaflet-bar {
+        box-shadow: none;
+        border: 0;
+
+        a {
+            height: 30px;
+            line-height: 30px;
+            width: 30px;
+            border: 1px solid $border;
+            border-bottom: 0;
+            background-color: $background;
+            color: $text;
+            white-space: nowrap;
+            transition: all 0.5s ease, background-position 1ms, background-color 0.1s;
+
+            &.active {
+                background-color: $background-hover;
+            }
+
+            &:hover {
+                background-color: $background-hover;
+                color: $text;
+            }
+
+            &:last-child {
+                border-radius: 0 0 4px 4px;
+                border-bottom: 1px solid $border;
+            }
+
+            &:first-child {
+                border-radius: 4px 4px 0 0;
+            }
+
+            &:only-child {
+                border-radius: 4px;
+            }
+
+            &.leaflet-disabled {
+                background-color: $background;
+                color: $silver;
+                cursor: default;
+            }
+        }
+
+        span {
+            &:first-child:not(.ui-slider-handle) {
+                border-top-left-radius: 4px;
+                border-top-right-radius: 4px;
+            }
+
+            &:not(.ui-slider-handle) {
+                display: block;
+                height: 26px;
+                width: 26px;
+                border-bottom: 1px solid $border;
+                background-color: $background;
+                background-position: 50% 50%;
+                background-repeat: no-repeat;
+                color: $background;
+                text-align: center;
+                text-decoration: none;
+                line-height: 26px;
+            }
+        }
+
+        &.power,
+        &.map {
+            a {
+                background-clip: padding-box;
+                background-position: 3px 2px;
+                background-repeat: no-repeat;
+                background-size: 48px 24px;
+                font-size: 16px;
+            }
+
+            .leaflet-control-save {
+                background-image: url(../images/menu-save.svg);
+
+                &:not(.leaflet-disabled) {
+                    background-color: $save;
+
+                    &:hover {
+                        background-color: $save-hover;
+                    }
+                }
+            }
+
+            .leaflet-control-power {
+                background-image: url(../images/menu-power.svg);
+                background-color: $power-green;
+
+                &:hover:not(.leaflet-disabled) {
+                    background-color: $power-green-hover;
+                }
+
+                &.enabled {
+                    background-color: $power-red;
+                    background-image: url(../images/menu-power-off.svg);
+
+                    &:hover:not(.leaflet-disabled) {
+                        background-color: $power-red-hover;
+                    }
+                }
+            }
+
+            .leaflet-control-grid {
+                background-image: url(../images/menu-grid.svg);
+            }
+
+            .leaflet-control-group {
+                background-image: url(../images/menu-group.svg);
+            }
+
+            .leaflet-control-cancel {
+                background-image: url(../images/menu-cancel.svg?v=1);
+
+                &:not(.leaflet-disabled) {
+                    background-color: lighten(desaturate($power-red, 20%), 5%);
+
+                    &:hover {
+                        background-color: lighten(desaturate($power-red-hover, 20%), 5%);
+                    }
+                }
+            }
+
+            .leaflet-control-drag {
+                background-image: url(../images/menu-drag.svg);
+
+                &.enabled {
+                    background-color: $save;
+
+                    &:hover {
+                        background-color: $save-hover;
+                    }
+                }
+            }
+
+            .leaflet-control-tools {
+                background-image: url(../images/menu-tools.svg);
+            }
+
+            .leaflet-disabled {
+                background-position: -21px 2px;
+            }
+        }
+
+        .leaflet-menu-icons:last-child {
+            border-bottom: 0;
+            border-bottom-left-radius: 4px;
+            border-bottom-right-radius: 4px;
+        }
+    }
+
+    .leaflet-draw-toolbar {
+        a {
+            background-image: url(../images/spritesheet.svg);
+            background-size: 420px 30px;
+        }
+
+        .leaflet-draw-draw-polyline {
+            background-position: 0 -1px;
+
+            &.leaflet-disabled {
+                background-position: -210px -1px;
+            }
+        }
+
+        .leaflet-draw-draw-polygon {
+            background-position: -30px -1px;
+
+            &.leaflet-disabled {
+                background-position: -240px -1px;
+            }
+        }
+
+        .leaflet-draw-draw-rectangle {
+            background-position: -60px -1px;
+
+            &.leaflet-disabled {
+                background-position: -270px -1px;
+            }
+        }
+
+        .leaflet-draw-draw-marker {
+            background-position: -120px -1px;
+
+            &.leaflet-disabled {
+                background-position: -330px -1px;
+            }
+        }
+
+        .leaflet-draw-edit-edit {
+            &.leaflet-disabled {
+                background-position: -360px -1px;
+            }
+        }
+
+        .leaflet-draw-edit-remove {
+            &.leaflet-disabled {
+                background-position: -390px -1px;
+            }
+        }
+    }
+
+    .leaflet-draw-actions {
+        background-clip: padding-box;
+        border-radius: 4px;
+        position: absolute;
+        z-index: 400;
+        left: 46px;
+
+        li {
+            display: block;
+
+            &:first-child a {
+                border: 1px solid $border;
+                border-bottom: 0;
+                border-radius: 4px 4px 0 0;
+            }
+
+            &:last-child a {
+                border: 1px solid $border;
+                border-radius: 0 0 4px 4px;
+            }
+
+            &:only-child a {
+                border: 1px solid $border;
+                border-radius: 4px;
+            }
+        }
+
+        a {
+            background-color: $background;
+            border: 1px solid $border;
+            border-bottom: 0;
+            border-radius: 0;
+            color: $text;
+            font: 12px $font-0, $font-4, $font-5, $font-3;
+            height: 30px;
+            line-height: 28px;
+            padding: 0 10px;
+            text-decoration: none;
+            transition: all 0.5s ease, background-position 1ms, background-color 0.1s;
+            white-space: nowrap;
+            width: auto;
+
+            &:hover {
+                background-color: $background-hover;
+            }
+        }
+    }
+
+    .leaflet-control-attribution {
+        background-color: $background;
+        border-bottom-right-radius: 10px;
+        border-top-left-radius: 10px;
+        border: $border 1px solid;
+        box-shadow: none;
+        color: $border;
+        margin: 5px;
+        padding: 2px 5px;
+    }
+}
+
+.leaflet-menu {
+    background-clip: padding-box;
+    border-radius: 4px;
+    left: 55px;
+    position: absolute;
+    z-index: 400;
+    display: flex;
+    flex-direction: column;
+    background-color: $background;
+    border: 1px solid $border;
+    overflow-y: scroll;
+
+    &.group-switch {
+        margin-top: 2px;
+        max-height: 65%;
+
+        span {
+            border-bottom: 1px solid $border-hmm;
+            box-sizing: border-box;
+            color: $text;
+            font-size: 14px;
+            padding: 0 15px;
+            line-height: 30px;
+        }
+
+        a {
+            border-bottom: 1px solid $border-hmm;
+            box-sizing: border-box;
+            color: $text;
+            font-size: 12px;
+            height: 25px;
+            line-height: 25px;
+            padding: 0 10px;
+            text-align: center;
+            transition: all ease 0.3s;
+
+            &:last-child {
+                border-bottom: 0;
+            }
+
+            &:hover {
+                background-color: $background-hover;
+            }
+
+            &.active {
+                background-color: $background-hover;
+            }
+        }
+    }
+}
+
+%anim-icon {
+
+    span,
+    img {
+        transform: scale(0);
+        transition-duration: 0.8s;
+    }
+
+    .time,
+    .done {
+        opacity: 0;
+        transition-property: all;
+    }
+
+    &:hover {
+        .halo {
+            transition-duration: 1.3s;
+        }
+
+        .time,
+        .done {
+            transition-delay: 0.5s;
+            opacity: 1;
+        }
+    }
+
+    &::before {
+        display: none;
+    }
+}
+
+.z7 {
+    .group08 {
+        &.anim-icon {
+            @extend %anim-icon;
+        }
+    }
+}
+
+.z8 {
+    .group09 {
+        &.street-name {
+            div {
+                font-size: 7pt;
+            }
+        }
+
+        &.anim-icon {
+            @extend %anim-icon;
+        }
+    }
+}
+
+.z9 {
+    .group10 {
+        &.anim-icon {
+            @extend %anim-icon;
+        }
+    }
+}
+
+.z10 {
+    .group11 {
+        &.anim-icon {
+            @extend %anim-icon;
+        }
+    }
+}
+
+.leaflet-pane {
+    &.leaflet-marker-pane {
+        .icon {
+            transform: translateZ(0);
+            transition-duration: 0.5s;
+            transition-property: transform;
+        }
+
+        .halo {
+            position: absolute;
+            transform: translateZ(0);
+            transition-duration: 1s;
+            transition-property: transform;
+            pointer-events: none;
+        }
+
+        .done {
+            position: absolute;
+            transform: translateZ(0);
+            transition-duration: 0.5s;
+            transition-property: transform;
+            pointer-events: none;
+            top: 2px;
+            left: 6px;
+        }
+
+        .time {
+            display: block;
+            position: absolute;
+            transform: translateZ(0);
+            transition-duration: 0.5s;
+            transition-property: transform;
+            pointer-events: none;
+            bottom: -2px;
+            right: -6px;
+            font-size: 9pt;
+            color: $bird-flower;
+            text-shadow: -1px -1px 0 $border, 1px -1px 0 $border, -1px 1px 0 $border, 1px 1px 0 $border;
+        }
+
+        .bg-dot {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            top: calc(50% - 3px);
+            left: calc(50% - 3px);
+            z-index: -2;
+        }
+
+        .hover-icon,
+        .anim-icon {
+
+            &:hover>,
+            &:focus>,
+            &:active> {
+                .icon {
+                    transform: scale(1.4);
+                }
+
+                .halo {
+                    transform: scale(2.6);
+                }
+
+                .done {
+                    transform: scale(1.4) translateX(2px) translateY(1px);
+                }
+
+                .time {
+                    transform: scale(1.4) translateX(2px) translateY(1px);
+                }
+            }
+        }
+
+        path {
+            fill: $text;
+        }
+
+        .chambray {
+            path {
+                fill: $chambray;
+            }
+        }
+
+        .red {
+            path {
+                fill: lighten($red, 15%);
+            }
+        }
+
+        .purple {
+            path {
+                fill: $purple;
+            }
+        }
+
+        .orange {
+            path {
+                fill: $orange;
+            }
+        }
+
+        .astral {
+            path {
+                fill: $astral;
+            }
+        }
+
+        .apple {
+            path {
+                fill: $apple;
+            }
+        }
+
+        .blue-bell {
+            path {
+                fill: $blue-bell;
+            }
+        }
+
+        .laurel {
+            path {
+                fill: lighten($laurel, 10%);
+            }
+        }
+
+        .hokey-pokey {
+            path {
+                fill: $hokey-pokey;
+            }
+        }
+
+        .medium-purple {
+            path {
+                fill: lighten($medium-purple, 5%);
+            }
+        }
+
+        .silver {
+            path {
+                fill: $silver;
+            }
+        }
+
+        .pirate-gold {
+            path {
+                fill: $pirate-gold;
+            }
+        }
+
+        .orange-roughy {
+            path {
+                fill: $orange-roughy;
+            }
+        }
+
+        .well-read {
+            path {
+                fill: $well-read;
+            }
+        }
+
+        .stiletto {
+            path {
+                fill: $stiletto;
+            }
+        }
+
+        .bird-flower {
+            path {
+                fill: $bird-flower;
+            }
+        }
+
+        .woodland {
+            path {
+                fill: lighten($woodland, 10%);
+            }
+        }
+
+        .elm {
+            path {
+                fill: $elm;
+            }
+        }
+    }
+}
+
+.leaflet-marker-icon {
+    &.underground {
+        &::before {
+            position: absolute;
+            top: -12px;
+            height: 26px;
+            width: 100%;
+            background-image: url(../images/level.svg);
+            background-position: 50% 50%;
+            background-repeat: no-repeat;
+            background-size: 26px 26px;
+            content: '';
+        }
+    }
+
+    &.overground {
+        &::before {
+            position: absolute;
+            bottom: -12px;
+            height: 26px;
+            width: 100%;
+            background-image: url(../images/level.svg);
+            background-position: 50% 50%;
+            background-repeat: no-repeat;
+            background-size: 26px 26px;
+            content: '';
+            transform: rotate(180deg);
+        }
+    }
+
+    &.hide {
+        display: none;
+    }
+
+    &.street-name {
+        @extend %div-marker-base;
+
+        // pointer-events: none;
+
+        div {
+            @extend %div-marker;
+        }
+
+        &.avenue div {
+            transform: translate(-50%, -50%) rotate(-90deg);
+        }
+    }
+
+    &.garden-name {
+        @extend %div-marker-base;
+
+        div {
+            @extend %div-marker;
+
+            color: $garden-name;
+            font-size: 20px;
+            line-height: 20px;
+        }
+    }
+
+    &.pan-pointer {
+        &::after {
+            display: block;
+            content: '';
+            background-image: url(../images/pan-pointer.svg);
+            width: 25px;
+            height: 25px;
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translate(100%, -50%)
+        }
+    }
+}
+
+img.leaflet-marker-icon {
+    margin-top: -13px !important;
+}
+
+.leaflet-layer-editing {
+    outline: 2px dashed rgba($pink, 0.4) !important;
+    outline-offset: 8px;
+}
+
+.leaflet-edit-marker-selected {
+    &.street-name {
+        border: 0;
+    }
+
+    &.garden-name {
+        border: 0;
+    }
+}
+
+.leaflet-editing-icon {
+    height: 8px !important;
+    width: 8px !important;
+    margin-left: -5px !important;
+    margin-top: -5px !important;
+    border: 1px solid $edit-icon-border;
+    border-radius: 5px;
+    background: $edit-icon;
+
+    &:hover {
+        background: $edit-icon-hover;
+    }
+
+    &::before {
+        position: absolute;
+        height: 20px;
+        width: 20px;
+        margin: -6px;
+
+        // border: 1px solid $edit-icon-border;
+        background: url(../images/vertex-arrows.svg);
+        color: transparent;
+        content: '';
+
+        // transform: rotate(45deg);
+        transition: all .3s ease;
+    }
+
+    &.leaflet-drag-target {
+        &::before {
+            height: 40px;
+            width: 40px;
+            margin: -16px;
+        }
+    }
+
+    .bg-dot {
+        visibility: hidden;
+    }
+}
+
+path {
+    &.leaflet-interactive {
+        transition: stroke-opacity 500ms ease-in-out, fill-opacity 500ms ease-in-out, stroke-width 500ms ease-in-out;
+
+        &.poly-hover {
+            transition: stroke-opacity 250ms ease-in-out;
+            cursor: grab;
+
+            &:hover {
+                stroke-opacity: 0.7;
+            }
+        }
+
+        &.hover {
+            fill-opacity: 0.1;
+            stroke-opacity: 0.5;
+            stroke-width: 2;
+        }
+
+        &[fill='#fe57a1'] {
+            stroke-opacity: 0.7;
+        }
+    }
+}
+
+.leaflet-draw-tooltip {
+    display: none;
+}
+
+.leaflet-draw-toolbar-notop a:first-child {
+    border-top-right-radius: 4px;
+}
+
+.leaflet-control-attribution a {
+    color: $attribute;
+    text-decoration: none;
+    font-size: 10px;
+
+    &:hover {
+        color: $attribute-hover;
+        text-decoration: none;
+    }
+}

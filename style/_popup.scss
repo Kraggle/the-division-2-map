@@ -1,0 +1,418 @@
+@import './variables';
+
+%popup-style {
+    color: $text;
+    font-size: 11px;
+    line-height: 12px;
+    margin: 0 0 0 5px;
+    text-shadow: $text-shadow 0 0 5px;
+
+    // white-space: pre;
+}
+
+.leaflet-popup {
+    height: 1px;
+    margin-bottom: 20px;
+    position: absolute;
+    text-align: left;
+    width: 1px;
+
+    &.poly-info {
+        bottom: initial !important;
+        left: 60px !important;
+        max-width: 320px;
+        position: fixed;
+        top: 23px;
+        transform: initial !important;
+        transition: opacity 0.5s cubic-bezier(0, 0, 0.2, 1);
+        width: auto;
+
+        &.master {
+            left: 60px !important;
+        }
+
+        .leaflet-popup-content {
+            background: none;
+            border: 0;
+            position: relative;
+            width: auto !important;
+
+            &::before {
+                background-color: $border;
+                border-radius: 10px;
+                bottom: 0;
+                content: '';
+                display: block;
+                filter: blur(10px);
+                left: 0;
+                opacity: 0.8;
+                position: absolute;
+                right: 0;
+                top: 0;
+                z-index: -1;
+            }
+        }
+
+        li {
+            font-size: 12px;
+
+            img {
+                width: 15px;
+            }
+
+            span {
+                font-size: 12px;
+            }
+        }
+
+        .leaflet-popup-tip-container {
+            display: none;
+        }
+
+        .title {
+            font-size: 25px;
+            line-height: 23px;
+            margin-bottom: 3px;
+        }
+
+        img {
+            margin-right: 2px;
+            position: relative;
+            top: 3px;
+            width: 22px;
+        }
+
+        p {
+            color: $text;
+            font-size: 14px;
+            margin-bottom: 5px;
+
+            &:last-of-type {
+                margin-bottom: 0;
+            }
+        }
+
+        .description {
+            color: $gray;
+            white-space: normal;
+        }
+
+        .level {
+            font-size: 18px;
+            margin-top: -5px;
+
+            .number {
+                font-size: 20px;
+                color: $woodland;
+            }
+        }
+
+        .type {
+            font-size: 18px;
+        }
+
+        .tier img {
+            margin-right: 0;
+            top: 1px;
+            width: 15px;
+        }
+    }
+
+    img {
+        margin-bottom: -1px;
+        padding-right: 3px;
+        position: relative;
+        width: 10px;
+    }
+
+    li {
+        img {
+            margin-left: -7px;
+            padding-right: 7px;
+            top: 1px;
+        }
+
+        .qty {
+            padding-left: 5px;
+        }
+    }
+
+    &:not(.poly-info) .leaflet-popup-content {
+        max-width: 220px;
+        width: max-content;
+
+        // width: auto !important;
+
+    }
+}
+
+.leaflet-popup-content-wrapper {
+    background: transparent;
+    border-radius: 12px;
+    box-shadow: none;
+    padding: 1px;
+    text-align: left;
+    text-shadow: $text-shadow 0 0 5px;
+
+    // white-space: nowrap;
+}
+
+.leaflet-popup-content {
+    position: relative;
+    background-color: $background;
+    border-radius: 10px 0;
+    border: $border solid 1px;
+    display: inline-block;
+    font-size: 14px;
+    line-height: 1;
+    margin: 0;
+    padding: 6px 10px;
+
+    p {
+        @extend %popup-style;
+
+        &.sub {
+            margin-bottom: 3px;
+        }
+
+        &:first-of-type {
+            padding-top: 2px;
+        }
+
+        &.description,
+        &.desc {
+            color: $gray;
+
+            // padding-left: 6px;
+
+        }
+
+        &.note {
+            position: relative;
+            font-size: 7pt;
+            padding-left: 15px;
+            min-height: initial;
+            margin-top: 3px;
+
+            &::before {
+                content: '*';
+                position: absolute;
+                left: 0;
+                top: 3px;
+                font-size: 14pt;
+            }
+
+            &::after {
+                content: '';
+                position: absolute;
+                left: 10px;
+                top: 1px;
+                border-left: 1px solid $text;
+                bottom: 1px;
+            }
+        }
+    }
+
+    li {
+        @extend %popup-style;
+    }
+
+    ul {
+        margin: 0;
+        padding-left: 15px;
+
+        li span {
+            font-size: 11px;
+            line-height: 12px;
+            margin-left: -5px;
+            position: relative;
+            top: 1px;
+        }
+    }
+
+    span {
+        &.qty {
+            margin-left: 0;
+        }
+    }
+
+    .icon-npc {
+        position: absolute;
+        right: 10px;
+        top: 10px;
+        width: 26px;
+
+        * {
+            fill: $well-read;
+        }
+    }
+}
+
+.leaflet-popup-tip-container {
+    height: 20px;
+    left: 25px;
+    overflow: hidden;
+    pointer-events: none;
+    position: absolute;
+    top: -18px;
+    width: 40px;
+}
+
+.leaflet-popup-tip {
+    background: $background;
+    border: $border solid 1px;
+    box-shadow: none;
+    height: 17px;
+    margin: 15px auto 0;
+    padding: 1px;
+    text-align: left;
+    transform: rotate(45deg);
+    white-space: nowrap;
+    width: 17px;
+}
+
+.leaflet-message-pane p {
+    &.chambray {
+        color: $chambray;
+    }
+
+    &.red {
+        color: $red;
+    }
+
+    &.purple {
+        color: $purple;
+    }
+
+    &.orange {
+        color: $orange;
+    }
+
+    &.astral {
+        color: $astral;
+    }
+
+    &.apple {
+        color: $apple;
+    }
+
+    &.blue-bell {
+        color: $blue-bell;
+    }
+
+    &.laurel {
+        color: $laurel;
+    }
+
+    &.hokey-pokey {
+        color: $hokey-pokey;
+    }
+
+    &.medium-purple {
+        color: $medium-purple;
+    }
+
+    &.silver {
+        color: $silver;
+    }
+
+    &.pirate-gold {
+        color: $pirate-gold;
+    }
+
+    &.orange-roughy {
+        color: $orange-roughy;
+    }
+
+    &.well-read {
+        color: $well-read;
+    }
+
+    &.stiletto {
+        color: $stiletto;
+    }
+
+    &.bird-flower {
+        color: $bird-flower;
+    }
+
+    &.woodland {
+        color: $woodland;
+    }
+
+    &.elm {
+        color: $elm;
+    }
+}
+
+.chambray .leaflet-popup-content-wrapper {
+    color: $chambray;
+}
+
+.red .leaflet-popup-content-wrapper {
+    color: $red;
+}
+
+.purple .leaflet-popup-content-wrapper {
+    color: $purple;
+}
+
+.orange .leaflet-popup-content-wrapper {
+    color: $orange;
+}
+
+.astral .leaflet-popup-content-wrapper {
+    color: $astral;
+}
+
+.apple .leaflet-popup-content-wrapper {
+    color: $apple;
+}
+
+.blue-bell .leaflet-popup-content-wrapper {
+    color: $blue-bell;
+}
+
+.laurel .leaflet-popup-content-wrapper {
+    color: $laurel;
+}
+
+.hokey-pokey .leaflet-popup-content-wrapper {
+    color: $hokey-pokey;
+}
+
+.medium-purple .leaflet-popup-content-wrapper {
+    color: $medium-purple;
+}
+
+.silver .leaflet-popup-content-wrapper {
+    color: $silver;
+}
+
+.pirate-gold .leaflet-popup-content-wrapper {
+    color: $pirate-gold;
+}
+
+.orange-roughy .leaflet-popup-content-wrapper {
+    color: $orange-roughy;
+}
+
+.well-read .leaflet-popup-content-wrapper {
+    color: $well-read;
+}
+
+.stiletto .leaflet-popup-content-wrapper {
+    color: $stiletto;
+}
+
+.bird-flower .leaflet-popup-content-wrapper {
+    color: $bird-flower;
+}
+
+.woodland .leaflet-popup-content-wrapper {
+    color: $woodland;
+}
+
+.elm .leaflet-popup-content-wrapper {
+    color: $elm;
+}

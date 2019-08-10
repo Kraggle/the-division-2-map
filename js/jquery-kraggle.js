@@ -1,3 +1,5 @@
+import { jQuery as $ } from './jQuery/jquery3.4.1.js';
+
 // Replaces only the text content of an element ignoring
 // all children, tags and properties
 $.fn.replace = function(text, replace) {

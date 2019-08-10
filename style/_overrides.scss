@@ -1,0 +1,88 @@
+@import './variables';
+
+%ui-override {
+    background: $text;
+    background-color: $text;
+    border: 1px solid $border;
+    box-sizing: border-box;
+    color: $background;
+    font-size: 11px;
+    font-weight: normal;
+    height: 15px;
+    margin-left: -25px;
+    text-align: center;
+    text-shadow: none;
+    width: 50px;
+}
+
+.ui-state-default {
+    @extend %ui-override;
+}
+
+.ui-button {
+    @extend %ui-override;
+}
+
+.ui-widget-content .ui-state-default {
+    @extend %ui-override;
+}
+
+.ui-widget-header .ui-state-default {
+    @extend %ui-override;
+}
+
+html .ui-button.ui-state-disabled {
+    &:hover {
+        @extend %ui-override;
+    }
+
+    &:active {
+        @extend %ui-override;
+    }
+}
+
+ul {
+    &.ui-menu {
+        z-index: 10000;
+        border: $border 1px solid !important;
+        background-color: $background;
+        color: $text;
+        max-height: 106px;
+        overflow: hidden;
+        border-radius: 0 0 4px 4px;
+
+        .ui-state-active {
+            border: 1px solid $border;
+            color: $text;
+            background-color: $background-hover;
+        }
+    }
+}
+
+.huebee__container {
+    padding: 10px 13px;
+    background: transparent;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.huebee__cursor {
+    width: 9px;
+    height: 9px;
+    box-sizing: content-box;
+    border: 3px solid #fff;
+    border-radius: 5px;
+    pointer-events: none;
+}
+
+.tooltip-style {
+    border: 1px solid $border;
+    background: $background;
+    color: $text;
+
+    .qtip-content {
+        font-size: 11px;
+        padding: 3px 6px;
+        text-align: center;
+    }
+}

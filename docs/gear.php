@@ -33,91 +33,96 @@ foreach ($sets['sets'] as $piece) {
 	$svg = $piece['svg'];
 	$id = $piece['id'];
 	$classified = $piece['classified']; ?>
-	
-	
-	<div id='<? echo $id ?>' class='set-piece <? echo $classified ? "classified" : "" ?> min'>
-		<div class='name'>
-			<div class='decor'>
-				<div class='bg'></div>
-				<? echo $svg ?>
-				<span><? echo $name ?></span>
-				<? if ($classified) { ?>
-					<span class='class-title'>Classified</span>
-				<? } ?>
-				<br>
-				<span><? echo $type ?></span>
-				<div class='counter' name='<? echo $id ?>'></div>
-			</div>
+
+<div id='<? echo $id ?>' class='set-piece <? echo $classified ? "classified" : "" ?> min'>
+	<div class='name'>
+		<div class='decor'>
+			<div class='bg'></div>
+			<? echo $svg ?>
+			<span>
+				<? echo $name ?></span>
+			<? if ($classified) { ?>
+			<span class='class-title'>Classified</span>
+			<? } ?>
+			<br>
+			<span>
+				<? echo $type ?></span>
+			<div class='counter' name='<? echo $id ?>'></div>
 		</div>
-		<div class="size min" title="Expand/Retract"></div>
-		<div class='checks'>
-			<div class='decor'>
-				<div class='check'>
-					<? echo $vest ?>
-					<a class='img-check' name='<? echo $id ?>-vest'></a>
-				</div>
-				<div class='check'>
-					<? echo $backpack ?>
-					<a class='img-check' name='<? echo $id ?>-backpack'></a>
-				</div>
-				<div class='check'>
-					<? echo $knee_pads ?>
-					<a class='img-check' name='<? echo $id ?>-kneepads'></a>
-				</div>
-				<div class='check'>
-					<? echo $holster ?>
-					<a class='img-check' name='<? echo $id ?>-holster'></a>
-				</div>
-				<div class='check'>
-					<? echo $gloves ?>
-					<a class='img-check' name='<? echo $id ?>-gloves'></a>
-				</div>
-				<div class='check'>
-					<? echo $mask ?>
-					<a class='img-check' name='<? echo $id ?>-mask'></a>
-				</div>
+	</div>
+	<div class="size min" title="Expand/Retract"></div>
+	<div class='checks'>
+		<div class='decor'>
+			<div class='check'>
+				<? echo $vest ?>
+				<a class='img-check' name='<? echo $id ?>-vest'></a>
 			</div>
-		</div>
-		<div class='bonus'>
-			<div class='decor'>
-				<div class='sub'>Set Bonus 2: </div>
-				<div class='set-bonus 2'>
-					<? echo $bonus1 ?>
-				</div>
-				<div class='line-break'></div>
-				<div class='sub'>Set Bonus 3: </div>
-				<div class='set-bonus 3'>
-					<span class='sub-title'><? echo $bonus2name ?></span>
-					<? echo ($bonus2name ? "<br>" : "") . $bonus2 ?>
-				</div>
-				<div class='line-break'></div>
-				<div class='sub'>Set Bonus 4: </div>
-				<div class='set-bonus 4'>
-					<span class='sub-title'><? echo $bonus3name ?></span>
-					<? echo ($bonus3name ? "<br>" : "") . $bonus3 ?>
-				</div>
-				
-				<? if ($classified) { ?>
-					<div class='line-break'></div>
-					<div class='sub'>Set Bonus 5: </div>
-					<div class='set-bonus 5'>
-						<span class='sub-title'><? echo $bonus4name ?></span>
-						<? echo ($bonus4name ? "<br>" : "") . $bonus4 ?>
-					</div>
-					<div class='line-break'></div>
-					<div class='sub'>Set Bonus 6: </div>
-					<div class='set-bonus 6'>
-						<span class='sub-title'><? echo $bonus5name ?></span>
-						<? echo ($bonus5name ? "<br>" : "") . $bonus5 ?>
-					</div>
-				<? } ?>
+			<div class='check'>
+				<? echo $backpack ?>
+				<a class='img-check' name='<? echo $id ?>-backpack'></a>
+			</div>
+			<div class='check'>
+				<? echo $knee_pads ?>
+				<a class='img-check' name='<? echo $id ?>-kneepads'></a>
+			</div>
+			<div class='check'>
+				<? echo $holster ?>
+				<a class='img-check' name='<? echo $id ?>-holster'></a>
+			</div>
+			<div class='check'>
+				<? echo $gloves ?>
+				<a class='img-check' name='<? echo $id ?>-gloves'></a>
+			</div>
+			<div class='check'>
+				<? echo $mask ?>
+				<a class='img-check' name='<? echo $id ?>-mask'></a>
 			</div>
 		</div>
 	</div>
-	<div class='divider'></div>
-	
+	<div class='bonus'>
+		<div class='decor'>
+			<div class='sub'>Set Bonus 2: </div>
+			<div class='set-bonus 2'>
+				<? echo $bonus1 ?>
+			</div>
+			<div class='line-break'></div>
+			<div class='sub'>Set Bonus 3: </div>
+			<div class='set-bonus 3'>
+				<span class='sub-title'>
+					<? echo $bonus2name ?></span>
+				<? echo ($bonus2name ? "<br>" : "") . $bonus2 ?>
+			</div>
+			<div class='line-break'></div>
+			<div class='sub'>Set Bonus 4: </div>
+			<div class='set-bonus 4'>
+				<span class='sub-title'>
+					<? echo $bonus3name ?></span>
+				<? echo ($bonus3name ? "<br>" : "") . $bonus3 ?>
+			</div>
+
+			<? if ($classified) { ?>
+			<div class='line-break'></div>
+			<div class='sub'>Set Bonus 5: </div>
+			<div class='set-bonus 5'>
+				<span class='sub-title'>
+					<? echo $bonus4name ?></span>
+				<? echo ($bonus4name ? "<br>" : "") . $bonus4 ?>
+			</div>
+			<div class='line-break'></div>
+			<div class='sub'>Set Bonus 6: </div>
+			<div class='set-bonus 6'>
+				<span class='sub-title'>
+					<? echo $bonus5name ?></span>
+				<? echo ($bonus5name ? "<br>" : "") . $bonus5 ?>
+			</div>
+			<? } ?>
+		</div>
+	</div>
+</div>
+<div class='divider'></div>
+
 <? } ?>
 
 <div class="warning"></div>
 
-<? $seal = false; include "./includes/credits.php" ?>
+<div include="./docs/credits.html"></div>

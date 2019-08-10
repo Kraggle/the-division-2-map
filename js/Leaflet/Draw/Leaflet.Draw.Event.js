@@ -1,3 +1,5 @@
+import { L } from '../leaflet1.0.3.js';
+
 /**
  * ### Events
  * Once you have successfully added the Leaflet.draw plugin to your map you will want to respond to the different
@@ -45,11 +47,11 @@ L.Draw.Event.CREATED = 'draw:created';
  * @example
  * ```js
  *      map.on('draw:edited'; function (e) {
-     *          var layers = e.layers;
-     *          layers.eachLayer(function (layer) {
-     *              //do whatever you want; most likely save back to db
-     *          });
-     *      });
+ *          var layers = e.layers;
+ *          layers.eachLayer(function (layer) {
+ *              //do whatever you want; most likely save back to db
+ *          });
+ *      });
  * ```
  */
 L.Draw.Event.EDITED = 'draw:edited';

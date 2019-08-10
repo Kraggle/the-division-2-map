@@ -1,0 +1,91 @@
+@import "./variables";
+
+@font-face {
+    font-family: $font-0;
+    src: url(../data/Prototype.ttf) format("truetype");
+}
+
+body {
+    font: 13px $font-0, $font-4, $font-5, $font-3;
+    overflow: hidden;
+    text-shadow: $text-shadow 0 0 5px;
+
+    a,
+    label {
+        cursor: pointer;
+    }
+
+    input,
+    textarea,
+    div,
+    a,
+    span,
+    p {
+        font: 13px $font-0, $font-4, $font-5, $font-3;
+        text-shadow: rgba($black, 0.8) 0 0 5px;
+    }
+}
+
+hr {
+    margin: 4px 30% 4px 5px;
+    border-style: inset hidden hidden hidden;
+}
+
+.message-panel {
+    bottom: 10px;
+    color: $text;
+    pointer-events: none;
+    position: absolute;
+    text-align: center;
+    text-shadow: $text-shadow 0 0 5px;
+    width: 100%;
+    z-index: 400;
+}
+
+.on-top {
+    z-index: 1000;
+}
+
+[type='button'] {
+    cursor: pointer;
+}
+
+::-webkit-input-placeholder {
+    color: $placeholder;
+    font-style: italic;
+}
+
+::-moz-placeholder {
+    color: $placeholder;
+    font-style: italic;
+}
+
+:-ms-input-placeholder {
+    color: $placeholder;
+    font-style: italic;
+}
+
+.blink-me {
+    color: $well-read;
+    animation: blinker 1.5s linear infinite;
+}
+
+@keyframes blinker {
+    50% {
+        opacity: 0.25;
+    }
+}
+
+::-webkit-scrollbar {
+    width: 0.6em;
+}
+
+::-webkit-scrollbar-track {
+    box-shadow: inset 0 0 6px rgba($black, 0.3);
+    border-left: 1px solid $border;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: $text;
+    border: 1px solid $border;
+}

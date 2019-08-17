@@ -30,7 +30,7 @@
 
 .leaflet-container {
     font-family: $font-0;
-    background: $mapbg;
+    background: $map-back;
     position: fixed !important;
     top: 0;
     left: 0;
@@ -692,6 +692,10 @@
             top: 50%;
             transform: translate(100%, -50%)
         }
+    }
+
+    &:focus {
+        outline: 0;
     }
 }
 

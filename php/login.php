@@ -2,17 +2,17 @@
 include_once 'db_connect.php';
 include_once 'functions.php'; ?>
 
-<div class="side-content">
-	<span class="title">User Account</span>
+<div class="side-content grid <? echo type_name($_SESSION['usertype']) ?>">
+	<span class="title span-row">User Account</span>
 
 	<? if (login_check($mysqli) == true) { ?>
 
-	<span class="sub title">Hi<span class="dnt">
+	<span class="sub title span-row">Hi<span class="dnt">
 			<? echo htmlentities($_SESSION['username']) ?></span></span>
 
 	<? if ($_SESSION['usertype'] != 5) { ?>
 
-	<ul>
+	<ul class="list span-row">
 		<li>You now have access to the editing tools.</li>
 		<li>You can make a limited amount of Paths, Polygons or Markers.</li>
 		<li>These are saved to your own database.</li>
@@ -27,18 +27,18 @@ include_once 'functions.php'; ?>
 
 	<? if ($_SESSION['usertype'] == 2) { ?>
 
-	<span>As a donator...</span>
-	<ul>
+	<span class="span-row">As a donator...</span>
+	<ul class="list span-row">
 		<li>you can store more layers on the map.</li>
 		<li>no longer have the donation notification.</li>
 		<li>have the Donator title.</li>
 	</ul>
-	<span>Thank you for your support.</span>
+	<span class="span-row">Thank you for your support.</span>
 
 	<? } elseif ($_SESSION['usertype'] == 1) { ?>
 
-	<span>Become a donator to...</span>
-	<ul>
+	<span class="span-row">Become a donator to...</span>
+	<ul class="list span-row">
 		<li>store more layers on the map.</li>
 		<li>no longer have the donation notification.</li>
 		<li>have the Donator title.</li>
@@ -48,43 +48,44 @@ include_once 'functions.php'; ?>
 
 	<? } else { ?>
 
-	<!-- <form id="donate" name="donate_form">   -->
-	<input class="input" placeholder="Donators Email" type="text" name="donator" id="donator" /><br>
-	<input id="donate" class="button" type="button" value="Add" />
-	<!-- </form> -->
+	<input class="input span-row" placeholder="Donators Email" type="text" name="donator" id="donator" /><br>
+	<input id="donate" class="button donate ripple-me" type="button" value="Add" />
+
 	<? } ?>
 
-	<a id="logout" class="button">Sign Out</a>
+	<a id="logout" class="button textual sign-out ripple-me">Sign Out</a>
 	<div class="level dnt">
 		<? echo type_name($_SESSION['usertype']) ?>
 	</div>
 
 	<? } else { ?>
 
-	<span class="title sub">Sign In</span>
+	<span class="title sub span-row">Sign In</span>
 
-	<form id="login" name="login_form">
-		<input class="input" placeholder="Email Address" type="text" name="username" id="email" <?if (isset($email) && $email) {echo " value='$email'" ;}?>/><br>
-		<input class="input" placeholder="Password" type="password" name="password" id="password" />
-		<input class="button" type="button" value="Login" />
-		<div class="rem-case">
-			<input id="rem-check" class="check" type="checkbox" <? if (isset($_COOKIE['validator'])) {echo 'checked' ;} ?>>
-			<label for="rem-check">Remember me</label>
-		</div>
+	<form id="login" name="login_form" class="span-row">
+		<input class="input span-row" placeholder="Email Address" type="text" name="username" id="email" <?if (isset($email) && $email) {echo " value='$email'" ;}?>/>
+		<input class="input span-row" placeholder="Password" type="password" name="password" id="password" />
+		<label class="check ripple-me">
+			<input type="checkbox" id="rem-check" class="checkbox" <? if (isset($_COOKIE['validator'])) {echo 'checked' ;} ?>>
+			<span class="text">Remember Me</span>
+			<div class="mark back"></div>
+			<div class="mark tick"></div>
+		</label>
+		<input class="button ripple-me" type="button" value="Login" />
 	</form>
 
-	<a name="forgot" class="page button forgot">Forgot Password</a>
-	<a name="register" class="page button">Create Account</a>
+	<a name="forgot" class="page button textual forgot ripple-me">Forgot Password</a>
+	<a name="register" class="page button textual register right ripple-me">Create Account</a>
 
-	<? } ?>
+	<? } 
 
-	<p class="error">
-		<?if(isset($_GET['error'])){echo $_GET['error'];}?>
-	</p>
-	<p class="success">
-		<?if(isset($_GET['success'])){echo 'You registered successfully, you can now login!';}?>
-	</p>
+	echo '<p class="error span-row">';
+		if (isset($_GET['error'])) echo $_GET['error'];
+	echo '</p>';
+	echo '<p class="success span-row">';
+		if (isset($_GET['success'])) echo 'You registered successfully, you can now login!';
+	echo '</p>';
 
-	<? include "../docs/credits.html" ?>
+	include "../docs/credits.html" ?>
 
 </div>

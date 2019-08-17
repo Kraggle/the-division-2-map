@@ -1,0 +1,8 @@
+{
+    "version": 3,
+    "sources": [
+        "loader.css"
+    ],
+    "names": [],
+    "mappings": "AAAA,aACI,MAAO,MACP,OAAQ,MACR,SAAU,MACV,KAAM,EACN,IAAK,EACL,QAAS,KACT,iBAAkB,uCAGtB,sBACI,QAAS,KACT,SAAU,SACV,KAAM,IACN,IAAK,IACL,UAAW,qBACX,WAAY,OAGhB,6BACI,UAAW,KACX,MAAO"
+}

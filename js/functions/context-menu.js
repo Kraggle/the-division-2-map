@@ -59,6 +59,8 @@ K.contextMenu = {
     build: function(event, layer) {
         // console.log(event, layer);
 
+        $('.context-menu').remove();
+
         const menu = $('<div />', {
             class: 'context-menu'
         }).css({
@@ -72,7 +74,7 @@ K.contextMenu = {
             menu.children().length && this.value == 'Settings' && $('<hr>').appendTo(menu);
 
             const $item = $('<div />', {
-                class: 'menu-item'
+                class: 'menu-item ripple-me'
             });
 
             $('<img />', {

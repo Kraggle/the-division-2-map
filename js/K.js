@@ -597,14 +597,14 @@ K.includeHTML = function() {
     }
 }
 
-K.loadStyles = async function(stylesheets) {
-    let arr = await Promise.all(stylesheets.map(url => fetch(url)))
-    arr = await Promise.all(arr.map(url => url.text()))
-    const style = document.createElement('style')
-    style.textContent = arr.reduce(
-        (prev, fileContents) => prev + fileContents, ''
-    )
-    document.head.appendChild(style);
+K.loadStyles = function(stylesheets) {
+    stylesheets.forEach(url => {
+        const link = document.createElement('link');
+        link.setAttribute('rel', 'stylesheet');
+        link.setAttribute('href', url);
+
+        document.head.appendChild(link);
+    });
 }
 
 // @class Class
@@ -1021,6 +1021,8 @@ export function stripAndCollapse(value) {
     let tokens = value.match(rnothtmlwhite) || [];
     return tokens.join(" ");
 }
+
+K.isMobile = () => navigator.userAgent.bMatch(/Android|BlackBerry|iPhone|iPad|iPod|Opera Mini|IEMobile/i);
 
 // MARK: [ [  P R O T O T Y P E S  ] ]
 if (!Array.prototype.removeDupes) {

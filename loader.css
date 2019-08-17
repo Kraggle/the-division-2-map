@@ -1,0 +1,23 @@
+.loader-back {
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 1000;
+    background-image: linear-gradient(72deg, #4b4845, #675e56);
+}
+
+.loader-back .support {
+    display: none;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+.loader-back .support .sorry {
+    font-size: 20pt;
+    color: #c7cbd7;
+}

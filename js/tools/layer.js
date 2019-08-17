@@ -67,7 +67,7 @@ K.tool.layer = {
 
         layer.makeBackup();
 
-        // Used to make holes in polys
+        // Used to make holes in polygons
         if (this.join) {
 
             this.join._latlngs.push(layer._latlngs[0]);
@@ -86,10 +86,10 @@ K.tool.layer = {
             K.group.removeLayer(layer);
             K.group.addLayer(this.new);
 
-            this.new.on('click', K.tool.layer.show);
-            this.new.options.complete && this.new.options.shape === 'marker' && this.new.on('contextmenu', function() {
-                this.toggleCompleted();
-            });
+            // this.new.on('click', K.tool.layer.show);
+            // this.new.options.complete && this.new.options.shape === 'marker' && this.new.on('contextmenu', function() {
+            //     this.toggleCompleted();
+            // });
 
             this.new.saved(false);
             this.new.storeSettings();
@@ -115,7 +115,7 @@ K.tool.layer = {
             // self._save();
 
         }).draggable({
-            containment: '#mapid',
+            containment: '#map-id',
             start: function() {
                 $(this).css({
                     transform: 'translate(0, 0)'
@@ -149,14 +149,14 @@ K.tool.layer = {
 			</div>
 			<div class="settings-tools buttons"></div>
 			<div class="settings-tools save">
-                <!-- <a class="settings-save button" aria-label="save">CONFIRM</a> -->
-                <a class="settings-cancel button" aria-label="cancel">CANCEL</a>
+                <!-- <a class="settings-save button ripple-me" aria-label="save">CONFIRM</a> -->
+                <a class="settings-cancel button ripple-me" aria-label="cancel">CANCEL</a>
 			</div>
 			<div class="creator">${layer.options.creator}</div>
             <div class="unsaved" ${layer.editing.saved ? 'style="display: none"' : ''}>Save me!</div>`
         );
 
-        let btn = $('<a class="settings icon button" />'),
+        let btn = $('<a class="settings icon button ripple-me" />'),
             box = '.settings-tools.buttons',
             btns = [{
                 cls: 'copy',
@@ -246,7 +246,7 @@ K.tool.layer = {
         K.each(K.settings.main, function(i, n) {
             if (!K.has(shape, n.for)) return;
             $('<a />', {
-                class: 'dnt settings-item button ' + i,
+                class: 'dnt settings-item button ripple-me ' + i,
                 setting: i,
                 html: i.firstToUpper().space()
             }).appendTo('.settings-tools.marker');
@@ -255,7 +255,7 @@ K.tool.layer = {
         // Fill the popup menu with settings
         K.each(K.settings.popup, function(i) {
             $('<a />', {
-                class: 'dnt settings-item button ' + i,
+                class: 'dnt settings-item button ripple-me ' + i,
                 setting: i,
                 popup: true,
                 html: i.firstToUpper().space()
@@ -289,7 +289,7 @@ K.tool.layer = {
 
         $('.settings.icon[title!=""]').qtip({
             position: {
-                viewport: $('#mapid'),
+                viewport: $('#map-id'),
                 my: 'bottom left',
                 at: 'top center'
             },
@@ -297,6 +297,7 @@ K.tool.layer = {
                 classes: 'tooltip-style'
             },
             show: {
+                event: 'mouseenter',
                 delay: 250,
                 solo: true
             },
@@ -349,9 +350,9 @@ K.tool.layer = {
 
         if (!K.has(setting, ['id'])) {
 
-            $('.right .settings-title').after(`<a class="settings icon copy inline" title="Copy this setting" 
+            $('.right .settings-title').after(`<a class="settings icon copy inline ripple-me" title="Copy this setting" 
                 setting="${setting}" which="${isPopup ? 'popup' : 'icon'}"></a>`);
-            $('.right .settings-title').after(`<a class="settings icon paste inline" title="Paste this setting" 
+            $('.right .settings-title').after(`<a class="settings icon paste inline ripple-me" title="Paste this setting" 
                 setting="${setting}" which="${isPopup ? 'popup' : 'icon'}"></a>`);
 
             $('.settings.copy.inline').on('click', function() {
@@ -383,16 +384,16 @@ K.tool.layer = {
                     class: 'name',
                     html: 'Modify for mode:'
                 }),
-                msgs = [
+                notes = [
                     'This will modify this setting for the original layer, no changes will be made to any modified modes.',
                     `This will modify this setting for ${K.mode} only, no changes will be made to the original layer.\nSwitching this with changes already made will delete any changes for ${K.mode}.`
                 ],
                 help = $('<span />', {
                     class: 'help',
-                    html: msgs[+changes]
+                    html: notes[+changes]
                 });
 
-            toggle = $(`<label class="switch">
+            toggle = $(`<label class="switch ripple-me">
                 <span class="label"></span>
                 <span class="back"></span>
                 <input type="checkbox" class="settings-item mode-switch check">
@@ -403,7 +404,7 @@ K.tool.layer = {
 
             $('input', toggle).prop('checked', changes).on('change', function() {
                 changes = $(this).is(':checked');
-                help.text(msgs[+changes]);
+                help.text(notes[+changes]);
 
                 if (!changes) {
                     K.in(setting, mode) && delete mode[setting];
@@ -454,12 +455,12 @@ K.tool.layer = {
                         <input type="text" class="settings-item input list" name="list-title" role="input" setting="list-title" which="popup" placeholder="Title">
                     </div>
                     <div class="section subs">
-                        <a class="add subs button" title="Add another paragraph">+</a>
+                        <a class="add subs button ripple-me" title="Add another paragraph">+</a>
                         <span class="header">PARAGRAPH</span>
                         <br>
                     </div>
                     <div class="section list">
-                        <a class="add list button" title="Add another item">+</a>
+                        <a class="add list button ripple-me" title="Add another item">+</a>
                         <span class="header">LIST</span>
                         <br>
                     </div>
@@ -478,7 +479,7 @@ K.tool.layer = {
                 which: 'popup'
             });
 
-            toggle = $(`<label class="switch">
+            toggle = $(`<label class="switch ripple-me">
                 <span class="label"></span>
                 <span class="back"></span>
                 <input type="checkbox" class="settings-item input list check">
@@ -605,9 +606,9 @@ K.tool.layer = {
 
             $('.settings-tools.right-bar').append(
                 `<div class="restore-container hide">
-                    <div class="restore-back img"></div>
+                    <div class="restore-back img ripple-me"></div>
                     <span class="restore-text">Current</span>
-                    <div class="restore-forward img"></div>
+                    <div class="restore-forward img ripple-me"></div>
                 </div>`
             );
 
@@ -738,7 +739,7 @@ K.tool.layer = {
             $('.settings-tools.right-bar').append(
                 `<div class="scroll-box">
                     <div class="section links">
-                        <a class="add links button" title="Add another paragraph">+</a>
+                        <a class="add links button ripple-me" title="Add another paragraph">+</a>
                         <span class="header">IDS</span><br>
                     </div>
 				</div>`
@@ -759,11 +760,11 @@ K.tool.layer = {
             });
 
             let grab = $('<a />', {
-                class: 'settings-item link grab'
+                class: 'settings-item link grab ripple-me'
             });
 
             let trash = $('<a />', {
-                class: 'settings-item link trash'
+                class: 'settings-item link trash ripple-me'
             });
 
             K.each(value, function(i, v) {
@@ -848,10 +849,7 @@ K.tool.layer = {
                         K.check.grabbing = false;
 
                         layers.eachLayer(function(l) {
-                            // put the layer tools back on the layer
                             l.off('click');
-                            K.user.type && (K.user.type >= 4 || l.options.creator.toLowerCase() == K.user.name.toLowerCase()) &&
-                                l.on('click', K.tool.layer.show);
                         });
 
                     });
@@ -873,7 +871,7 @@ K.tool.layer = {
                 class: 'name'
             });
 
-            toggle = $(`<label class="switch">
+            toggle = $(`<label class="switch ripple-me">
                 <span class="label"></span>
                 <span class="back"></span>
                 <input type="checkbox" class="settings-item input mode check">
@@ -919,7 +917,9 @@ K.tool.layer = {
                     trd = lst + fst;
 
                 retHtml += `${img && num == 1 ? fst : ''}
-                    <a class="settings-item button selector${col ? ' color' : (img ? ' icon' : '')}" aria-label="${i}" role="button"
+                    < a class = "settings-item button ripple-me selector${col ? ' color' : (img ? ' icon' : '')}"
+                    aria - label = "${i}"
+                    role = "button"
                         ${value == i ? ` style="background-color: #2f474e; ${(col ? ` color: ${i};` : '')}"` : (col ? ` style="color: ${i};"` : '')}>
                         ${img ? `<img src="${i}" height="30" width="30">` : i} 
                     </a>
@@ -1113,13 +1113,6 @@ K.tool.layer = {
 
                     apply.call(this);
                 });
-
-                // el.bind('blur', function() {
-                //     if (el.data('oldVal') == el.val())
-                //         return;
-
-                //     apply.call(this);
-                // });
             });
         }
 
@@ -1128,7 +1121,7 @@ K.tool.layer = {
 
         $('.inline.icon[title!=""]').qtip({
             position: {
-                viewport: $('#mapid'),
+                viewport: $('#map-id'),
                 my: 'right center',
                 at: 'left center'
             },
@@ -1136,6 +1129,7 @@ K.tool.layer = {
                 classes: 'tooltip-style'
             },
             show: {
+                event: 'mouseenter',
                 delay: 250,
                 solo: true
             },
@@ -1148,18 +1142,6 @@ K.tool.layer = {
         this.modeSwitch = false;
         return this;
     },
-
-    // Confirm the settings that you have changed and remove the backup
-    // _save: function() {
-
-    //     this._hide();
-    //     layer.copy();
-    //     delete layer.backup;
-
-    //     if (!K.in(K.mode, layer.options.mode)) {
-    //         K.group.removeLayer(layer);
-    //     }
-    // },
 
     // Confirm the settings that you have changed
     _cancel: function() {
@@ -1181,7 +1163,6 @@ K.tool.layer = {
 
             layer.setLatLng(b.pos.latlng);
             layer.updateIcon();
-            // layer.setOpacity(o.opacity);
 
             // Create a polyline with the new settings
         } else if (K.has(o.shape, ['polyline', 'polygon'])) {
@@ -1345,7 +1326,7 @@ K.tool.layer = {
         }).appendTo('body');
 
         $('<a />', {
-                class: 'button no',
+                class: 'button no ripple-me',
                 title: 'Cancel',
                 html: 'Cancel'
             }).appendTo('.confirm')
@@ -1354,7 +1335,7 @@ K.tool.layer = {
             });
 
         $('<a />', {
-                class: 'button yes',
+                class: 'button yes ripple-me',
                 title: 'Delete',
                 html: 'Delete'
             }).appendTo('.confirm')

@@ -8,39 +8,34 @@
 	<link rel="shortcut icon" type="image/x-icon" href="images/contaminated.ico" />
 	<title>The Division 2 Interactive Map</title>
 	<meta name="description" content="Tom Clancy's The Division 2 Interactive Map. Shows entire map.">
-	<meta name="keywords" content="the division 2 map, the division 2 interactive map, tom clancy the division 2, tom clancys the division 2, tom clancy's the division 2, the division 2 named bosses, the division 2 divtech, division 2 map, division 2 divtech, division 2 elites, the division 2 elites, division 2 locations, the division 2 locations, the division 2 vendors, the division 2 stores, the division 2 safehouses, the division 2 contaminated map, the division 2 contaminated zones, the division 2 dark zone, the division 2 dark zone map, the division 2 crates, the division 2 loot, the division 2 loot locations, the division 2 crate locations, the division 2 full map, last stand, division 2 last stand, division 2 enemy loacations">
+	<meta name="keywords" content="the division 2 map, the division 2 interactive map, tom clancy the division 2, tom clancys the division 2, tom clancy's the division 2, the division 2 named bosses, the division 2 divtech, division 2 map, division 2 divtech, division 2 elites, the division 2 elites, division 2 locations, the division 2 locations, the division 2 vendors, the division 2 stores, the division 2 safehouses, the division 2 contaminated map, the division 2 contaminated zones, the division 2 dark zone, the division 2 dark zone map, the division 2 crates, the division 2 loot, the division 2 loot locations, the division 2 crate locations, the division 2 full map, last stand, division 2 last stand, division 2 enemy locations">
 	<meta property="og:title" content="The Division 2 Interactive Map">
 	<meta property="og:type" content="website">
 	<meta property="og:url" content="https://the-division-2-map.com/">
 	<meta property="og:description" content="Tom Clancy's The Division 2 Interactive Map.">
 
-	<style>
-.loader-back {
-	width: 100vw;
-	height: 100vh;
-	position: fixed;
-	left: 0;
-	top: 0;
-	z-index: 1000;
-	background-image: linear-gradient(72deg, #4b4845, #675e56);
-}
-	</style>
+	<link rel="stylesheet" href="loader.css">
 </head>
 
 <body>
-	<div id="mapid"></div>
+	<div id="map-id"></div>
 	<div id="side-bar" class="side-menu">
-		<div class="map-mode-box">
-			<div class="map-mode"><img src="" class="img" /><span class="desc"></span></div>
+		<div class="side-menu-open ripple-me"></div>
+
+		<div class="menu-toggle-wrap">
+			<a href='#' class="side-menu-toggle mode ripple-me" button="mode">Map Mode</a>
+			<a href='#' class="side-menu-toggle login ripple-me" button="login">User Account</a>
+			<a href='#' class="side-menu-toggle filters ripple-me" button="filters">Filters</a>
+			<a href='#' class="side-menu-toggle search ripple-me" button="search">Search</a>
+			<a href='#' class="side-menu-toggle full ripple-me" button="full">Toggle Full Screen</a>
+			<a href='#' class="side-menu-toggle changes ripple-me" button="changes">Recent Changes</a>
+			<a href='#' class="side-menu-toggle shorts ripple-me" button="shorts">Keyboard Shortcuts</a>
+			<!-- <a href='#' class="side-menu-toggle gear" button="gear">Gear Set Collection Tracker</a> -->
 		</div>
 
-		<a href='#' class="side-menu-toggle login" button="login">User Account</a>
-		<a href='#' class="side-menu-toggle filters" button="filters">Filters</a>
-		<a href='#' class="side-menu-toggle search" button="search">Search</a>
-		<a href='#' class="side-menu-toggle full" button="full">Toggle Full Screen</a>
-		<a href='#' class="side-menu-toggle changes" button="changes">Recent Changes</a>
-		<!-- <a href='#' class="side-menu-toggle gear" button="gear">Gear Set Collection Tracker</a> -->
-		<a href='#' class="side-menu-toggle shorts" button="shorts">Keyboard Shortcuts</a>
+		<div class="side-menu-box mode">
+			<div class="side-content"></div>
+		</div>
 
 		<div class="side-menu-box login" include="php/login.php"></div>
 
@@ -91,14 +86,23 @@
 		<p>My deepest apologies for the site being down for the last week or so. It was through no fault of the servers
 			host which these donations pay for, but the domain handler. Their nameservers got automatically reset and
 			would not allow changes, there was also no help from their customer services. It's only back up again as I
-			transfered the domain to the same vendor as the servers host. This is what took a week.</p>
+			transferred the domain to the same vendor as the servers host. This is what took a week.</p>
 		<p>Thank you for your patience and thank you GoDaddy!</p>
 	</div> -->
 
 	<input type="text" id="copy-input">
-	<div class="loader-back"></div>
+	<div class="loader-back">
+		<div id="no-browser" class="support">
+			<span class="sorry">Sorry but this website does<br>not support this browser.</span>
+		</div>
+	</div>
+
+	<div class="ripple"></div>
 </body>
 
 <script type="module" src="index.js"></script>
+<script nomodule>
+document.getElementById('no-browser').style.display = 'block';
+</script>
 
 </html>

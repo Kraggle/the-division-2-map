@@ -1,13 +1,16 @@
 // jQuery and Plugins
 import { jQuery as $ } from './js/jQuery/jquery3.4.1.js';
+window.$ = $;
 import './js/jQuery/jQuery-UI/importer.js';
 
 // Kraggle Universal
 import './js/jquery-kraggle.js';
 import { K } from './js/K.js';
+window.K = K;
 
 // Leaflet and Plugins
 import { L } from './js/Leaflet/importer.js';
+window.L = L;
 
 // Extensions
 import './js/extensions/K.Extended.js';
@@ -19,7 +22,7 @@ import './js/tools/marker.js';
 import './js/tools/layer.js';
 
 // Functions
-import { doDonator, doLogin, doRegister, doReset, doForgot } from './js/functions/account.js';
+import { doDonator, doLogin, doRegister, doReset, doForgot, loadReset } from './js/functions/account.js';
 import './js/functions/complete.js';
 import './js/functions/context-menu.js';
 import './js/functions/cycle.js';
@@ -54,7 +57,6 @@ if (!K.local('mode') || K.has(K.local('mode'), ['normal', 'Story']) || !K.has(K.
 $(function() {
 
     K.includeHTML();
-
     K.initMap();
 
     // Import credits
@@ -82,7 +84,6 @@ $(function() {
             attribution: `<a title="Tom Clancy's The Division 2" href="https://tomclancy-thedivision.ubisoft.com/">The Division 2</a>`,
             pane: 'mapPane'
         }).addTo(K.myMap);
-
     });
 
     // Add the main groups to the map
@@ -99,87 +100,47 @@ $(function() {
         polyHoverAnimation();
     });
 
-    // MARK: ~ Create Mode Buttons
-    // Create the mode buttons
-    const mC = $('.map-mode-box'),
-        mB = $('.map-mode', mC).detach();
-    K.each(K.modes.get, function(i, mode) {
-        const nB = mB.clone();
-        $('img', nB).attr('src', `images\\mode-${mode.toLowerCase().replace(/ /g, '-')}.svg`);
-        $('span', nB).text(mode);
-        nB.attr('mode', mode);
-        mC.append(nB);
-        mode == K.mode && nB.addClass('active');
-    });
-
-    const reorderModes = function() {
-        const gap = 45;
-        let i = 0;
-        $('.map-mode').each(function() {
-            if ($(this).hasClass('active')) $(this).css('top', 0);
-            else {
-                i++;
-                $(this).css('top', (i * gap) + 'px');
-            }
-        });
-    };
-    reorderModes();
-
-    // Add click control for the mode buttons
-    $('.map-mode').on('click', function() {
-        if (mC.hasClass('active')) {
-            if (!$(this).hasClass('active')) {
-
-                $(this).siblings().removeClass('active');
-                $(this).addClass('active');
-
-                reorderModes();
-
-                K.mode = $(this).attr('mode');
-                K.local('mode', K.mode);
-                K.group.mode = K.group.feature[K.mode];
-                K.bar.b.power && !K.bar.b.power.enabled() ? K.check.doOnce = true : true;
-
-                setTimeout(() => {
-                    pageLoad();
-                }, 1000);
-            }
-            mC.removeClass('active');
-
-        } else mC.addClass('active');
-    });
-
     // Toggle menu buttons
-    $('#side-bar .side-menu-toggle:not(.mode):not(.full)').on('click', function() {
+    $('#side-bar .side-menu-toggle:not(.full)').on('click', function() {
 
-        let sb = $('#side-bar'),
+        const sb = $('#side-bar'),
             c = 'active',
+            ta = '.side-menu-toggle.active, .side-menu-box.active',
+            to = ', .menu-toggle-wrap',
             a = $(this).attr('button'),
-            o = K.local('sideMenu');
+            o = K.local('sideMenu'),
+            save = () => {
+                K.local('sideBar', sb.hasClass(c));
+                K.local('sideMenu', a);
+            };
 
         if ($(this).hasClass(c)) {
             sb.removeClass(`${c} ${a}`);
             setTimeout(function() {
-                sb.children().removeClass(c);
+                $(ta + to, sb).removeClass(c);
+                save();
             }, 1000);
         } else if (sb.hasClass(c)) {
             sb.removeClass(`${c} ${o}`);
             setTimeout(function() {
-                sb.children().removeClass(c);
+                $(ta, sb).removeClass(c);
                 sb.addClass(`${c} ${a}`);
-                sb.children(`.${a}`).addClass(c);
+                $(`.${a}`, sb).addClass(c);
+                save();
             }, 1000);
         } else {
             sb.addClass(`${c} ${a}`);
-            sb.children(`.${a}`).addClass(c);
+            $(`.${a}`, sb).addClass(c);
+            save();
         }
+    });
 
-        K.local('sideBar', sb.hasClass(c));
-        K.local('sideMenu', a);
+    $('.side-menu-open').on('click', function() {
+        $('.menu-toggle-wrap').toggleClass('active')
     });
 
     // Correctly position the menu buttons
-    $('#side-bar > a').each(function(i) {
+    $('#side-bar .side-menu-toggle').each(function(i) {
         $(this).css('top', i == 0 ? '10px' : (10 + (i * 40)) + 'px');
     });
 
@@ -190,7 +151,7 @@ $(function() {
         el.toggleClass('yes');
     });
 
-    // Set change log if they have not seen it before
+    // Set change log if user has not seen it before
     if (!K.urlParam('overwolf') && K.local('currentUpdate') != K.currentUpdate) {
         K.local('sideMenu', 'changes');
         K.local('sideBar', true);
@@ -206,9 +167,11 @@ $(function() {
 
         }).done(function(a) {
 
-            a && $('#side-bar .login .side-content').html(a);
+            a && $('#side-bar .login .side-content').parent().html(a);
         });
     });
+
+    K.urlParam('forgot') && loadReset(K.urlParam('token'));
 
     $('#side-bar').on('click', '#regform .button', doRegister);
     $('#side-bar').on('keypress', '#regform .input', function(e) {
@@ -240,7 +203,6 @@ $(function() {
     });
 
     // Logout
-    //////////
     $('#side-bar').on('click', '#logout', function() {
 
         $.ajax({
@@ -252,14 +214,13 @@ $(function() {
             K.user.type = 0;
             K.user.data = false;
 
-            $('#side-bar .login .side-content').html(a);
+            $('#side-bar .login .side-content').parent().html(a);
 
             pageLoad();
         });
     });
 
     // Remember me
-    ///////////////
     $('#side-bar').on('click', '#rem-check', function() {
 
         $.ajax({
@@ -273,7 +234,7 @@ $(function() {
 
     // MARK: ~ Hide Menus
     // Hide Menus on no click
-    $(document).mousedown(function(e) {
+    $(document).on('mousedown touchstart', function(e) {
         if (K.check.grabbing) return;
         const container = $('.settings-divider, .switch-active-group, #slider-box, .group-switch, .context-menu');
         if (!container.is(e.target) && container.has(e.target).length === 0) {
@@ -287,10 +248,8 @@ $(function() {
     // Error handling in inputs
     $('#side-bar').on('focus', '.login .input', function() {
         $('.' + $(this).attr('name')).show(500);
-
     }).on('blur', '.login .input', function() {
         $('.' + $(this).attr('name')).hide(500);
-
     }).on('propertychange change click keyup input paste', '.login .input', function() {
         let el = $(this),
             ty = el.attr('id'),
@@ -312,44 +271,9 @@ $(function() {
     // Menu icon sliders
     $('#side-bar .side-menu-toggle').on('mouseenter touchstart', function() {
         $(this).css('left', '-' + ($(this).width() + 50) + 'px');
-
     }).on('mouseleave touchmove click', function() {
         $(this).css('left', '-35px');
     });
-
-    // Gear set button controls
-    // $('.set-piece .img-check').on('click', function() {
-    //     $(this).toggleClass('checked');
-    //     updateSetCounter($(this));
-    // });
-
-    // $('.set-piece .check svg').on('click', function() {
-    //     $(this).siblings('a').toggleClass('checked');
-    //     updateSetCounter($(this));
-    // });
-
-    // $('.set-piece .size').on('click', function() {
-    //     $(this).toggleClass('min');
-    //     $(this).parent().toggleClass('min');
-    //     // updateSetCounter($(this));
-    // });
-
-    // Save changes warning
-    // $(window).bind('beforeunload', function() {
-    //     if (K.save.check()) {
-    //         if (navigator.userAgent.toLowerCase().match(/msie|chrome/)) {
-    //             if (window.aysHasPrompted) {
-    //                 return;
-    //             }
-    //             window.aysHasPrompted = true;
-    //             window.setTimeout(function() {
-    //                 window.aysHasPrompted = false;
-    //             }, 900);
-    //         }
-    //         return 'are you sure';
-    //     }
-    //     return;
-    // });
 
     if (K.local('powered') !== undefined)
         K.check.doOnce = !K.local('powered');
@@ -366,6 +290,90 @@ $(function() {
             window.location.href = window.location.href.split('?')[0];
         });
     }
+
+    // MARK: ~ Mode Menu
+    $.getJSON("data/modes.json", function(data) {
+        const menu = $('.side-menu-box.mode .side-content');
+        menu.append($('<span />', {
+            class: 'title',
+            text: 'Map Modes'
+        }));
+
+        K.each(data, function() {
+            $('<div />', {
+                class: 'mode-wrap ripple-me' + (this.name == K.local('mode') ? ' active' : ''),
+                mode: this.name
+            }).append($('<img />', {
+                class: 'mode-icon',
+                src: this.icon
+            })).append($('<span />', {
+                class: 'mode-name',
+                text: this.name
+            })).append($('<div />', {
+                class: 'mode-desc span-row',
+                html: this.descriptor
+            })).appendTo(menu).on('click', function() {
+                if (!$(this).hasClass('active')) {
+
+                    $(this).siblings().removeClass('active');
+                    $(this).addClass('active');
+
+                    K.mode = $(this).attr('mode');
+                    K.local('mode', K.mode);
+                    K.group.mode = K.group.feature[K.mode];
+                    K.bar.b.power && !K.bar.b.power.enabled() ? K.check.doOnce = true : true;
+
+                    setTimeout(() => {
+                        pageLoad();
+                    }, 1000);
+                }
+            });
+        });
+
+        menu.append($('<div />', {
+            include: '/docs/credits.html'
+        }));
+
+    });
+
+    $('body').on('click', '.ripple-me', function(e) {
+        const ripple = $('.ripple'),
+            x = e.pageX,
+            y = e.pageY,
+            duration = 600;
+
+        let animationFrame,
+            animationStart;
+
+        const animationStep = function(timestamp) {
+            if (!animationStart)
+                animationStart = timestamp;
+
+            const frame = timestamp - animationStart;
+            if (frame < duration) {
+                const easing = (frame / duration) * (2 - (frame / duration)),
+
+                    circle = `circle at ${x}px ${y}px`,
+                    color = `rgba(175, 101, 44, ${(0.3 * (1 - easing))})`,
+                    stop = 10 * easing + "%";
+
+                ripple.css({
+                    "background-image": "radial-gradient(" + circle + ", " + color + " " + stop + ", transparent " + stop + ")"
+                });
+
+                animationFrame = window.requestAnimationFrame(animationStep);
+
+            } else {
+                ripple.css({
+                    "background-image": "none"
+                });
+                window.cancelAnimationFrame(animationFrame);
+            }
+
+        };
+
+        animationFrame = window.requestAnimationFrame(animationStep);
+    });
 
     pageLoad();
 });

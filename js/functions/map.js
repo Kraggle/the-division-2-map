@@ -590,7 +590,7 @@ K.each(K.group.feature, function(i, m) {
 });
 
 K.initMap = () => {
-    K.myMap = L.map('mapid', {
+    K.myMap = L.map('map-id', {
         center: K.local('pan') || [0, 0],
         zoom: K.local('zoom') || 7,
         minZoom: 7,
@@ -603,7 +603,8 @@ K.initMap = () => {
         zoomDelta: 0.5,
         wheelPxPerZoomLevel: 100,
         zoomControl: false,
-        attributionControl: true
+        attributionControl: true,
+        closePopupOnClick: false
     });
 
     K.myMap.createPane('messagePane', L.DomUtil.get('message'));

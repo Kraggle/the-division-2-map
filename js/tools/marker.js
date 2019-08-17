@@ -37,7 +37,7 @@ K.tool.marker = {
         const tools = $('#marker-tools');
         tools.append(
             `<div class="outer inputs">
-                <div class="switch">
+                <div class="switch ripple-me">
                     <input name="switch" id="_2" type="radio" name="radio" value="underground">
                     <label for="_2" class="label down" title="Underground">Below</label>
                     <input name="switch" id="_1" type="radio" name="radio" value="" checked>
@@ -53,7 +53,7 @@ K.tool.marker = {
         );
 
         tools.draggable({
-            containment: '#mapid',
+            containment: '#map-id',
             start: function() {
                 $(this).css({
                     transform: 'translateX(0)',
@@ -93,16 +93,12 @@ K.tool.marker = {
                     key = false;
 
                 K.each(K.shortcuts.QuickMarker, function(k, t) {
-
-                    if (p.type == t && p.type != 'Underground') {
-                        key = k;
-                        return;
-                    }
+                    p.type == t && p.type != 'Underground' && (key = k);
                 });
 
                 if (K.mode in p.mode) {
                     $('<a />', {
-                        class: active,
+                        class: 'ripple-me ' + active,
                         title: category + '<br>' + p.type.replace('Survival', '').space(),
                         category: category,
                         type: p.type,

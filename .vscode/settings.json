@@ -1,8 +1,13 @@
 {
     "cSpell.words": [
+        "Boucas",
         "Comms",
+        "Engeloki",
         "GSAP's",
         "ckeditor",
+        "clancys",
+        "confirmpwd",
+        "divtech",
         "dropdown",
         "gsap",
         "truetype",
@@ -43,9 +48,10 @@
     "spellright.documentTypes": [
         "markdown",
         "latex",
-        "plaintext",
-        "todo",
-        "php"
+        "c"
     ],
-    "eslint.enable": true
+    "eslint.enable": true,
+    "cSpell.ignoreWords": [
+        "rrggbb"
+    ]
 }

@@ -26,6 +26,10 @@ body {
     }
 }
 
+p:empty {
+    display: none;
+}
+
 hr {
     margin: 4px 30% 4px 5px;
     border-style: inset hidden hidden hidden;
@@ -88,4 +92,14 @@ hr {
 ::-webkit-scrollbar-thumb {
     background-color: $text;
     border: 1px solid $border;
+}
+
+.ripple {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 101000;
 }

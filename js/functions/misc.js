@@ -52,14 +52,14 @@ export function sortObjByKeys(object) {
 }
 
 export function polyHoverAnimation(stop) {
-    let polys = $('path.leaflet-interactive:not(.poly-hover):not([fill="none"])');
+    let poly = $('path.leaflet-interactive:not(.poly-hover):not([fill="none"])');
 
-    polys.off('mouseover mouseout');
+    poly.off('mouseover mouseout');
 
     if (stop)
         return;
 
-    polys.on('mouseover', function() {
+    poly.on('mouseover', function() {
         let _this = $(this),
             cls = _this.attr('class').split(' ');
 
@@ -138,18 +138,16 @@ export function toggleHideIcons() {
     else
         $('#side-bar .hide-all').removeClass('hidden');
 
-    $('#side-bar .filters .side-content').children('').each(function() {
-        if ($(this).hasClass('sub')) {
-            let group = $(this).nextUntil('.sub, div'),
-                count = 0;
+    $('#side-bar .filters .side-content .category-wrap').each(function() {
+        const group = $('.side-bar-button', this);
+        let count = 0;
 
-            group.each(function() {
-                $(this).hasClass('inactive') && count++;
-            });
+        group.each(function() {
+            $(this).hasClass('inactive') && count++;
+        });
 
-            $('.hide-some', this).removeClass('hidden');
-            count == group.length && $('.hide-some', this).addClass('hidden');
-        }
+        $('.hide-some', this).removeClass('hidden');
+        count == group.length && $('.hide-some', this).addClass('hidden');
     });
 }
 
@@ -379,8 +377,8 @@ export function setAllLayerClick() {
 
         } else {
             // Add the Layer editing tools on click if you created it
-            K.user.type && (K.user.type >= 4 || l.options.creator.toLowerCase() == K.user.name.toLowerCase()) &&
-                l.on('click', K.tool.layer.show);
+            // K.user.type && (K.user.type >= 4 || l.options.creator.toLowerCase() == K.user.name.toLowerCase()) &&
+            //     l.on('click', K.tool.layer.show);
         }
     });
 }
@@ -395,8 +393,8 @@ export function onZoomEnd() {
         classes += ` z${i}`;
     }
 
-    $('#mapid').removeClass(classes);
-    $('#mapid').addClass(`z${Math.floor(zoom)}`);
+    $('#map-id').removeClass(classes);
+    $('#map-id').addClass(`z${Math.floor(zoom)}`);
 
     K.each(K.group.mode, function(g) {
         let a = g.replace('group', '');

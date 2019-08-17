@@ -4,7 +4,7 @@ import { K, classesToArray, stripAndCollapse } from '../K.js';
 import { createGeoJSON } from '../functions/to-geo-json.js';
 import { createIcon } from '../functions/create-marker.js';
 
-// MARK: [L] Map
+// MARK: [L] Map (Popup)
 L.Map.include({
     openPopup: function(popup, latlng, options) {
         if (!(popup instanceof L.Popup)) {
@@ -80,12 +80,13 @@ L.Layer.include({
 
         if (!this._popup._content) return this;
 
+        if (this.isPopupOpen()) return this;
+
         let content = this.getSetting('content', true) || this.getSetting('list', true);
         this._popup.setContent(content);
 
-        if (!latlng) {
+        if (!latlng)
             latlng = layer.getCenter ? layer.getCenter() : layer.getLatLng();
-        }
 
         if (!this._popup._content) return this;
 
@@ -98,6 +99,8 @@ L.Layer.include({
 
             // open the popup on the map
             this._map.openPopup(this._popup, latlng);
+
+            // console.log(this.getPopup().options, this._map.options, this.getPopup().getEvents());
         }
 
         return this;
@@ -197,6 +200,36 @@ L.Layer.include({
         }
         return this;
     },
+
+    _openPopup: function(e) {
+        var layer = e.layer || e.target;
+
+        if (!this._popup) {
+            return;
+        }
+
+        if (!this._map) {
+            return;
+        }
+
+        // prevent map click
+        L.DomEvent.stop(e);
+
+        // if this inherits from Path its a vector and we can just
+        // open the popup at the new location
+        if (layer instanceof L.Path) {
+            this.openPopup(e.layer || e.target, e.latlng);
+            return;
+        }
+
+        // otherwise treat it like a marker and figure out
+        // if we should toggle it open/closed
+        if (this._map.hasLayer(this._popup) && this._popup._source === layer) {
+            // this.closePopup();
+        } else {
+            this.openPopup(layer, e.latlng);
+        }
+    }
 });
 
 // MARK: [L] Layer (Complete)
@@ -359,6 +392,21 @@ L.Layer.include({
     }
 });
 
+// MARK: [L] Layer (Events)
+L.Layer.include({
+
+    initEvents: function() {
+        this.on('contextmenu', function(e) {
+            this.onContextMenu(e);
+        });
+    },
+
+    onContextMenu: function(e) {
+        this.closePopup();
+        K.contextMenu.build(e, this);
+    }
+});
+
 // MARK: [L] Polyline
 L.Polyline.include({
 
@@ -374,6 +422,8 @@ L.Polyline.include({
         }
 
         this._setLatLngs(latlngs);
+
+        this.options.creator && this.initEvents();
     }
 });
 
@@ -402,6 +452,8 @@ L.Circle.include({
         // @aka Circle options
         // @option radius: Number; Radius of the circle, in meters.
         this._mRadius = this.options.radius;
+
+        this.options.creator && this.initEvents();
     }
 });
 
@@ -427,7 +479,7 @@ L.Marker.include({
         }
 
         this._latlng = L.latLng(latlng);
-        this.options.creator && this.updateIcon();
+        this.options.creator && (this.updateIcon(), this.initEvents());
 
         this.options.cycle && K.cycle.add(this);
     },

@@ -276,10 +276,10 @@ export function drawEventCreated(e) {
 
     K.group.addLayer(layer);
 
-    layer.on('click', K.tool.layer.show);
-    layer.getSetting('complete') && layer.options.shape === 'marker' && layer.on('contextmenu', function() {
-        this.toggleCompleted();
-    });
+    // layer.on('click', K.tool.layer.show);
+    // layer.getSetting('complete') && layer.options.shape === 'marker' && layer.on('contextmenu', function() {
+    //     this.toggleCompleted();
+    // });
 
     layer.saved(false);
     layer.storeSettings();

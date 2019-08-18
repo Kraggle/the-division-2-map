@@ -2,7 +2,7 @@
 include_once 'db_connect.php';
 include_once 'functions.php'; ?>
 
-<div class="side-content grid <? echo type_name($_SESSION['usertype']) ?>">
+<div class="box-content grid <? echo type_name($_SESSION['usertype']) ?>">
 	<span class="title span-row">User Account</span>
 
 	<? if (login_check($mysqli) == true) { ?>

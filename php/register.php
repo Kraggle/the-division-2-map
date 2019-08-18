@@ -1,5 +1,5 @@
 <? include_once 'functions.php'; ?>
-<div class="side-content grid">
+<div class="box-content grid">
 	<span class="title span-row">Create Account</span>
 	<ul class="help span-row">
 		<li class="username">Usernames may contain only digits, upper and lowercase letters and underscores</li>

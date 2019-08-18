@@ -1,5 +1,7 @@
 import { jQuery as $ } from '../../jquery3.4.1.js';
 import './jq-ui-mouse.js';
+import './jq-ui-data.js';
+import './jq-ui-scroll-parent.js';
 
 /*!
  * jQuery UI Draggable 1.12.1

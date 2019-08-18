@@ -138,7 +138,7 @@ export function toggleHideIcons() {
     else
         $('#side-bar .hide-all').removeClass('hidden');
 
-    $('#side-bar .filters .side-content .category-wrap').each(function() {
+    $('#side-bar .filters .box-content .category-wrap').each(function() {
         const group = $('.side-bar-button', this);
         let count = 0;
 

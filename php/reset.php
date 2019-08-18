@@ -1,7 +1,7 @@
 <? include_once 'db_connect.php';
 include_once 'functions.php'; ?>
 
-<div class="side-content grid">
+<div class="box-content grid">
 	<span class="title span-row">Password Reset</span>
 
 	<p class="span-row">Please enter a new password.</p>

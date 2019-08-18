@@ -1,7 +1,7 @@
 <? include_once 'db_connect.php';
 include_once 'functions.php'; ?>
 
-<div class="side-content grid">
+<div class="box-content grid">
 	<span class="title span-row">Forgot Password</span>
 
 	<p class="span-row">Enter the email address you registered with and an email will be sent with a reset code to it. Remember to check the junk mail if you don't find the email.</p>

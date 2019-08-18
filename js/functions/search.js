@@ -157,7 +157,7 @@ K.search = {
         }
     }, {
         key: 'MENU',
-        selector: '.side-menu-toggle.search'
+        selector: '.bar-toggle.search'
     }],
 
     // used for the display list

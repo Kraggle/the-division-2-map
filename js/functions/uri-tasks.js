@@ -6,7 +6,7 @@ K.performURITasks = function() {
     const params = K.urlParam() || {};
 
     if (K.in('search', params)) {
-        $('.side-menu-toggle.search:not(.active)').trigger('click');
+        $('.bar-toggle.search:not(.active)').trigger('click');
 
         K.search.CHECK.EXACT.prop('checked', !!params.searchExact);
         K.search.CHECK.MATCH.prop('checked', !!params.searchMatch);

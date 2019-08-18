@@ -21,12 +21,12 @@
     border: 1px solid $border;
 }
 
-.side-menu {
+.bar {
     position: absolute;
     z-index: 1000;
     right: 0;
 
-    .side-content {
+    .box-content {
         position: relative;
         min-height: 275px;
         padding: 10px 10px 15px 12px;
@@ -106,7 +106,7 @@
 
     // Search Menu
     .search {
-        .side-content {
+        .box-content {
             padding-top: 0;
             max-height: calc(100vh - 239px);
             overflow-x: hidden;
@@ -898,7 +898,7 @@
     }
 
     .shorts {
-        .side-content {
+        .box-content {
             padding-bottom: 30px;
         }
 
@@ -1059,7 +1059,7 @@
     }
 }
 
-.side-menu-box {
+.bar-box {
     position: fixed;
     top: 5px;
     width: 210px;
@@ -1146,7 +1146,7 @@
     }
 }
 
-.side-menu-toggle {
+.bar-toggle {
     &.login {
         background-image: url(../images/menu-login.svg?v=1.0);
 
@@ -1218,15 +1218,15 @@
 }
 
 @include desktop {
-    .side-menu {
+    .bar {
         top: 5px;
         bottom: 30px;
 
-        .menu-toggle-wrap {
+        .bar-toggle-wrap {
             transition: all 1s ease;
         }
 
-        .side-menu-toggle {
+        .bar-toggle {
             position: absolute;
             display: block;
             color: $text;
@@ -1264,11 +1264,11 @@
 
 
 @include mobile {
-    .side-menu {
+    .bar {
         top: 0;
         bottom: 0;
 
-        .side-menu-open {
+        .bar-open {
             position: absolute;
             top: 5px;
             right: 5px;
@@ -1284,11 +1284,11 @@
             transform: translateX(0) !important;
         }
 
-        .menu-toggle-wrap {
+        .bar-toggle-wrap {
             display: grid;
             grid-auto-rows: 40px;
             position: absolute;
-            right: 0;
+            left: 0;
             top: 0;
             background-color: $background;
             border-left: $border solid 1px;
@@ -1296,14 +1296,13 @@
             border-radius: 0 0 0 10px;
             transition: all 1s ease;
             padding: 5px 2px;
-            transform: translateX(calc(100% + 10px));
 
             &.active {
-                transform: translateX(0);
+                transform: translateX(-100%);
             }
         }
 
-        .side-menu-toggle {
+        .bar-toggle {
             color: $text;
             text-decoration: none;
             padding: 0 10px 0 45px;
@@ -1314,7 +1313,7 @@
             white-space: nowrap;
             transform: translateX(0);
 
-            &:after {
+            &::after {
                 content: '';
                 position: absolute;
                 bottom: 0;
@@ -1338,28 +1337,18 @@
                     transform: translateX(-263px);
                 }
 
-                .menu-toggle-wrap {
-                    transform: translateX(-138px);
+                .bar-toggle-wrap {
+                    transform: translateX(calc(-263px - 43px));
                 }
             }
 
-            &.shorts {
-                >* {
-                    transform: translateX(-172px);
-                }
-
-                .menu-toggle-wrap {
-                    transform: translateX(-38px);
-                }
-            }
-
-            &:not(.shorts):not(.filters) {
+            &:not(.filters) {
                 >* {
                     transform: translateX(-301px);
                 }
 
-                .menu-toggle-wrap {
-                    transform: translateX(-176px);
+                .bar-toggle-wrap {
+                    transform: translateX(calc(-301px - 43px));
                 }
 
                 @media (max-width: 346px) {
@@ -1367,15 +1356,15 @@
                         transform: translateX(calc(-100vw + 45px));
                     }
 
-                    .menu-toggle-wrap {
-                        transform: translateX(calc(-100vw + 169px));
+                    .bar-toggle-wrap {
+                        transform: translateX(calc(-100vw + 2px));
                     }
                 }
             }
         }
 
         .search {
-            .side-content {
+            .box-content {
                 max-height: calc(100vh - 239px);
             }
         }
@@ -1417,14 +1406,18 @@
                 }
             }
         }
+
+        .shorts {
+            display: none !important;
+        }
     }
 
-    .side-menu-box {
+    .bar-box {
         top: 0;
         border-top: 0;
         border-right: 0;
         border-radius: 0 0 0 10px;
-        max-height: 100vh;
+        max-height: 100%;
 
         &:not(.shorts):not(.filters) {
             width: calc(100vw - 40px);
@@ -1483,15 +1476,15 @@
 }
 
 @media (pointer: coarse) {
-    .side-menu {
+    .bar {
         &.active {
             &.filters {
                 >* {
                     transform: translateX(-263px);
                 }
 
-                .menu-toggle-wrap {
-                    transform: translateX(-138px);
+                .bar-toggle-wrap {
+                    transform: translateX(calc(-263px - 43px));
                 }
             }
         }

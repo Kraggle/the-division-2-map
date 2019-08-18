@@ -52,7 +52,7 @@ export function doLogin() {
         }
 
         if (a) {
-            $('#side-bar .login .side-content').parent().html(a);
+            $('#side-bar .login .box-content').parent().html(a);
             K.check.doOnce = true;
             pageLoad();
         }
@@ -81,7 +81,7 @@ export function doRegister() {
         if (K.type(a) == 'object' && a.error)
             $('#side-bar .login .error').html(a.error);
         else
-            $('#side-bar .login .side-content').parent().html(a);
+            $('#side-bar .login .box-content').parent().html(a);
     });
 }
 
@@ -131,7 +131,7 @@ export function doForgot() {
 
         }).done(function(b) {
 
-            b && $('#side-bar .login .side-content').parent().html(b);
+            b && $('#side-bar .login .box-content').parent().html(b);
 
             if (K.type(result) == 'object') {
 
@@ -149,7 +149,7 @@ export function doForgot() {
 export function loadReset(token) {
     if (!token || token.length != 10) return;
 
-    const box = $('.side-menu-box.login').removeAttr('include');
+    const box = $('.bar-box.login').removeAttr('include');
     $.ajax({
         type: "POST",
         url: "./php/reset.php",

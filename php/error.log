@@ -95,3 +95,14 @@
 [17-Aug-2019 18:48:08 UTC] PHP Notice:  Undefined index: usertype in D:\Dropbox\laragon\www\the-division-2-map\php\login.php on line 5
 [17-Aug-2019 19:05:26 UTC] PHP Notice:  Undefined index: usertype in D:\Dropbox\laragon\www\the-division-2-map\php\login.php on line 5
 [17-Aug-2019 19:27:04 UTC] PHP Notice:  Undefined index: usertype in D:\Dropbox\laragon\www\the-division-2-map\php\login.php on line 5
+[18-Aug-2019 07:35:22 UTC] PHP Warning:  session_start(): open(D:/Dropbox/laragon/tmp\sess_htcc29hd3uh6splcgm6l5tn0qv, O_RDWR) failed: Permission denied (13) in D:\Dropbox\laragon\www\the-division-2-map\php\session_start.php on line 9
+[18-Aug-2019 07:35:22 UTC] PHP Warning:  session_start(): Failed to read session data: files (path: D:/Dropbox/laragon/tmp) in D:\Dropbox\laragon\www\the-division-2-map\php\session_start.php on line 9
+[18-Aug-2019 07:35:22 UTC] PHP Warning:  session_regenerate_id(): Cannot regenerate session id - session is not active in D:\Dropbox\laragon\www\the-division-2-map\php\session_start.php on line 10
+[18-Aug-2019 07:53:37 UTC] PHP Notice:  Undefined index: usertype in D:\Dropbox\laragon\www\the-division-2-map\php\login.php on line 5
+[18-Aug-2019 11:49:27 UTC] PHP Notice:  Undefined index: usertype in D:\Dropbox\laragon\www\the-division-2-map\php\login.php on line 5
+[18-Aug-2019 11:50:38 UTC] PHP Notice:  Undefined index: usertype in D:\Dropbox\laragon\www\the-division-2-map\php\login.php on line 5
+[18-Aug-2019 12:46:09 UTC] PHP Notice:  Undefined index: usertype in D:\Dropbox\laragon\www\the-division-2-map\php\login.php on line 5
+[18-Aug-2019 14:43:57 UTC] PHP Notice:  Undefined index: usertype in D:\Dropbox\laragon\www\the-division-2-map\php\login.php on line 5
+[18-Aug-2019 15:26:50 UTC] PHP Notice:  Undefined index: usertype in D:\Dropbox\laragon\www\the-division-2-map\php\login.php on line 5
+[18-Aug-2019 15:28:59 UTC] PHP Notice:  Undefined index: usertype in D:\Dropbox\laragon\www\the-division-2-map\php\login.php on line 5
+[18-Aug-2019 15:30:24 UTC] PHP Notice:  Undefined index: usertype in D:\Dropbox\laragon\www\the-division-2-map\php\login.php on line 5

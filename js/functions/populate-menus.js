@@ -24,7 +24,7 @@ export const populateMenus = function() {
     //             Side Menu
     //
     //////////////////////////////////////////////////////
-    let sb = '#side-bar .filters .side-content';
+    let sb = '#side-bar .filters .box-content';
     $(sb).html('');
     $(sb).append(`<a class="hide-all ripple-me" title="Show/Hide all!"></a>
                 <span class="title">Filters</span>
@@ -179,7 +179,7 @@ export const populateMenus = function() {
     if (K.local('sideBar') && !K.local('cleanMenu')) {
         let a = K.local('sideMenu');
         $('#side-bar').addClass('active ' + a);
-        $('.menu-toggle-wrap, #side-bar .' + a).addClass('active');
+        $('.bar-toggle-wrap, #side-bar .' + a).addClass('active');
     }
 
     polyHoverAnimation();

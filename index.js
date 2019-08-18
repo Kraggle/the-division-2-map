@@ -101,12 +101,12 @@ $(function() {
     });
 
     // Toggle menu buttons
-    $('#side-bar .side-menu-toggle:not(.full)').on('click', function() {
+    $('#side-bar .bar-toggle:not(.full)').on('click', function() {
 
         const sb = $('#side-bar'),
             c = 'active',
-            ta = '.side-menu-toggle.active, .side-menu-box.active',
-            to = ', .menu-toggle-wrap',
+            ta = '.bar-toggle.active, .bar-box.active',
+            to = ', .bar-toggle-wrap',
             a = $(this).attr('button'),
             o = K.local('sideMenu'),
             save = () => {
@@ -135,17 +135,17 @@ $(function() {
         }
     });
 
-    $('.side-menu-open').on('click', function() {
-        $('.menu-toggle-wrap').toggleClass('active')
+    $('.bar-open').on('click', function() {
+        $('.bar-toggle-wrap').toggleClass('active')
     });
 
     // Correctly position the menu buttons
-    $('#side-bar .side-menu-toggle').each(function(i) {
+    $('#side-bar .bar-toggle').each(function(i) {
         $(this).css('top', i == 0 ? '10px' : (10 + (i * 40)) + 'px');
     });
 
     // Toggle fullscreen button
-    let el = $('#side-bar .side-menu-toggle.full');
+    let el = $('#side-bar .bar-toggle.full');
     el.on('click', toggleFullScreen);
     $(document).on('webkitfullscreenchange mozfullscreenchange fullscreenchange', function() {
         el.toggleClass('yes');
@@ -167,7 +167,7 @@ $(function() {
 
         }).done(function(a) {
 
-            a && $('#side-bar .login .side-content').parent().html(a);
+            a && $('#side-bar .login .box-content').parent().html(a);
         });
     });
 
@@ -214,7 +214,7 @@ $(function() {
             K.user.type = 0;
             K.user.data = false;
 
-            $('#side-bar .login .side-content').parent().html(a);
+            $('#side-bar .login .box-content').parent().html(a);
 
             pageLoad();
         });
@@ -269,7 +269,7 @@ $(function() {
     });
 
     // Menu icon sliders
-    $('#side-bar .side-menu-toggle').on('mouseenter touchstart', function() {
+    $('#side-bar .bar-toggle').on('mouseenter touchstart', function() {
         $(this).css('left', '-' + ($(this).width() + 50) + 'px');
     }).on('mouseleave touchmove click', function() {
         $(this).css('left', '-35px');
@@ -293,7 +293,7 @@ $(function() {
 
     // MARK: ~ Mode Menu
     $.getJSON("data/modes.json", function(data) {
-        const menu = $('.side-menu-box.mode .side-content');
+        const menu = $('.bar-box.mode .box-content');
         menu.append($('<span />', {
             class: 'title',
             text: 'Map Modes'

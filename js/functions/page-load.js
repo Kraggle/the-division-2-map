@@ -33,27 +33,27 @@ export default function pageLoad() {
         $('#survival-logo').fadeIn(500);
 
     if (K.local('cleanMenu')) {
-        $('.side-menu-toggle.login').hide(0);
-        $('.side-menu-toggle.filters').hide(0);
-        $('.side-menu-toggle.full').hide(0);
-        $('.side-menu-toggle.changes').hide(0);
-        $('.side-menu-toggle.todo').hide(0);
-        $('.side-menu-toggle.gear').hide(0);
-        $('.side-menu-toggle.shorts').hide(0);
+        $('.bar-toggle.login').hide(0);
+        $('.bar-toggle.filters').hide(0);
+        $('.bar-toggle.full').hide(0);
+        $('.bar-toggle.changes').hide(0);
+        $('.bar-toggle.todo').hide(0);
+        $('.bar-toggle.gear').hide(0);
+        $('.bar-toggle.shorts').hide(0);
         $('.leaflet-control-attribution.leaflet-control').hide(0);
         $('#logo').hide(0);
     }
 
     if (K.urlParam('overwolf') == 'true') {
-        $('.side-menu-toggle.full').hide(0);
-        $('.side-menu-toggle.changes').hide(0);
-        $('.side-menu-toggle.todo').hide(0);
-        $('.side-menu-toggle.shorts').hide(0);
+        $('.bar-toggle.full').hide(0);
+        $('.bar-toggle.changes').hide(0);
+        $('.bar-toggle.todo').hide(0);
+        $('.bar-toggle.shorts').hide(0);
         $('.leaflet-control-attribution.leaflet-control').hide(0);
         $('#alert').hide(0);
         $('#logo').hide(0);
 
-        // $('#side-bar .side-menu-toggle.gear').css('top', '170px');
+        // $('#side-bar .bar-toggle.gear').css('top', '170px');
     }
 
     // Load all available markers
@@ -74,9 +74,9 @@ export default function pageLoad() {
 
         // Clear a few things in case you have logged out
         $('#message').removeClass('master');
-        let shorts = $('#side-bar .shorts .side-content');
+        let shorts = $('#side-bar .shorts .box-content');
         shorts.html('');
-        $('.side-menu-toggle.shorts').hide();
+        $('.bar-toggle.shorts').hide();
         K.each(K.bar.b, function(i, v) {
             empty(v);
         });
@@ -96,7 +96,7 @@ export default function pageLoad() {
             //////////////////////////////////////////////////////
             $('#message').addClass('master');
 
-            !K.urlParam('overwolf') && $('.side-menu-toggle.shorts').show();
+            !K.urlParam('overwolf') && $('.bar-toggle.shorts').show();
             let key = function(k, t) {
                 return `<div class="item">
                     <div>${k}</div>

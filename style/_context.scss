@@ -18,8 +18,11 @@
         transition: background-color .3s ease;
         padding: 0 10px;
 
-        &:hover {
-            background-color: $background-hover;
+
+        @media (hover: hover) {
+            &:hover {
+                background-color: $background-hover;
+            }
         }
 
         &:last-of-type {

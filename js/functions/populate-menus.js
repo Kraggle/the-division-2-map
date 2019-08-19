@@ -198,7 +198,7 @@ export const populateMenus = function() {
             solo: true
         },
         hide: {
-            event: 'click mouseleave'
+            event: 'click mouseleave unfocus'
         }
     });
 

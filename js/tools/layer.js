@@ -917,9 +917,7 @@ K.tool.layer = {
                     trd = lst + fst;
 
                 retHtml += `${img && num == 1 ? fst : ''}
-                    < a class = "settings-item button ripple-me selector${col ? ' color' : (img ? ' icon' : '')}"
-                    aria - label = "${i}"
-                    role = "button"
+                    <a class="settings-item button ripple-me selector${col ? ' color' : (img ? ' icon' : '')}" aria-label="${i}" role="button"
                         ${value == i ? ` style="background-color: #2f474e; ${(col ? ` color: ${i};` : '')}"` : (col ? ` style="color: ${i};"` : '')}>
                         ${img ? `<img src="${i}" height="30" width="30">` : i} 
                     </a>

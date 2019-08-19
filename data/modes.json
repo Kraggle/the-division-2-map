@@ -2,33 +2,33 @@
     "Story Mode": {
         "name": "Story Mode",
         "descriptor": "<p>This is the mode you start on in <strong>The Division 2</strong>, you maintain this mode until you reach level 30 and have completed all three <strong>Strongholds</strong> at which point you are automatically put into <strong>World Tier I</strong>.</p><p>In this mode, on this site, you are given everything you have access to during your first 30 levels only. Bear in mind that some things have prerequisites, so even if you can't find them in-game, they will show eventually. I have tried to add these prerequisites to the popups but may have missed some.</p><p>If you find there is anything I need to add or amend, please don't hesitate to contact me.</p>",
-        "icon": "/images/mode-story-mode.svg",
+        "icon": "images/mode-story-mode.svg",
         "order": 0
     },
     "World Tier": {
         "name": "World Tier",
         "descriptor": "<p>This mode is entered automatically in-game when you reach level 30 and have completed the three <strong>Strongholds</strong>. Once you have reached this mode you will be at <strong>World Tier I</strong>, this is the start of the <strong>Black Tusk</strong> clearout. At each <strong>World Tier</strong>, to reach the next you have to complete the two prerequisite missions and then the <strong>Stronghold</strong>, at which point you are automatically put in the next <strong>World Tier</strong>.</p><p>In this mode, on this site, you have a lot more on the map, new missions and activities are activated. To move the site to the next <strong>World Tier</strong>, you just have to mark the missions then the <strong>Stronghold</strong> as complete. It makes no difference what mode the site is in, you still get all the same layers, as long as you are in <strong>World Tier</strong> mode.</p>",
-        "icon": "/images/mode-world-tier-1.svg",
+        "icon": "images/mode-world-tier-1.svg",
         "alt": {
             "World Tier I": {
                 "name": "World Tier I",
-                "icon": "/images/mode-world-tier-1.svg"
+                "icon": "images/mode-world-tier-1.svg"
             },
             "World Tier II": {
                 "name": "World Tier II",
-                "icon": "/images/mode-world-tier-2.svg"
+                "icon": "images/mode-world-tier-2.svg"
             },
             "World Tier III": {
                 "name": "World Tier III",
-                "icon": "/images/mode-world-tier-3.svg"
+                "icon": "images/mode-world-tier-3.svg"
             },
             "World Tier IV": {
                 "name": "World Tier IV",
-                "icon": "/images/mode-world-tier-4.svg"
+                "icon": "images/mode-world-tier-4.svg"
             },
             "World Tier V": {
                 "name": "World Tier V",
-                "icon": "/images/mode-world-tier-5.svg"
+                "icon": "images/mode-world-tier-5.svg"
             }
         },
         "order": 1

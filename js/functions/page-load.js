@@ -61,7 +61,7 @@ export default function pageLoad() {
         url: 'php/get_markers.php'
     }).done(function(data) {
         K.each($.parseJSON(data), function(i, v) {
-            K.settings.main.iconUrl.values[v] = { shape: [] };
+            K.settings.main.iconUrl.values[v.replace('../', '')] = { shape: [] };
         });
     });
 

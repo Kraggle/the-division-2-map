@@ -52,6 +52,7 @@
     ],
     "eslint.enable": true,
     "cSpell.ignoreWords": [
+        "donators",
         "rrggbb"
     ]
 }

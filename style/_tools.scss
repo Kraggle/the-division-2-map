@@ -74,8 +74,10 @@
         position: relative;
         transition: all ease 0.3s;
 
-        &:hover {
-            background-color: $background-hover;
+        @media (hover: hover) {
+            &:hover {
+                background-color: $background-hover;
+            }
         }
 
         .current-value {
@@ -100,55 +102,55 @@
 
     .settings {
         &.copy {
-            background-image: url(../images/menu-copy.svg);
+            background-image: url(images/menu-copy.svg);
         }
 
         &.paste {
-            background-image: url(../images/menu-paste.svg);
+            background-image: url(images/menu-paste.svg);
         }
 
         &.copy-loc {
-            background-image: url(../images/menu-copy-loc.svg);
+            background-image: url(images/menu-copy-loc.svg);
         }
 
         &.paste-loc {
-            background-image: url(../images/menu-paste-loc.svg);
+            background-image: url(images/menu-paste-loc.svg);
         }
 
         &.edit {
-            background-image: url(../images/menu-edit.svg);
+            background-image: url(images/menu-edit.svg);
 
             &.end {
-                background-image: url(../images/menu-edit-end.svg);
+                background-image: url(images/menu-edit-end.svg);
             }
         }
 
         &.move {
-            background-image: url(../images/menu-move.svg);
+            background-image: url(images/menu-move.svg);
 
             &.end {
-                background-image: url(../images/menu-move-end.svg);
+                background-image: url(images/menu-move-end.svg);
             }
         }
 
         &.join {
-            background-image: url(../images/menu-join.svg);
+            background-image: url(images/menu-join.svg);
         }
 
         &.split {
-            background-image: url(../images/menu-split.svg);
+            background-image: url(images/menu-split.svg);
         }
 
         &.dupe {
-            background-image: url(../images/menu-duplicate.svg);
+            background-image: url(images/menu-duplicate.svg);
         }
 
         &.delete {
-            background-image: url(../images/menu-delete.svg);
+            background-image: url(images/menu-delete.svg);
         }
 
         &.to-type {
-            background-image: url(../images/menu-copy-type.svg);
+            background-image: url(images/menu-copy-type.svg);
         }
     }
 
@@ -279,8 +281,10 @@
             top: 1px;
             height: 24px;
 
-            &:hover {
-                background-color: $background-hover;
+            @media (hover: hover) {
+                &:hover {
+                    background-color: $background-hover;
+                }
             }
         }
     }
@@ -389,11 +393,11 @@
 
             .grab {
                 border-right: 1px solid $border-hmm;
-                background-image: url(../images/menu-grab.svg);
+                background-image: url(images/menu-grab.svg);
             }
 
             .trash {
-                background-image: url(../images/menu-delete.svg);
+                background-image: url(images/menu-delete.svg);
             }
         }
     }
@@ -582,19 +586,22 @@
             &.enabled {
                 background-position-x: 0;
 
-                &:focus,
-                &:hover {
-                    background-color: $background-hover;
+                @media (hover: hover) {
+
+                    &:focus,
+                    &:hover {
+                        background-color: $background-hover;
+                    }
                 }
             }
         }
 
         .restore-back {
-            background-image: url(../images/menu-rewind.svg);
+            background-image: url(images/menu-rewind.svg);
         }
 
         .restore-forward {
-            background-image: url(../images/menu-forward.svg);
+            background-image: url(images/menu-forward.svg);
         }
 
         .restore-text {
@@ -722,8 +729,10 @@
         margin: 4px;
         box-sizing: border-box;
 
-        &:hover {
-            background-color: $background-hover-50;
+        @media (hover: hover) {
+            &:hover {
+                background-color: $background-hover-50;
+            }
         }
 
         &.enabled {
@@ -764,7 +773,7 @@
             margin-top: -47%;
             margin-left: -4px;
             content: ' ';
-            background-image: url(../images/level.svg);
+            background-image: url(images/level.svg);
             background-size: 60%;
             background-repeat: no-repeat;
             background-position: center;
@@ -806,8 +815,10 @@
             line-height: 30px;
             top: 0;
 
-            &:hover {
-                color: white;
+            @media (hover: hover) {
+                &:hover {
+                    color: white;
+                }
             }
         }
 

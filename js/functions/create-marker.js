@@ -8,7 +8,7 @@ export function createMarker(p) {
         [K.mode]: {}
     });
 
-    const i = K.getSetting(p, 'iconUrl');
+    const i = (K.getSetting(p, 'iconUrl') || '');
 
     // new settings happen here
     return L.marker(p.latlng, K.extend(p, {

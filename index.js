@@ -56,6 +56,9 @@ if (!K.local('mode') || K.has(K.local('mode'), ['normal', 'Story']) || !K.has(K.
 // MARK: [$] Document Ready
 $(function() {
 
+    // Used to get if this is a touch screen device
+    K.touchOnly = window.matchMedia("(any-hover: none)").matches;
+
     K.includeHTML();
     K.initMap();
 
@@ -331,7 +334,7 @@ $(function() {
         });
 
         menu.append($('<div />', {
-            include: '/docs/credits.html'
+            include: 'docs/credits.html'
         }));
 
     });

@@ -386,7 +386,7 @@ export function setAllLayerClick() {
 // Functions to show and hide layers based on zoom level and wether editing the layer
 export function onZoomEnd() {
     setGridRotate(true);
-    const zoom = K.myMap.getZoom();
+    const zoom = K.myMap.getZoom() + (K.touchOnly ? 1 : 0);
 
     let classes = '';
     for (let i = 7; i < 12; i++) {

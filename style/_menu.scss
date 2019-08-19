@@ -150,7 +150,7 @@
         border-bottom-right-radius: 10px;
         box-shadow: inset 0 0 15px 2px $box-shadow;
         transition: all 0.35s ease-in-out;
-        background-image: url(../images/menu-clear.svg);
+        background-image: url(images/menu-clear.svg);
         background-size: 50%;
         background-repeat: no-repeat;
         background-position: center;
@@ -526,11 +526,11 @@
                 @include button-color($bird-flower, 0.4);
 
                 &.asc {
-                    background-image: url(../images/menu-sort-score-asc.svg?v=0.2);
+                    background-image: url(images/menu-sort-score-asc.svg?v=0.2);
                 }
 
                 &.desc {
-                    background-image: url(../images/menu-sort-score-desc.svg?v=0.2);
+                    background-image: url(images/menu-sort-score-desc.svg?v=0.2);
                 }
             }
 
@@ -538,11 +538,11 @@
                 @include button-color($woodland, 0.4);
 
                 &.asc {
-                    background-image: url(../images/menu-sort-category-asc.svg?v=0.2);
+                    background-image: url(images/menu-sort-category-asc.svg?v=0.2);
                 }
 
                 &.desc {
-                    background-image: url(../images/menu-sort-category-desc.svg?v=0.2);
+                    background-image: url(images/menu-sort-category-desc.svg?v=0.2);
                 }
             }
 
@@ -550,11 +550,11 @@
                 @include button-color($medium-purple, 0.4);
 
                 &.asc {
-                    background-image: url(../images/menu-sort-type-asc.svg?v=0.2);
+                    background-image: url(images/menu-sort-type-asc.svg?v=0.2);
                 }
 
                 &.desc {
-                    background-image: url(../images/menu-sort-type-desc.svg?v=0.2);
+                    background-image: url(images/menu-sort-type-desc.svg?v=0.2);
                 }
             }
 
@@ -562,11 +562,11 @@
                 @include button-color($blue-bell, 0.4);
 
                 &.asc {
-                    background-image: url(../images/menu-sort-content-asc.svg?v=0.2);
+                    background-image: url(images/menu-sort-content-asc.svg?v=0.2);
                 }
 
                 &.desc {
-                    background-image: url(../images/menu-sort-content-desc.svg?v=0.2);
+                    background-image: url(images/menu-sort-content-desc.svg?v=0.2);
                 }
             }
 
@@ -574,11 +574,11 @@
                 @include button-color($well-read, 0.4);
 
                 &.asc {
-                    background-image: url(../images/menu-sort-date-asc.svg?v=0.2);
+                    background-image: url(images/menu-sort-date-asc.svg?v=0.2);
                 }
 
                 &.desc {
-                    background-image: url(../images/menu-sort-date-desc.svg?v=0.2);
+                    background-image: url(images/menu-sort-date-desc.svg?v=0.2);
                 }
             }
         }
@@ -612,11 +612,11 @@
         }
 
         .back {
-            background-image: url(../images/menu-checkbox.svg?v=0.2);
+            background-image: url(images/menu-checkbox.svg?v=0.2);
         }
 
         .tick {
-            background-image: url(../images/menu-checktick.svg);
+            background-image: url(images/menu-checktick.svg);
             transform: scale(0);
             transition: transform .3s ease;
         }
@@ -637,7 +637,7 @@
     .button {
         &.share {
             cursor: pointer;
-            background-image: url(../images/menu-share.svg?v=3);
+            background-image: url(images/menu-share.svg?v=3);
         }
 
         &.textual {
@@ -853,12 +853,12 @@
         padding: 4px;
 
         &::before {
-            content: url(../images/menu-collapse.svg);
+            content: url(images/menu-collapse.svg);
         }
 
         &.hidden {
             &::before {
-                content: url(../images/menu-expand.svg);
+                content: url(images/menu-expand.svg);
             }
         }
     }
@@ -869,12 +869,12 @@
         top: 2px;
 
         &::before {
-            content: url(../images/menu-hide.svg);
+            content: url(images/menu-hide.svg);
         }
 
         &.hidden {
             &::before {
-                content: url(../images/menu-show.svg);
+                content: url(images/menu-show.svg);
             }
         }
     }
@@ -971,7 +971,7 @@
         top: 15px;
 
         &::before {
-            content: url(../images/menu-hide.svg);
+            content: url(images/menu-hide.svg);
             position: absolute;
             right: 0;
             width: 16px;
@@ -980,7 +980,7 @@
 
         &.hidden {
             &::before {
-                content: url(../images/menu-show.svg);
+                content: url(images/menu-show.svg);
             }
         }
     }
@@ -992,7 +992,7 @@
         padding-left: 24px;
 
         &::before {
-            content: url(../images/menu-complete.svg);
+            content: url(images/menu-complete.svg);
             position: absolute;
             width: 20px;
             left: 0;
@@ -1001,7 +1001,7 @@
 
         &.hidden {
             &::before {
-                content: url(../images/menu-complete-hide.svg);
+                content: url(images/menu-complete-hide.svg);
             }
         }
     }
@@ -1148,72 +1148,72 @@
 
 .bar-toggle {
     &.login {
-        background-image: url(../images/menu-login.svg?v=1.0);
+        background-image: url(images/menu-login.svg?v=1.0);
 
         &.out {
-            background-image: url(../images/menu-logout.svg?v=1.0);
+            background-image: url(images/menu-logout.svg?v=1.0);
         }
     }
 
     &.mode {
-        background-image: url(../images/mode-story-mode.svg);
+        background-image: url(images/mode-story-mode.svg);
 
         &.tier-1 {
-            background-image: url(../images/mode-world-tier-1.svg);
+            background-image: url(images/mode-world-tier-1.svg);
         }
 
         &.tier-2 {
-            background-image: url(../images/mode-world-tier-2.svg);
+            background-image: url(images/mode-world-tier-2.svg);
         }
 
         &.tier-3 {
-            background-image: url(../images/mode-world-tier-3.svg);
+            background-image: url(images/mode-world-tier-3.svg);
         }
 
         &.tier-4 {
-            background-image: url(../images/mode-world-tier-4.svg);
+            background-image: url(images/mode-world-tier-4.svg);
         }
 
         &.tier-5 {
-            background-image: url(../images/mode-world-tier-5.svg);
+            background-image: url(images/mode-world-tier-5.svg);
         }
     }
 
     &.filters {
-        background-image: url(../images/menu-filters.svg?v=1.03);
+        background-image: url(images/menu-filters.svg?v=1.03);
     }
 
     &.search {
-        background-image: url(../images/menu-search.svg?v=1.03);
+        background-image: url(images/menu-search.svg?v=1.03);
     }
 
     &.full {
-        background-image: url(../images/menu-fullscreen.svg?v=1.0);
+        background-image: url(images/menu-fullscreen.svg?v=1.0);
 
         &.yes {
-            background-image: url(../images/menu-restore.svg?v=1.0);
+            background-image: url(images/menu-restore.svg?v=1.0);
         }
     }
 
     &.changes {
-        background-image: url(../images/menu-changes.svg?v=1.05);
+        background-image: url(images/menu-changes.svg?v=1.05);
     }
 
     &.todo {
-        background-image: url(../images/menu-check.svg?v=1.05);
+        background-image: url(images/menu-check.svg?v=1.05);
     }
 
     &.language {
-        background-image: url(../images/menu-language.svg?v=1.02);
+        background-image: url(images/menu-language.svg?v=1.02);
     }
 
     &.shorts {
         display: none;
-        background-image: url(../images/menu-shortcuts.svg?v=1.03);
+        background-image: url(images/menu-shortcuts.svg?v=1.03);
     }
 
     &.active {
-        background-image: url(../images/menu-close.svg?v=1.2) !important;
+        background-image: url(images/menu-close.svg?v=1.2) !important;
     }
 }
 
@@ -1272,7 +1272,7 @@
             position: absolute;
             top: 5px;
             right: 5px;
-            background-image: url(../images/menu.svg);
+            background-image: url(images/menu.svg);
             background-size: 24px;
             background-position: 3px 3px;
             background-repeat: no-repeat;

@@ -26,13 +26,13 @@ K.contextMenu = {
         settings: {
             value: 'Settings',
             icon: 'images/menu-settings.svg',
-            check: (layer) => K.bar.b.power.enabled() && (K.user.name == layer.options.creator || K.user.type > 3),
+            check: (layer) => K.bar.b && K.bar.b.power.enabled() && (K.user.name == layer.options.creator || K.user.type > 3),
             action: (layer) => K.tool.layer._show(layer)
         },
         move: {
             value: (layer) => layer.dragging.enabled() ? 'End Move' : 'Move',
             icon: 'images/menu-move-solo.svg',
-            check: (layer) => K.bar.b.power.enabled() && (K.user.name == layer.options.creator || K.user.type > 3),
+            check: (layer) => K.bar.b && K.bar.b.power.enabled() && (K.user.name == layer.options.creator || K.user.type > 3),
             action: (layer) => {
 
                 if (layer.dragging.enabled()) {
@@ -48,7 +48,7 @@ K.contextMenu = {
         edit: {
             value: (layer) => layer.editing.edit ? 'End Edit' : 'Edit',
             icon: 'images/menu-edit-solo.svg',
-            check: (layer) => K.bar.b.power.enabled() && (K.user.name == layer.options.creator || K.user.type > 3),
+            check: (layer) => K.bar.b && K.bar.b.power.enabled() && (K.user.name == layer.options.creator || K.user.type > 3),
             action: (layer) => {
                 layer.editing.edit = !layer.editing.edit;
                 switchLayerGroups();

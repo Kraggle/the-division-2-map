@@ -15,7 +15,7 @@
     border-bottom-right-radius: 10px;
     border-top-left-radius: 10px;
     background-color: $background;
-    background-image: url(../images/logo.svg?v=0.4);
+    background-image: url(images/logo.svg?v=0.4);
     background-position: 50%;
     background-repeat: no-repeat;
     background-size: 95%;
@@ -23,10 +23,10 @@
     color: transparent;
 
     &.survival {
-        background-image: url(../images/logo-survival.svg?v=0.1);
+        background-image: url(images/logo-survival.svg?v=0.1);
     }
 
     &.last.stand {
-        background-image: url(../images/logo-last-stand.svg?v=0.1);
+        background-image: url(images/logo-last-stand.svg?v=0.1);
     }
 }

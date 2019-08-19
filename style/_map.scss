@@ -68,9 +68,11 @@
                 background-color: $background-hover;
             }
 
-            &:hover {
-                background-color: $background-hover;
-                color: $text;
+            @media (hover: hover) {
+                &:hover {
+                    background-color: $background-hover;
+                    color: $text;
+                }
             }
 
             &:last-child {
@@ -125,69 +127,79 @@
             }
 
             .leaflet-control-save {
-                background-image: url(../images/menu-save.svg);
+                background-image: url(images/menu-save.svg);
 
                 &:not(.leaflet-disabled) {
                     background-color: $save;
 
-                    &:hover {
-                        background-color: $save-hover;
+                    @media (hover: hover) {
+                        &:hover {
+                            background-color: $save-hover;
+                        }
                     }
                 }
             }
 
             .leaflet-control-power {
-                background-image: url(../images/menu-power.svg);
+                background-image: url(images/menu-power.svg);
                 background-color: $power-green;
 
-                &:hover:not(.leaflet-disabled) {
-                    background-color: $power-green-hover;
+                @media (hover: hover) {
+                    &:hover:not(.leaflet-disabled) {
+                        background-color: $power-green-hover;
+                    }
                 }
 
                 &.enabled {
                     background-color: $power-red;
-                    background-image: url(../images/menu-power-off.svg);
+                    background-image: url(images/menu-power-off.svg);
 
-                    &:hover:not(.leaflet-disabled) {
-                        background-color: $power-red-hover;
+                    @media (hover: hover) {
+                        &:hover:not(.leaflet-disabled) {
+                            background-color: $power-red-hover;
+                        }
                     }
                 }
             }
 
             .leaflet-control-grid {
-                background-image: url(../images/menu-grid.svg);
+                background-image: url(images/menu-grid.svg);
             }
 
             .leaflet-control-group {
-                background-image: url(../images/menu-group.svg);
+                background-image: url(images/menu-group.svg);
             }
 
             .leaflet-control-cancel {
-                background-image: url(../images/menu-cancel.svg?v=1);
+                background-image: url(images/menu-cancel.svg?v=1);
 
                 &:not(.leaflet-disabled) {
                     background-color: lighten(desaturate($power-red, 20%), 5%);
 
-                    &:hover {
-                        background-color: lighten(desaturate($power-red-hover, 20%), 5%);
+                    @media (hover: hover) {
+                        &:hover {
+                            background-color: lighten(desaturate($power-red-hover, 20%), 5%);
+                        }
                     }
                 }
             }
 
             .leaflet-control-drag {
-                background-image: url(../images/menu-drag.svg);
+                background-image: url(images/menu-drag.svg);
 
                 &.enabled {
                     background-color: $save;
 
-                    &:hover {
-                        background-color: $save-hover;
+                    @media (hover: hover) {
+                        &:hover {
+                            background-color: $save-hover;
+                        }
                     }
                 }
             }
 
             .leaflet-control-tools {
-                background-image: url(../images/menu-tools.svg);
+                background-image: url(images/menu-tools.svg);
             }
 
             .leaflet-disabled {
@@ -204,7 +216,7 @@
 
     .leaflet-draw-toolbar {
         a {
-            background-image: url(../images/spritesheet.svg);
+            background-image: url(images/spritesheet.svg);
             background-size: 420px 30px;
         }
 
@@ -295,8 +307,10 @@
             white-space: nowrap;
             width: auto;
 
-            &:hover {
-                background-color: $background-hover;
+            @media (hover: hover) {
+                &:hover {
+                    background-color: $background-hover;
+                }
             }
         }
     }
@@ -353,8 +367,10 @@
                 border-bottom: 0;
             }
 
-            &:hover {
-                background-color: $background-hover;
+            @media (hover: hover) {
+                &:hover {
+                    background-color: $background-hover;
+                }
             }
 
             &.active {
@@ -378,15 +394,17 @@
         transition-property: all;
     }
 
-    &:hover {
-        .halo {
-            transition-duration: 1.3s;
-        }
+    @media (hover: hover) {
+        &:hover {
+            .halo {
+                transition-duration: 1.3s;
+            }
 
-        .time,
-        .done {
-            transition-delay: 0.5s;
-            opacity: 1;
+            .time,
+            .done {
+                transition-delay: 0.5s;
+                opacity: 1;
+            }
         }
     }
 
@@ -627,7 +645,7 @@
             top: -12px;
             height: 26px;
             width: 100%;
-            background-image: url(../images/level.svg);
+            background-image: url(images/level.svg);
             background-position: 50% 50%;
             background-repeat: no-repeat;
             background-size: 26px 26px;
@@ -641,7 +659,7 @@
             bottom: -12px;
             height: 26px;
             width: 100%;
-            background-image: url(../images/level.svg);
+            background-image: url(images/level.svg);
             background-position: 50% 50%;
             background-repeat: no-repeat;
             background-size: 26px 26px;
@@ -684,7 +702,7 @@
         &::after {
             display: block;
             content: '';
-            background-image: url(../images/pan-pointer.svg);
+            background-image: url(images/pan-pointer.svg);
             width: 25px;
             height: 25px;
             position: absolute;
@@ -727,8 +745,10 @@ img.leaflet-marker-icon {
     border-radius: 5px;
     background: $edit-icon;
 
-    &:hover {
-        background: $edit-icon-hover;
+    @media (hover: hover) {
+        &:hover {
+            background: $edit-icon-hover;
+        }
     }
 
     &::before {
@@ -738,7 +758,7 @@ img.leaflet-marker-icon {
         margin: -6px;
 
         // border: 1px solid $edit-icon-border;
-        background: url(../images/vertex-arrows.svg);
+        background: url(images/vertex-arrows.svg);
         color: transparent;
         content: '';
 
@@ -767,8 +787,10 @@ path {
             transition: stroke-opacity 250ms ease-in-out;
             cursor: grab;
 
-            &:hover {
-                stroke-opacity: 0.7;
+            @media (hover: hover) {
+                &:hover {
+                    stroke-opacity: 0.7;
+                }
             }
         }
 
@@ -797,8 +819,10 @@ path {
     text-decoration: none;
     font-size: 10px;
 
-    &:hover {
-        color: $attribute-hover;
-        text-decoration: none;
+    @media (hover: hover) {
+        &:hover {
+            color: $attribute-hover;
+            text-decoration: none;
+        }
     }
 }

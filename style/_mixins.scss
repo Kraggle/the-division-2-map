@@ -40,8 +40,10 @@
 @mixin button-color($color, $alpha) {
     background-color: rgba($color, $alpha);
 
-    &:hover {
-        background-color: lighten(rgba($color, $alpha), 20%);
+    @media (hover: hover) {
+        &:hover {
+            background-color: lighten(rgba($color, $alpha), 20%);
+        }
     }
 }
 

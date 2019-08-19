@@ -592,9 +592,9 @@ K.each(K.group.feature, function(i, m) {
 K.initMap = () => {
     K.myMap = L.map('map-id', {
         center: K.local('pan') || [0, 0],
-        zoom: K.local('zoom') || 7,
-        minZoom: 7,
-        maxZoom: 15,
+        zoom: K.local('zoom') || (K.touchOnly ? 6 : 7),
+        minZoom: K.touchOnly ? 6 : 7,
+        maxZoom: K.touchOnly ? 12 : 15,
         maxBounds: [
             [8.3, -14.9],
             [-8.3, 14.9]

@@ -15,6 +15,8 @@ export const populateMap = function(e, id) {
     if ((e.p || {}).content) delete p.list;
     if ((e.p || {}).list) delete p.content;
 
+    if (o.iconUrl) o.iconUrl = o.iconUrl.replace('../', '');
+
     if (!o) return;
 
     // convert the mode arrays to objects

@@ -1,5 +1,6 @@
 import { jQuery as $ } from '../jQuery/jquery3.4.1.js';
 import { K } from '../K.js';
+import { L } from '../Leaflet/leaflet1.0.3.js';
 
 // MARK: [K] => PerformURITasks
 K.performURITasks = function() {
@@ -55,5 +56,5 @@ K.performURITasks = function() {
 
     // }
 
-    window.history.replaceState({}, document.title, window.location.origin);
+    window.history.replaceState({}, document.title, window.location.href.split('?')[0]);
 };

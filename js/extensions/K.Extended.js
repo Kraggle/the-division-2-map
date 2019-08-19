@@ -2,7 +2,7 @@ import { jQuery as $ } from '../jQuery/jquery3.4.1.js';
 import { K, classesToArray, stripAndCollapse } from '../K.js';
 
 // MARK: [K] Variables
-K.currentUpdate = '01-08-2019';
+K.currentUpdate = '19-08-2019';
 K.modes = {
     get: [
         'Story Mode',

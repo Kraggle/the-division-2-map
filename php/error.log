@@ -156,3 +156,6 @@
 [24-Aug-2019 05:37:32 UTC] PHP Warning:  session_start(): open(D:/Dropbox/laragon/tmp\sess_9desf669ndnqk7mmmivtuf7m5j, O_RDWR) failed: Permission denied (13) in D:\Dropbox\laragon\www\the-division-2-map\php\session_start.php on line 9
 [24-Aug-2019 05:37:32 UTC] PHP Warning:  session_start(): Failed to read session data: files (path: D:/Dropbox/laragon/tmp) in D:\Dropbox\laragon\www\the-division-2-map\php\session_start.php on line 9
 [24-Aug-2019 05:37:32 UTC] PHP Warning:  session_regenerate_id(): Cannot regenerate session id - session is not active in D:\Dropbox\laragon\www\the-division-2-map\php\session_start.php on line 10
+[24-Aug-2019 14:36:14 UTC] PHP Warning:  session_start(): open(D:/Dropbox/laragon/tmp\sess_75vfnf85a8ht20shrt7nmqm777, O_RDWR) failed: Permission denied (13) in D:\Dropbox\laragon\www\the-division-2-map\php\session_start.php on line 9
+[24-Aug-2019 14:36:14 UTC] PHP Warning:  session_start(): Failed to read session data: files (path: D:/Dropbox/laragon/tmp) in D:\Dropbox\laragon\www\the-division-2-map\php\session_start.php on line 9
+[24-Aug-2019 14:36:14 UTC] PHP Warning:  session_regenerate_id(): Cannot regenerate session id - session is not active in D:\Dropbox\laragon\www\the-division-2-map\php\session_start.php on line 10

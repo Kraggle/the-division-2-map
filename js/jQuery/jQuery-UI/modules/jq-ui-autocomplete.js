@@ -1,3 +1,10 @@
+import { jQuery as $ } from '../../jquery3.4.1.js';
+import './jq-ui-keycode.js';
+import './jq-ui-mouse.js';
+import './jq-ui-menu.js';
+import './jq-ui-position.js';
+import '../effects/jq-ui-effects.js';
+
 /*!
  * jQuery UI Autocomplete 1.12.1
  * http://jqueryui.com

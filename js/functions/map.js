@@ -36,6 +36,21 @@ K.group = {
 
     feature: {},
 
+    toDraw: function(layer) {
+        if (!(layer instanceof L.Layer)) return;
+
+        layer.editing.currentGroup = 'drawLayer';
+        K.group.draw.addLayer(layer);
+        K.group.removeLayer(layer);
+    },
+
+    fromDraw: function(layer) {
+        if (!(layer instanceof L.Layer)) return;
+
+        this.addLayer(layer);
+        this.draw.removeLayer(layer._leaflet_id);
+    },
+
     getLayer: function(id) {
         let r = null;
         this.mode.everyLayer.eachLayer(function(l) {
@@ -128,9 +143,13 @@ K.save = {
     },
 
     delete: function(layer) {
-        this.removeLayer(layer);
-        this.deleted.push(layer.options.id);
-        K.group.removeLayer(layer);
+        if (K.type(layer) == 'string') {
+            this.deleted.push(layer);
+        } else {
+            this.removeLayer(layer);
+            this.deleted.push(layer.options.id);
+            K.group.removeLayer(layer);
+        }
         this.check();
         this.store();
     },

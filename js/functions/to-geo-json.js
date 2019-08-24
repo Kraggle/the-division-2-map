@@ -137,7 +137,7 @@ export function createGeoJSON(store = false) {
             K.save.data = geoData;
 
             timer.run(() => {
-                console.log('There are %i unsaved features... %o', K.length(geoData.features), geoData);
+                console.log('There are %i unsaved features... %o', K.length(geoData.features) + K.length(geoData.deleted), geoData);
             }, 100);
 
             return geoData;

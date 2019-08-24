@@ -1,3 +1,5 @@
+@import "./variables";
+
 /// Viewport sized typography with minimum and maximum values
 ///
 /// @author Eduardo Boucas
@@ -43,6 +45,18 @@
     @media (hover: hover) {
         &:hover {
             background-color: lighten(rgba($color, $alpha), 20%);
+        }
+    }
+}
+
+@mixin button($color, $alpha: 1, $lighten: 20%) {
+    background-color: rgba($color, $alpha);
+
+    box-shadow: inset 0 0 15px 2px $box-shadow;
+
+    @media (hover: hover) {
+        &:hover {
+            background-color: lighten(rgba($color, $alpha), $lighten);
         }
     }
 }

@@ -273,21 +273,14 @@ export function switchLayerGroups(skip) {
 
     // Remove current layers in the K.group.draw to original group
     K.group.draw.eachLayer(function(l) {
-
-        K.group.addLayer(l);
-        K.group.draw.removeLayer(l._leaflet_id);
+        K.group.fromDraw(l);
     });
 
     // Move layers to drawLayer
-    !skip && K.each(K.group.mode, function(j, g) {
-
-        g.eachLayer(function(l) {
-            if ((K.map.active[l.options.type] && (l.options.creator == K.user.name || K.user.type > 3)) || l.editing.edit) {
-                l.editing.currentGroup = 'drawLayer';
-                K.group.draw.addLayer(l);
-                K.group.removeLayer(l._leaflet_id);
-            }
-        });
+    !skip && K.each(K.group.all(), function(i, l) {
+        if ((K.map.active[l.options.type] && (l.options.creator == K.user.name || K.user.type > 3)) || l.editing.edit) {
+            K.group.toDraw(l);
+        }
     });
 
     K.myMap.removeLayer(K.group.draw).addLayer(K.group.draw).addLayer(K.group.mode.groupAll);

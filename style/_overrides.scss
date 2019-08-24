@@ -32,10 +32,8 @@
 }
 
 html .ui-button.ui-state-disabled {
-    @media (hover: hover) {
-        &:hover {
-            @extend %ui-override;
-        }
+    &:hover {
+        @extend %ui-override;
     }
 
     &:active {

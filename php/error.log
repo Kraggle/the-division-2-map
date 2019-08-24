@@ -153,3 +153,6 @@
 [19-Aug-2019 16:19:22 UTC] PHP Notice:  Undefined index: usertype in D:\Dropbox\laragon\www\the-division-2-map\php\login.php on line 5
 [19-Aug-2019 16:20:06 UTC] PHP Notice:  Undefined index: usertype in D:\Dropbox\laragon\www\the-division-2-map\php\login.php on line 5
 [19-Aug-2019 16:23:05 UTC] PHP Notice:  Undefined index: usertype in D:\Dropbox\laragon\www\the-division-2-map\php\login.php on line 5
+[24-Aug-2019 05:37:32 UTC] PHP Warning:  session_start(): open(D:/Dropbox/laragon/tmp\sess_9desf669ndnqk7mmmivtuf7m5j, O_RDWR) failed: Permission denied (13) in D:\Dropbox\laragon\www\the-division-2-map\php\session_start.php on line 9
+[24-Aug-2019 05:37:32 UTC] PHP Warning:  session_start(): Failed to read session data: files (path: D:/Dropbox/laragon/tmp) in D:\Dropbox\laragon\www\the-division-2-map\php\session_start.php on line 9
+[24-Aug-2019 05:37:32 UTC] PHP Warning:  session_regenerate_id(): Cannot regenerate session id - session is not active in D:\Dropbox\laragon\www\the-division-2-map\php\session_start.php on line 10

@@ -520,7 +520,8 @@ L.DivIcon.include({
 
         const div = (oldIcon && oldIcon.tagName === 'DIV') ? oldIcon : document.createElement('div');
 
-        div.innerHTML = K.getSetting(this.options, 'html') || this.getIconHTML();
+        div.innerHTML = K.getSetting(o, 'html') || this.getIconHTML();
+        o.layer && div.setAttribute('type', K.getSetting(o.layer.options, 'type'));
 
         if (o.bgPos) {
             var bgPos = L.point(o.bgPos);

@@ -1,3 +1,5 @@
+import { jQuery as $ } from '../../jquery3.4.1.js';
+
 /*!
  * jQuery UI Keycode 1.12.1
  * http://jqueryui.com

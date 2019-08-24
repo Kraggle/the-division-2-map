@@ -261,16 +261,21 @@ export default function pageLoad() {
                 title: 'Grid modifier tools',
                 css: 'grid',
                 clickFn: function() {
-                    let el = arguments[0]._button;
-
                     if ($('#slider-box').length) {
                         $('#slider-box').remove();
                         return;
                     }
 
-                    let gridTools = ['rotate', 'x-pos', 'y-pos'];
+                    $('body').append('<div id="slider-box" class="slider-panel"></div>');
 
-                    $(el).after('<div id="slider-box" class="slider-panel"></div>');
+                    const btn = $('.leaflet-control-grid');
+
+                    $('#slider-box').css({
+                        left: btn.offset().left + btn.outerWidth() + 15,
+                        'top': btn.offset().top
+                    });
+
+                    const gridTools = ['rotate', 'x-pos', 'y-pos'];
                     K.each(gridTools, function(i, type) {
                         $('#slider-box').append(`<div class="leaflet-menu-slider">
                             <div id="slider-${type}" class="slider-class ${type}">
@@ -360,6 +365,7 @@ export default function pageLoad() {
                 K.bar.b.power.disable();
                 K.bar.b.group.disable();
                 K.bar.b.save.disable();
+                K.bar.b.cancel.disable();
                 K.bar.b.tools.disable();
 
                 K.myMap.addLayer(K.group.draw).addLayer(K.grid.overlay);
@@ -435,13 +441,22 @@ export default function pageLoad() {
 
                 K.myMap.addLayer(K.group.draw);
 
-                setGridRotate();
+                K.group.draw.eachLayer(function(l) {
+                    if (l.dragging.enabled()) {
+                        l.dragging.disable();
+                        l.editing.wasDragging = true;
+                    }
+
+                    if (l.options.shape == 'marker')
+                        $(l._icon).addClass('leaflet-marker-deleting');
+                    else
+                        $(l._path).addClass('leaflet-path-deleting');
+                });
             })
 
             // L.Control.Draw Deleted
             K.myMap.on('draw:deleted', function(e) {
                 K.each(e.layers._layers, function(i, l) {
-                    K.group.draw.removeLayer(i);
                     K.save.delete(l);
 
                     K.map.type.remove(l.options.type);
@@ -463,6 +478,18 @@ export default function pageLoad() {
 
                 // onZoomEnd(true);
                 K.myMap.panBy([0, 0]);
+
+                K.group.draw.eachLayer(function(l) {
+                    if (l.editing.wasDragging) {
+                        l.dragging.enable();
+                        l.editing.wasDragging = false;
+                    }
+
+                    if (l.options.shape == 'marker')
+                        $(l._icon).removeClass('leaflet-marker-deleting');
+                    else
+                        $(l._path).removeClass('leaflet-path-deleting');
+                });
             });
 
             K.myMap.on('draw:drawstop', function() {
@@ -526,7 +553,7 @@ export default function pageLoad() {
                             K.complete.layers = [];
                             K.timed.layers = [];
 
-                            const unsaved = K.local('unsaved') || { features: {}, settings: {} };
+                            const unsaved = K.local('unsaved') || { features: {}, settings: {}, deleted: [] };
                             K.each(unsaved.features, function(id, feature) {
                                 feature.unsaved = true;
                             });
@@ -547,7 +574,8 @@ export default function pageLoad() {
                             });
 
                             K.each(geoJSON.features, function(id, feature) {
-                                populateMap(feature, id);
+                                if (K.in(id, unsaved.deleted)) K.save.delete(id);
+                                else populateMap(feature, id);
                             });
 
                         }).done(function() {

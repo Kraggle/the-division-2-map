@@ -1,4 +1,4 @@
-@import './variables';
+@import "./variables";
 
 %div-marker {
     color: $street-name;
@@ -708,7 +708,7 @@
             position: absolute;
             right: 0;
             top: 50%;
-            transform: translate(100%, -50%)
+            transform: translate(100%, -50%);
         }
     }
 
@@ -726,7 +726,18 @@ img.leaflet-marker-icon {
     outline-offset: 8px;
 }
 
+.leaflet-path-deleting {
+    outline: 2px dashed rgba($power-red, 0.4) !important;
+    outline-offset: 8px;
+}
+
 .leaflet-edit-marker-selected {
+    background-color: rgba($pink, 0.001);
+    border-color: transparent;
+    outline: 2px dashed rgba($pink, 0.4);
+    outline-offset: 4px;
+    box-sizing: initial;
+
     &.street-name {
         border: 0;
     }
@@ -734,6 +745,11 @@ img.leaflet-marker-icon {
     &.garden-name {
         border: 0;
     }
+}
+
+.leaflet-marker-deleting {
+    outline: 2px dashed rgba($power-red, 0.4);
+    outline-offset: 4px;
 }
 
 .leaflet-editing-icon {

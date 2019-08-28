@@ -37,11 +37,12 @@ import './js/functions/search.js';
 import './js/functions/share.js';
 import './js/functions/shortcut.js';
 import './js/functions/uri-tasks.js';
+import './js/functions/level.js';
 import pageLoad from './js/functions/page-load.js';
 
 // Import Stylesheets 
 K.loadStyles([
-    './js/Leaflet/leaflet1.0.3.css',
+    './js/Leaflet/leaflet1.5.1.css',
     './js/jQuery/jquery-ui1.12.1.css',
     './js/Utility/huebee.css',
     './js/Leaflet/Draw/leaflet.draw.css',
@@ -80,13 +81,37 @@ $(function() {
         K.mapVersion = a;
 
         // Map Image Overlay
-        L.imageOverlay(`images/map.svg?v=${K.mapVersion}`, [
+        const main = L.imageOverlay(`images/map.svg?v=${K.mapVersion}`, [
             [15, -15],
             [-15, 15]
         ], {
             attribution: `<a title="Tom Clancy's The Division 2" href="https://tomclancy-thedivision.ubisoft.com/">The Division 2</a>`,
             pane: 'mapPane'
         }).addTo(K.myMap);
+
+        $('.leaflet-map-pane > .leaflet-image-layer').addClass('svg-me');
+        K.imgToSvg('svg-me', function() {
+            main._image = this;
+            this.id = 'svg-map';
+
+            const controls = L.imageOverlay(`images/map.svg?v=${K.mapVersion}`, [
+                [15, -15],
+                [-15, 15]
+            ], {
+                pane: 'controlPane'
+            }).addTo(K.myMap);
+
+            $('.leaflet-control-pane > .leaflet-image-layer').addClass('svg-me');
+            K.imgToSvg('svg-me', function() {
+                controls._image = this;
+                this.id = 'control-map';
+
+                $('>*', this).remove();
+
+                K.level.build();
+            });
+        });
+
     });
 
     // Add the main groups to the map

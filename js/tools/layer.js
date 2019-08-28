@@ -86,11 +86,6 @@ K.tool.layer = {
             K.group.removeLayer(layer);
             K.group.addLayer(this.new);
 
-            // this.new.on('click', K.tool.layer.show);
-            // this.new.options.complete && this.new.options.shape === 'marker' && this.new.on('contextmenu', function() {
-            //     this.toggleCompleted();
-            // });
-
             this.new.saved(false);
             this.new.storeSettings();
 
@@ -1593,6 +1588,8 @@ L.Layer.include({
                 forMode: false // this is used to apply the setting into the mode setting
             }, options),
             group = this.options.group;
+
+        if (o.setting == 'group' && !K.in(o.value, K.map.group)) return this;
 
         !this.backup && !o.skipSave && this.makeBackup();
 

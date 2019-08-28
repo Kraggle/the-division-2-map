@@ -1,5 +1,5 @@
 import { jQuery as $ } from '../jQuery/jquery3.4.1.js';
-import { L } from '../Leaflet/leaflet1.0.3.js';
+import { L } from '../Leaflet/leaflet1.5.1.js';
 import { K } from '../K.js';
 
 // MARK: [ [  F U N C T I O N S  ] ]

@@ -45,6 +45,14 @@
         z-index: 0;
     }
 
+    .leaflet-control-pane {
+        z-index: 500;
+
+        .leaflet-image-layer {
+            pointer-events: auto;
+        }
+    }
+
     .leaflet-zone-pane {
         z-index: 200;
     }
@@ -839,6 +847,30 @@ path {
         &:hover {
             color: $attribute-hover;
             text-decoration: none;
+        }
+    }
+}
+
+$level-green: #22591A;
+
+.level-button {
+    cursor: pointer;
+
+    path {
+        transition: fill .3s ease;
+    }
+
+    &.active {
+        .hover-path {
+            fill: lighten($level-green, 8%);
+        }
+    }
+
+    @media (hover: hover) {
+        &:hover {
+            .hover-path {
+                fill: lighten($level-green, 4%);
+            }
         }
     }
 }

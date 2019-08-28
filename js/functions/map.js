@@ -65,7 +65,7 @@ K.group = {
         layer.currentGroup = layer.options.group;
 
         for (let mode in layer.options.mode) {
-            if (!K.in(mode, this.feature)) continue;
+            if (!K.in(mode, this.feature) || !layer.options.group) continue;
             this.feature[mode][layer.options.group].addLayer(layer);
             this.feature[mode].everyLayer.addLayer(layer);
         }
@@ -201,7 +201,8 @@ K.map = {
         group09: [],
         group10: [],
         group11: [],
-        group12: []
+        group12: [],
+        group13: []
     },
     type: {
         counts: {},
@@ -519,6 +520,10 @@ K.mode = K.local('mode') || 'Story Mode';
 
 K.popupContent = {};
 
+K.htmlContent = {
+    '$level-control': `<div class="level-wrap"><div class="level-control"><div class="level-switch level-up"></div><span class="level-text">0</span><div class="level-switch level-down"></div></div></div>`
+};
+
 // MARK: [K] UpdateMarker
 K.updateMarker = function(icon) {
     const copy = K.local('copy') || {};
@@ -628,6 +633,7 @@ K.initMap = () => {
 
     K.myMap.createPane('messagePane', L.DomUtil.get('message'));
     K.myMap.createPane('mapPane');
+    K.myMap.createPane('controlPane');
     K.myMap.createPane('zonePane');
 }
 

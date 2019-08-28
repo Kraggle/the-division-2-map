@@ -1,6 +1,6 @@
 import { jQuery as $ } from '../jQuery/jquery3.4.1.js';
 import { K } from '../K.js';
-import { L } from '../Leaflet/leaflet1.0.3.js';
+import { L } from '../Leaflet/leaflet1.5.1.js';
 
 // MARK: [K] => PerformURITasks
 K.performURITasks = function() {

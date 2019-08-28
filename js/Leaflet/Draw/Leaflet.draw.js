@@ -1,4 +1,4 @@
-import { L } from '../leaflet1.0.3.js';
+import { L } from '../leaflet1.5.1.js';
 
 /**
  * Leaflet.draw assumes that you have already included the Leaflet library.

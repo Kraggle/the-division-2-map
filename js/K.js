@@ -570,31 +570,73 @@ K.localRemove = K.Util.localRemove;
 K.getPropByString = K.Util.getPropByString;
 
 K.includeHTML = function() {
-    let z, i, elmnt, file, xhttp;
+    let z, i, el, file, x;
     /* Loop through a collection of all HTML elements: */
-    z = document.getElementsByTagName("*");
+    z = document.querySelectorAll('[include]');
     for (i = 0; i < z.length; i++) {
-        elmnt = z[i];
-        /*search for elements with a certain atrribute:*/
-        file = elmnt.getAttribute("include");
+        el = z[i];
+        /*search for elements with a certain attribute:*/
+        file = el.getAttribute("include");
         if (file) {
             /* Make an HTTP request using the attribute value as the file name: */
-            xhttp = new XMLHttpRequest();
-            xhttp.onreadystatechange = function() {
+            x = new XMLHttpRequest();
+            x.onreadystatechange = function() {
                 if (this.readyState == 4) {
-                    if (this.status == 200) { elmnt.innerHTML = this.responseText; }
-                    if (this.status == 404) { elmnt.innerHTML = "Page not found."; }
+                    if (this.status == 200) el.innerHTML = this.responseText;
+                    if (this.status == 404) el.innerHTML = "Page not found.";
                     /* Remove the attribute, and call this function once more: */
-                    elmnt.removeAttribute("include");
+                    el.removeAttribute("include");
                     K.includeHTML();
                 }
             }
-            xhttp.open("GET", file, true);
-            xhttp.send();
+            x.open("GET", file, true);
+            x.send();
             /* Exit the function: */
             return;
         }
     }
+}
+
+K.imgToSvg = function(cls, callback) {
+    const doc = document;
+
+    doc.querySelectorAll(`img.${cls}`).forEach((img) => {
+        const imgId = img.id,
+            imgClass = img.className,
+            imgURL = img.src,
+            imgStyle = img.getAttribute('style'),
+            x = new XMLHttpRequest();
+
+        x.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+                const svg = this.responseXML.getElementsByTagName('svg')[0];
+
+                // replace the id
+                imgId && (svg.id = imgId);
+
+                // replace the classes
+                imgClass && svg.setAttribute('class', imgClass.removeClass('svg-me'));
+
+                // remove invalid attribute
+                svg.removeAttribute('xmlns:a');
+
+                // set the viewbox if it's not set
+                const vB = svg.getAttribute('viewBox'),
+                    w = svg.getAttribute('width'),
+                    h = svg.getAttribute('height');
+                !vB && w && h && (svg.setAttribute('viewBox', `0 0 ${h} ${w}`));
+
+                imgStyle && svg.setAttribute('style', imgStyle);
+
+                // replace the img with the svg
+                img.replaceWith(svg);
+
+                callback && callback.call(svg);
+            }
+        };
+        x.open("GET", imgURL, true);
+        x.send();
+    })
 }
 
 K.loadStyles = function(stylesheets) {
@@ -1150,8 +1192,8 @@ if (!String.prototype.equals) {
 }
 
 // Change the first character in a string to uppercase
-if (!String.prototype.add) {
-    String.prototype.add = function(value) {
+if (!String.prototype.addClass) {
+    String.prototype.addClass = function(value) {
 
         let classes = classesToArray(value),
             cur, curValue, clazz, j,
@@ -1177,8 +1219,8 @@ if (!String.prototype.add) {
 }
 
 // Change the first character in a string to uppercase
-if (!String.prototype.remove) {
-    String.prototype.remove = function(value) {
+if (!String.prototype.removeClass) {
+    String.prototype.removeClass = function(value) {
 
         let classes = classesToArray(value),
             cur, curValue, clazz, j,

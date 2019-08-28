@@ -1,4 +1,4 @@
-import { L } from '../leaflet1.0.3.js';
+import { L } from '../leaflet1.5.1.js';
 
 /*
 leaflet-boundsawarelayergroup - 1.2.1, Leaflet.LayerGroup plugin to render only layers in the current map bounds

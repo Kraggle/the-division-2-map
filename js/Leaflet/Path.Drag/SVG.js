@@ -1,4 +1,4 @@
-import { L } from '../leaflet1.0.3.js';
+import { L } from '../leaflet1.5.1.js';
 
 L.SVG.include({
 

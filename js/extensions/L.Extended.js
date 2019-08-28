@@ -423,7 +423,8 @@ L.Polyline.include({
 
         this._setLatLngs(latlngs);
 
-        this.options.creator && this.initEvents();
+        // this.options.creator && this.initEvents();
+        this.initEvents();
     }
 });
 
@@ -453,7 +454,8 @@ L.Circle.include({
         // @option radius: Number; Radius of the circle, in meters.
         this._mRadius = this.options.radius;
 
-        this.options.creator && this.initEvents();
+        this.initEvents();
+        // this.options.creator && this.initEvents();
     }
 });
 
@@ -479,7 +481,9 @@ L.Marker.include({
         }
 
         this._latlng = L.latLng(latlng);
-        this.options.creator && (this.updateIcon(), this.initEvents());
+        this.options.creator && (this.updateIcon());
+
+        this.initEvents()
 
         this.options.cycle && K.cycle.add(this);
     },
@@ -520,7 +524,10 @@ L.DivIcon.include({
 
         const div = (oldIcon && oldIcon.tagName === 'DIV') ? oldIcon : document.createElement('div');
 
-        div.innerHTML = K.getSetting(o, 'html') || this.getIconHTML();
+        let html = K.getSetting(o, 'html');
+        (html || '').bMatch(/^\$/) && (html = K.htmlContent[html]);
+
+        div.innerHTML = html || this.getIconHTML();
         o.layer && div.setAttribute('type', K.getSetting(o.layer.options, 'type'));
 
         if (o.bgPos) {

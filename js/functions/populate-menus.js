@@ -65,7 +65,7 @@ export const populateMenus = function() {
                     class: 'spacer'
                 }).appendTo(el);
 
-            if (i[0].contains('.svg')) {
+            if ((i[0] || '').contains('.svg')) {
 
                 let src = i[Math.floor(Math.random() * i.length)];
                 type == 'MainMission' && (src = 'images/marker-mission.svg');

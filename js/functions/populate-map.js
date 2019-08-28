@@ -1,5 +1,5 @@
 import { jQuery as $ } from '../jQuery/jquery3.4.1.js';
-import { L } from '../Leaflet/leaflet1.0.3.js';
+import { L } from '../Leaflet/leaflet1.5.1.js';
 import { K } from '../K.js';
 import { createMarker } from './create-marker.js';
 import { toCorrectType } from './misc.js';
@@ -177,16 +177,6 @@ export const populateMap = function(e, id) {
         // Add the settings to the settings object for editing menus
         K.user.type && K.settings.add('className', p.className, o.shape, true);
     }
-
-    // Add the Layer editing tools on click if you created it
-    // K.user.type && (K.user.type >= 4 || o.creator.toLowerCase() == K.user.name.toLowerCase()) &&
-    //     l.on('click', K.tool.layer.show);
-
-    // K.getSetting(o, 'complete') && o.shape === 'marker' && 
-    // l.on('contextmenu', function(e) {
-    //     // this.toggleCompleted();
-    //     K.contextMenu.build(e, this);
-    // });
 
     // Add the new layer to the correct group
     let add = false;

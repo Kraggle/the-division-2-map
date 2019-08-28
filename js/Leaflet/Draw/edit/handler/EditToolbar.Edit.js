@@ -4,12 +4,8 @@ import { L } from '../../../leaflet1.5.1.js';
  * @class L.EditToolbar.Edit
  * @aka EditToolbar.Edit
  */
-L.EditToolbar.Edit = L.Handler.extend({
-    statics: {
-        TYPE: 'edit'
-    },
-
-    includes: L.Mixin.Events,
+L.EditToolbar.Edit = L.Evented.extend(L.Handler);
+L.EditToolbar.Edit.include({
 
     // @method intialize(): void
     initialize: function(map, options) {
@@ -27,7 +23,7 @@ L.EditToolbar.Edit = L.Handler.extend({
         this._uneditedLayerProps = {};
 
         // Save the type so super can fire, need to do this as cannot do this.TYPE :(
-        this.type = L.EditToolbar.Edit.TYPE;
+        this.type = 'edit';
     },
 
     // @method enable(): void

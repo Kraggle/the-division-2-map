@@ -45,9 +45,7 @@ import { L } from '../leaflet1.5.1.js';
  *      });
  * ```
  */
-L.Toolbar = L.Class.extend({
-    includes: [L.Mixin.Events],
-
+L.Toolbar = L.Evented.extend({
     // @section Methods for modifying the toolbar
 
     // @method initialize(options): void

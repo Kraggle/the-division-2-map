@@ -4,12 +4,8 @@ import { L } from '../../../leaflet1.5.1.js';
  * @class L.EditToolbar.Delete
  * @aka EditToolbar.Delete
  */
-L.EditToolbar.Delete = L.Handler.extend({
-    statics: {
-        TYPE: 'remove' // not delete as delete is reserved in js
-    },
-
-    includes: L.Mixin.Events,
+L.EditToolbar.Delete = L.Evented.extend(L.Handler);
+L.EditToolbar.Delete.include({
 
     // @method intialize(): void
     initialize: function(map, options) {
@@ -25,7 +21,7 @@ L.EditToolbar.Delete = L.Handler.extend({
         }
 
         // Save the type so super can fire, need to do this as cannot do this.TYPE :(
-        this.type = L.EditToolbar.Delete.TYPE;
+        this.type = 'remove';
     },
 
     // @method enable(): void

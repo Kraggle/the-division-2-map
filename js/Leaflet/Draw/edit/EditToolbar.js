@@ -153,7 +153,7 @@ L.EditToolbar = L.Toolbar.extend({
             button;
 
         if (this.options.edit) {
-            button = this._modes[L.EditToolbar.Edit.TYPE].button;
+            button = this._modes.edit.button;
 
             if (hasLayers) {
                 L.DomUtil.removeClass(button, 'leaflet-disabled');
@@ -170,7 +170,7 @@ L.EditToolbar = L.Toolbar.extend({
         }
 
         if (this.options.remove) {
-            button = this._modes[L.EditToolbar.Delete.TYPE].button;
+            button = this._modes.remove.button;
 
             if (hasLayers) {
                 L.DomUtil.removeClass(button, 'leaflet-disabled');

@@ -6,8 +6,9 @@ L.Draw = L.Draw || {};
  * @class L.Draw.Feature
  * @aka Draw.Feature
  */
-L.Draw.Feature = L.Handler.extend({
-    includes: L.Mixin.Events,
+
+L.Draw.Feature = L.Evented.extend(L.Handler);
+L.Draw.Feature.include({
 
     // @method initialize(): void
     initialize: function(map, options) {

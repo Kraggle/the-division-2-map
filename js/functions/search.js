@@ -63,7 +63,7 @@ K.search = {
         }
     }, {
         key: 'ITEM',
-        selector: '.search .result',
+        selector: '.search .result.clone-me',
         call: ['detach']
     }, {
         key: 'COUNT',
@@ -168,6 +168,7 @@ K.search = {
     timeout: false,
 
     attach: function() {
+        $('#search').val('');
         K.group.clearSearch();
         K.group.search();
 
@@ -182,6 +183,8 @@ K.search = {
                     !path[key] && (path[key] = {});
                     path = path[key];
                 } else {
+                    if (!$(this.selector).length) continue;
+
                     path[key] = $(this.selector);
                     const $el = path[key];
 
@@ -433,7 +436,7 @@ K.search = {
             }
 
             const result = this.list[this.loaded],
-                item = this.ITEM.clone().appendTo(this.LIST),
+                item = this.ITEM.clone().removeClass('clone-me').appendTo(this.LIST),
                 icon = result.layer.options.iconUrl;
 
             $('.num', item).text(this.loaded + 1);
@@ -639,7 +642,7 @@ K.search = {
     },
 
     trigger: function() {
-        this.SEARCH.trigger('change');
+        this.SEARCH && this.SEARCH.trigger('change');
     },
 
     by: function(type, string) {

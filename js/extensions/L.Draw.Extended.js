@@ -236,9 +236,7 @@ export function drawEventCreated(e) {
 
         } else {
 
-            const icon = copy ? copy.o : K.map.defaults.marker;
-
-            layer = createMarker(K.extend(icon, {
+            layer = createMarker(K.extend(copy.o, {
                 id: ID(),
                 latlng: layer._latlng,
                 shape: 'marker'
@@ -247,24 +245,21 @@ export function drawEventCreated(e) {
 
     } else { // Circle, Polyline, Polygon or Rectangle
 
-        let obj = copy.o || K.map.defaults[shape];
-
-        if (K.type(obj) == 'object') {
+        if (K.type(copy.o) == 'object') {
 
             let ll = layer._latlng;
             if (type == 'polyline') ll = layer._latlngs.removeDupes();
             else if (K.has(type, ['polygon', 'rectangle'])) ll = layer._latlngs[0].removeDupes();
 
-            K.extend(obj, {
+            K.extend(copy.o, {
                 id: ID(),
-                pane: (obj.className == 'poly-hover' ? 'zonePane' : 'overlayPane'),
+                pane: (copy.o.className == 'poly-hover' ? 'zonePane' : 'overlayPane'),
                 shape: type
             });
 
-            if (type == 'circle') obj.radius = layer._mRadius;
+            if (type == 'circle') copy.o.radius = layer._mRadius;
 
-            layer = L[type](ll, obj);
-
+            layer = L[type](ll, copy.o);
         }
     }
 
@@ -283,4 +278,6 @@ export function drawEventCreated(e) {
 
     switchLayerGroups();
     polyHoverAnimation();
+
+    layer.copy(false);
 }

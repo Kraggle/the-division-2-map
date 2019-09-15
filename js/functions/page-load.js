@@ -552,13 +552,14 @@ export default function pageLoad() {
                             K.map.type.counts = {};
                             K.complete.layers = [];
                             K.timed.layers = [];
+                            K.group.type = {};
 
                             const unsaved = K.local('unsaved') || { features: {}, settings: {}, deleted: [] };
                             K.each(unsaved.features, function(id, feature) {
                                 feature.unsaved = true;
                             });
                             K.each(unsaved.settings, function(id, setting) {
-                                setting.unsaved = true;
+                                setting.changed = true;
                             });
 
                             // merge the user data & unsaved changes with the main data

@@ -159,18 +159,23 @@ L.Layer.include({
     convertContent: function(options) {
         let list = options.list,
             html = '',
-            img, mark;
+            img, mark,
+            gotList = list.list && list.list[0] && list.list[0].item;
 
-        if (list.title)
-            html += list.title;
+        list.title && (html += list.title);
+
+        const notes = [];
 
         K.each(list.subs, function(i, v) {
-            if (v.value) html += `<p class="${v.color ? 'desc' : ''} ${v.note ? 'note' : ''}">
+            let line = false;
+            v.value && (line = `<p class="${v.color ? 'desc' : ''} ${v.note ? 'note' : ''}">
                     ${K.in(v.value.toLowerCase(), K.svg) ? K.svg[v.value.toLowerCase()] : ''}${v.value}
-                </p>${v.line ? '<hr>' : ''}`;
+                </p>${v.line ? '<hr>' : ''}`);
+
+            line && (v.note ? notes.push(line) : html += line)
         });
 
-        if (list.list && list.list[0] && list.list[0].item) {
+        if (gotList) {
 
             list.list.sort(function(a, b) {
 
@@ -188,6 +193,11 @@ L.Layer.include({
             });
             html += '</ul>';
         }
+
+        K.each(notes, (i, v) => {
+            i == 0 && gotList && (v = v.replace(/note"/, 'note bump"'));
+            html += v;
+        });
 
         return html;
     },

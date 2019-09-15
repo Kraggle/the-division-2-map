@@ -1,18 +1,58 @@
 import { jQuery as $ } from '../jQuery/jquery3.4.1.js';
 import { K } from '../K.js';
-import { sortObjByKeys } from '../functions/misc.js';
+import { sortObjByKeys, timed } from '../functions/misc.js';
 
 // MARK: [K] Tool.Marker
 K.tool.marker = {
-    full: false,
+    timer: timed(),
+
     layers: {},
 
+    clear: function() {
+        this.layers = {};
+    },
+
     fill: function() {
-        let _this = K.tool.marker;
-        !_this.full && K.each(K.modes.get, function(i, mode) {
-            _this.layers[mode] = {};
+        K.empty(this.layers) && K.each(K.modes.get, (i, mode) => {
+            this.layers[mode] = {};
         });
-        _this.full = true;
+    },
+
+    add: function(layer) {
+        this.fill();
+
+        const o = layer.options,
+            p = layer.popup;
+
+        K.each(K.modes.get, (i, mode) => {
+            const tool = this.layers[mode];
+            if (mode in o.mode) {
+                if (!K.in(o.category, tool)) tool[o.category] = {};
+                if (!K.in(o.type, tool[o.category])) tool[o.category][o.type] = {
+                    o: K.extend({}, o, {
+                        className: (o.className || '').replace(/\w+ground/g, '').trim()
+                    }),
+                    p: p ? p : {}
+                };
+            }
+        });
+
+        this.refresh();
+    },
+
+    remove: function(category, type) {
+        !K.map.type.counts[type] && K.each(K.modes.get, (i, mode) => {
+            const tool = this.layers[mode];
+            K.in(category, tool) && K.in(type, tool[category]) && delete tool[category][type];
+        });
+
+        this.refresh();
+    },
+
+    refresh: function() {
+        this.timer.run(() => {
+            this.enabled() && $('#marker-tools').remove() && this.show();
+        }, 500);
     },
 
     enabled: function() {

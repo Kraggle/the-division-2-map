@@ -1071,7 +1071,7 @@ K.tool.layer = {
 
         const inputRenew = function() {
             // Apply button event
-            $('.input').each(function() {
+            $('#settings-menu .input').each(function() {
                 if (!!$(this).prop('readonly')) return;
 
                 let el = $(this),
@@ -1593,8 +1593,9 @@ L.Layer.include({
 
         !this.backup && !o.skipSave && this.makeBackup();
 
-        // set oldType to check for changes and update objects
+        // set oldType && oldCategory to check for changes and update objects
         o.setting == 'type' && (this.oldType = this.options.type);
+        o.setting == 'category' && (this.oldCategory = this.options.category);
 
         let m = o.forMode ? this.getMode() : false;
         const mSp = this.getModeSettingPath(o.setting);
@@ -1628,7 +1629,20 @@ L.Layer.include({
         if (type != this.oldType) {
             K.map.type.add(type);
             K.map.type.remove(this.oldType);
+
+            K.group.addType(this);
+            K.group.removeType(this, this.oldType);
+
+            K.tool.marker.add(this);
+            K.tool.marker.remove(this.options.category, this.oldType);
         }
+
+        // if (this.options.category != this.oldCategory) {
+        //     K.tool.marker.add(this);
+        //     K.tool.marker.remove(this.oldCategory, type);
+
+        //     this.oldCategory = this.options.category;
+        // }
 
         // if we are changing the type, we need to apply all of the 
         // other settings to match it, if it exists already
@@ -1664,6 +1678,8 @@ L.Layer.include({
 
         this.storeSettings();
         !o.skipSave && this.saved(false);
+
+        K.in(o.setting, ['creator', 'type', 'category']) && K.group.searchUpdate(this);
 
         return this;
     },
@@ -1738,6 +1754,8 @@ L.Layer.include({
         this.storeSettings();
         this.saved(false);
 
+        K.in(o.setting, ['content', 'list']) && K.group.searchUpdate(this);
+
         return this;
     },
 
@@ -1805,7 +1823,7 @@ L.Layer.include({
     },
 
     // Copy settings 
-    copy: function() {
+    copy: function(message = true) {
 
         let copy = K.local('copy') || {};
 
@@ -1816,12 +1834,12 @@ L.Layer.include({
 
         K.local('copy', copy);
 
-        K.msg.show({
+        message && K.msg.show({
             msg: 'Settings copied!',
             time: 2000
         });
 
-        // K.updateMarker();
+        K.updateMarker();
 
         return this;
     },

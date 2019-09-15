@@ -404,7 +404,16 @@ K.Util = {
     },
 
     inArray: (value, obj, i) => {
-        return obj == null ? -1 : indexOf.call(obj, value, i);
+        if (obj == null) return -1;
+
+        switch (K.Util.type(value)) {
+            case 'object':
+                for (let j = 0; j < obj.length; j++)
+                    if (K.Util.equals(obj[j], value)) return j;
+                return -1;
+            default:
+                return indexOf.call(obj, value, i);
+        }
     },
 
     isInArray: (value, obj) => {
@@ -445,6 +454,7 @@ K.Util = {
                 case 'array':
                     if (K.Util.empty(obj1) && K.Util.empty(obj2)) return true;
                     if (obj1.length != obj2.length) return false;
+
                     for (let i = 0, len = obj1.length; i < len; i++) {
                         if (!K.isInArray(obj1[i], obj2)) return false;
                     }
@@ -568,6 +578,11 @@ K.empty = K.Util.empty;
 K.local = K.Util.local;
 K.localRemove = K.Util.localRemove;
 K.getPropByString = K.Util.getPropByString;
+
+// const o1 = [{ test: true, string: 'some string' }, { shit: false, stain: 'absolutely' }],
+//     o2 = [{ test: true, string: 'some string' }, { shit: false, stain: 'absolutely' }];
+
+// console.log(K.equals(o1, o2));
 
 K.includeHTML = function() {
     let z, i, el, file, x;

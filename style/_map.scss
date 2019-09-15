@@ -47,10 +47,6 @@
 
     .leaflet-control-pane {
         z-index: 500;
-
-        .leaflet-image-layer {
-            pointer-events: auto;
-        }
     }
 
     .leaflet-zone-pane {
@@ -872,5 +868,13 @@ $level-green: #22591A;
                 fill: lighten($level-green, 4%);
             }
         }
+    }
+}
+
+.level-control-layer {
+    pointer-events: none;
+
+    .level-button {
+        pointer-events: auto;
     }
 }

@@ -35,6 +35,7 @@ K.group = {
     }),
 
     feature: {},
+    type: {},
 
     toDraw: function(layer) {
         if (!(layer instanceof L.Layer)) return;
@@ -70,6 +71,8 @@ K.group = {
             this.feature[mode].everyLayer.addLayer(layer);
         }
 
+        this.addType(layer);
+
         return this;
     },
 
@@ -85,28 +88,72 @@ K.group = {
         return this;
     },
 
+    addType: function(layer) {
+        if (!(layer instanceof L.Layer)) return this;
+        const type = layer.options.type;
+
+        if (!type) return this;
+
+        !this.type[type] && (this.type[type] = new L.FeatureGroup());
+        !this.type[type].hasLayer(layer) && this.type[type].addLayer(layer);
+
+        return this;
+    },
+
+    removeType: function(layer, type) {
+        if (!(layer instanceof L.Layer)) return this;
+
+        if (!type) return this;
+        if (!this.type[type]) return this;
+
+        this.type[type].hasLayer(layer) && this.type[type].removeLayer(layer);
+
+        return this;
+    },
+
     all: function() {
         return this.feature[K.mode].everyLayer._layers;
     },
 
+    searchDate: 0,
+
     search: function() {
         if (K.empty(this._search)) {
-            const search = this._search;
-            let i = 0;
 
             this.feature[K.mode].everyLayer.eachLayer(function(l) {
-                K.in('type', l.options) && !K.empty(l.options.type) && (search[l.options.id] = {
-                    layer: l,
-                    creator: l.options.creator,
-                    type: l.options.type.space(),
-                    content: l._popup ? $('<div />', { html: l._popup._content }).text().replace(/[\s\n]+/g, ' ').space() : '',
-                    category: l.options.category,
-                    date: i++
-                });
+                K.group.searchAdd(l);
             });
         }
 
         return this._search;
+    },
+
+    searchUpdate: function(l) {
+        const result = this._search[l.options.id];
+        result.type = l.options.creator;
+        result.content = l._popup ? $('<div />', { html: l._popup._content }).text().replace(/[\s\n]+/g, ' ').space() : '';
+        result.category = l.options.category;
+
+        K.search.trigger();
+    },
+
+    searchAdd: function(l) {
+        K.in('type', l.options) && !K.empty(l.options.type) && (this._search[l.options.id] = {
+            layer: l,
+            creator: l.options.creator,
+            type: l.options.type.space(),
+            content: l._popup ? $('<div />', { html: l._popup._content }).text().replace(/[\s\n]+/g, ' ').space() : '',
+            category: l.options.category,
+            date: this.searchDate++
+        });
+
+        K.search.trigger();
+    },
+
+    searchRemove: function(l) {
+        delete this._search[l.options.id];
+
+        K.search.trigger();
     },
 
     clearSearch: function() {
@@ -250,91 +297,9 @@ K.map = {
         ],
         popup: ['className']
     },
-    defaults: { // speaks for itself, these are the defaults when creating a layer
-        marker: {
-            category: 'default',
-            className: 'anim-icon',
-            group: 'group08',
-            iconSize: [22, 22],
-            iconUrl: 'images/marker-poi-contaminated.svg',
-            mode: {
-                [K.mode]: {}
-            },
-            shape: 'marker',
-            type: 'Contaminated'
-        },
-        polygon: {
-            category: 'default',
-            className: '',
-            color: '#c22e2e',
-            fill: 1,
-            fillColor: '#672f2f',
-            fillOpacity: 0.05,
-            group: 'group08',
-            mode: {
-                [K.mode]: {}
-            },
-            opacity: 0.4,
-            pane: 'overlayPane',
-            shape: 'polygon',
-            smoothFactor: 1,
-            stroke: 1,
-            type: 'ContaminatedZone',
-            weight: 1
-        },
-        rectangle: {
-            category: 'default',
-            className: '',
-            color: '#c22e2e',
-            fill: 1,
-            fillColor: '#672f2f',
-            fillOpacity: 0.05,
-            group: 'group08',
-            mode: {
-                [K.mode]: {}
-            },
-            opacity: 0.4,
-            pane: 'overlayPane',
-            shape: 'rectangle',
-            smoothFactor: 1,
-            stroke: 1,
-            type: 'ContaminatedZone',
-            weight: 1
-        },
-        circle: {
-            category: 'default',
-            className: '',
-            color: '#c22e2e',
-            fill: 1,
-            fillColor: '#672f2f',
-            fillOpacity: 0.05,
-            group: 'group08',
-            mode: {
-                [K.mode]: {}
-            },
-            opacity: 0.4,
-            pane: 'overlayPane',
-            shape: 'circle',
-            smoothFactor: 1,
-            stroke: 1,
-            type: 'ContaminatedZone',
-            weight: 1
-        },
-        polyline: {
-            category: 'default',
-            color: '#207e70',
-            group: 'groupAll',
-            mode: {
-                [K.mode]: {}
-            },
-            opacity: 1,
-            pane: 'overlayPane',
-            shape: 'polyline',
-            smoothFactor: 1,
-            stroke: 1,
-            type: '',
-            weight: 5
-        }
+    defaults: {
+        marker: 'Loot',
+        polygon: 'CollectibleZone'
     },
     zIndex: ['PointOfInterest', 'Hideout', 'Contaminated', 'Landmark', 'CrashSite'],
 };
@@ -565,7 +530,7 @@ K.updateMarker = function(icon) {
     } else K.extend(K.drawIcon.options, options);
 };
 
-K.settingShape = shape => K.has(shape, ['polyline', 'rectangle']) ? 'polygon' : shape;
+K.settingShape = shape => K.has(shape, ['rectangle', 'circle']) ? 'polygon' : shape;
 
 K.getSetting = (obj, setting) => {
     const m = K.in('mode', obj) && K.in('o', obj.mode[K.mode]) ? obj.mode[K.mode].o : false;

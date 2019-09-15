@@ -107,14 +107,15 @@ export function createGeoJSON(store = false) {
             // grab the popup if it is different from the original
             if (layer.popup && (layer.popup.content || (layer.popup.list && !K.empty(layer.popup.list)))) {
 
-                const p = layer.popup;
-                const sv = K.layer[type] ? K.layer[type].p : {};
+                const p = layer.popup,
+                    sv = K.layer[type] ? K.layer[type].p : {};
 
                 p.className != sv.className && (pop.className = p.className);
 
-                if (p.list && p.list.title) // set up with list only
+                if (p.list && p.list.title) { // set up with list only
+                    // console.log(!K.equals(sv.list, p.list), sv.list, p.list);
                     !K.equals(sv.list, p.list) && (pop.list = p.list);
-                else // set up with content
+                } else // set up with content
                     sv.content != p.content && (pop.content = p.content);
 
                 // Set popup content to variable if one exists
@@ -138,7 +139,7 @@ export function createGeoJSON(store = false) {
 
             timer.run(() => {
                 console.log('There are %i unsaved features... %o', K.length(geoData.features) + K.length(geoData.deleted), geoData);
-            }, 100);
+            }, 1000);
 
             return geoData;
         }

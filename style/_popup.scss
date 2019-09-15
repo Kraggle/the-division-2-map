@@ -1,4 +1,4 @@
-@import './variables';
+@import "./variables";
 
 %popup-style {
     color: $text;
@@ -142,7 +142,7 @@
         width: max-content;
 
         // width: auto !important;
-
+   
     }
 }
 
@@ -184,7 +184,7 @@
             color: $gray;
 
             // padding-left: 6px;
-
+       
         }
 
         &.note {
@@ -193,6 +193,7 @@
             padding-left: 15px;
             min-height: initial;
             margin-top: 3px;
+            color: lighten($gray, 15%);
 
             &::before {
                 content: '*';
@@ -207,8 +208,12 @@
                 position: absolute;
                 left: 10px;
                 top: 1px;
-                border-left: 1px solid $text;
+                border-left: 1px solid lighten($gray, 15%);
                 bottom: 1px;
+            }
+
+            &.bump {
+                margin-top: 8px;
             }
         }
     }

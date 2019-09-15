@@ -51,8 +51,10 @@ K.loadStyles([
 ]);
 
 // temporary to update to new mode names
-if (!K.local('mode') || K.has(K.local('mode'), ['normal', 'Story']) || !K.has(K.local('mode'), K.modes.get))
-    K.local('mode', 'Story Mode');
+!K.local('mode') || !K.has(K.local('mode'), K.modes.get) && K.local('mode', 'Story Mode');
+
+// temporary to clear out old copies
+!K.local('copyRefresh') && (K.local('copyRefresh', true), K.localRemove('copy'));
 
 // MARK: [$] Document Ready
 $(function() {
@@ -105,6 +107,7 @@ $(function() {
             K.imgToSvg('svg-me', function() {
                 controls._image = this;
                 this.id = 'control-map';
+                $(this).addClass('level-control-layer');
 
                 $('>*', this).remove();
 

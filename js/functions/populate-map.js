@@ -106,29 +106,6 @@ export const populateMap = function(e, id) {
     pCn && !K.classRemoval.contains(pCn) && (K.classRemoval = `${K.classRemoval.trim()} ${pCn}`);
     !K.classRemoval.contains(o.group) && (K.classRemoval = `${K.classRemoval.trim()} ${o.group}`);
 
-    // Create the icons for Marker Tools
-    // ----------------------
-    if (o.shape == 'marker' && o.type) {
-
-        let obj = {
-            o: K.extend({}, o, {
-                className: (o.className || '').replace(/\w+ground/g, '').trim()
-            }),
-            p: p ? p : {}
-        };
-
-        K.each(K.modes.get, function(i, mode) {
-            let tool = K.tool.marker.layers[mode];
-            if (mode in o.mode) {
-                if (!(o.category in tool)) tool[o.category] = {};
-                if (!(o.type in tool[o.category])) tool[o.category][o.type] = obj;
-
-                // fill the icon array for the auto image assignment in popups
-                K.icons[o.type.space()] = obj.o.iconUrl;
-            }
-        });
-    }
-
     if (g.t != 'marker') { // Circle, Polyline, Polygon and Rectangle
         let obj = K.extend(o, {
             pane: o.pane || (o.className == 'poly-hover' ? 'zonePane' : 'overlayPane')
@@ -166,6 +143,7 @@ export const populateMap = function(e, id) {
         delete p.content;
         p.list = list;
         l.saved(false);
+
     }
 
     // Popup
@@ -202,4 +180,20 @@ export const populateMap = function(e, id) {
     l.markComplete();
 
     e.unsaved && l.saved(false);
+
+    const copy = K.local('copy') || {},
+        shape = K.settingShape(g.t);
+
+    !copy[shape] && o.type === K.map.defaults[shape] && l.copy(false);
+    g.t == 'polyline' && !copy.polyline && l.copy(false);
+
+    // Create the icons for Marker Tools
+    // ----------------------
+    if (o.shape == 'marker' && o.type) {
+
+        K.tool.marker.add(l);
+
+        // fill the icon array for the auto image assignment in popups
+        K.icons[o.type.space()] = o.iconUrl;
+    }
 };

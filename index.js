@@ -38,6 +38,7 @@ import './js/functions/share.js';
 import './js/functions/shortcut.js';
 import './js/functions/uri-tasks.js';
 import './js/functions/level.js';
+import './js/functions/done.js';
 import pageLoad from './js/functions/page-load.js';
 
 // Import Stylesheets 
@@ -112,6 +113,7 @@ $(function() {
                 $('>*', this).remove();
 
                 K.level.build();
+                K.done.start();
             });
         });
 

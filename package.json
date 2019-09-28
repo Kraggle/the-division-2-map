@@ -16,6 +16,8 @@
         "eslint-plugin-import": "^2.18.2",
         "eslint-plugin-jquery": "^1.5.1"
     },
-    "dependencies": {},
+    "dependencies": {
+        "sass": "^1.22.12"
+    },
     "repository": {}
 }

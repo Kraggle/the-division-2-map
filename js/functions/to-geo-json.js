@@ -166,6 +166,9 @@ export function createGeoJSON(store = false) {
                 K.msg.hide();
                 pageLoad();
             }
+        }).fail(function(a) {
+            alert('Save failed!');
+            console.log(a);
         });
     });
 

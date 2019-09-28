@@ -1,6 +1,7 @@
 import { jQuery as $ } from '../jQuery/jquery3.4.1.js';
 import { K } from '../K.js';
 
+// MARK: [K] Level
 K.level = {
     MAP: null,
     CONTROL: null,

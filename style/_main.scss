@@ -103,3 +103,28 @@ hr {
     pointer-events: none;
     z-index: 101000;
 }
+
+.map-completion {
+    position: fixed;
+    left: 50%;
+    width: 25%;
+    margin: 15px;
+    bottom: 0;
+    transform: translateX(-50%);
+    height: 20px;
+    background: $background;
+    border: $border 1px solid;
+    border-radius: 8px 0;
+    overflow: hidden;
+
+    .percent {
+        height: 100%;
+        background: $orange-roughy;
+        border-right: 1px solid $border;
+        text-align: right;
+        line-height: 20px;
+        color: $text;
+        box-sizing: border-box;
+        padding-right: 10px;
+    }
+}

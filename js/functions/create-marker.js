@@ -31,6 +31,7 @@ export function createIcon(options) {
         iconSize: '',
         html: '',
         className: '',
+        level: {},
         done: false,
         time: false,
         mode: {}

@@ -196,4 +196,13 @@ export const populateMap = function(e, id) {
         // fill the icon array for the auto image assignment in popups
         K.icons[o.type.space()] = o.iconUrl;
     }
+
+    // add the layer to the levels object to change the icons on floor change
+    const oL = o.level,
+        kL = K.level.layers;
+    if (!K.empty(oL) && K.type(oL.btn) == 'number' && K.type(oL.unit) == 'number') {
+        !kL[oL.unit] && (kL[oL.unit] = {});
+        !kL[oL.unit][oL.btn] && (kL[oL.unit][oL.btn] = []);
+        kL[oL.unit][oL.btn].push(l);
+    }
 };

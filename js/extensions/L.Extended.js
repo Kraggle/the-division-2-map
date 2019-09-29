@@ -511,6 +511,7 @@ L.Marker.include({
             className: this.getSetting('className'),
             done: !this.options.onComplete && K.complete.is(this),
             time: K.complete.time(this),
+            level: this.getSetting('level'),
             layer: this
         }, options));
 
@@ -564,7 +565,7 @@ L.DivIcon.include({
 L.Icon.include({
 
     _setIconStyles: function(img, name) {
-        let size, anchor, s;
+        let size, anchor, s, floor;
         const o = this.options,
             iz = `${name}Size`,
             cn = 'className',
@@ -578,7 +579,10 @@ L.Icon.include({
             size = L.point(s);
             anchor = L.point(name === 'shadow' && o.shadowAnchor || o.iconAnchor || size && size.divideBy(2, true));
 
-            img[cn] = `leaflet-marker-${name} ${l.getSetting(cn) || ''} ${l.getSetting(cn, true) || ''} ${l.getSetting('group') || ''}`;
+            floor = (l.getSetting('level') || {}).floor || 0;
+            floor = l._level != undefined ? l._level : floor < 0 ? 'underground' : floor > 0 ? 'overground' : '';
+
+            img[cn] = `leaflet-marker-${name} ${l.getSetting(cn) || ''} ${l.getSetting(cn, true) || ''} ${floor} ${l.getSetting('group') || ''}`;
 
         } else {
 

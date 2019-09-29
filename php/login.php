@@ -1,11 +1,13 @@
 <? include_once 'session_start.php';
 include_once 'db_connect.php';
-include_once 'functions.php'; ?>
+include_once 'functions.php'; 
+
+$in = login_check($mysqli); ?>
 
 <div class="box-content grid <? echo type_name($_SESSION['usertype']) ?>">
 	<span class="title span-row">User Account</span>
 
-	<? if (login_check($mysqli) == true) { ?>
+	<? if ($in == true) { ?>
 
 	<span class="sub title span-row">Hi<span class="dnt">
 			<? echo htmlentities($_SESSION['username']) ?></span></span>

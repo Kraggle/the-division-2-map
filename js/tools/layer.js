@@ -702,7 +702,52 @@ K.tool.layer = {
             });
         }
 
-        if (setting === 'list') {
+        if (setting === 'level') {
+
+            K.type(value) != 'object' && (value = {});
+
+            const choice = $(`<div class="outer inputs">
+                <div class="switch ripple-me">
+                    <input class="settings-item input level" name="switch" id="__2" type="radio" name="radio" value=-1>
+                    <label for="__2" class="label down" title="Underground">Below</label>
+                    <input class="settings-item input level" name="switch" id="__1" type="radio" name="radio" value=0 checked>
+                    <label for="__1" class="label level" title="Ground Level">Ground</label>
+                    <input class="settings-item input level" name="switch" id="__3" type="radio" name="radio" value=1>
+                    <label for="__3" class="label up" title="Overground">Above</label>
+                    <div class="indicator"></div>
+                </div>
+            </div>`).appendTo(bx);
+
+            K.type(value.floor) == 'number' && $(`[value=${value.floor}]`, choice).prop('checked', true);
+
+            const wrap = $('<div />', {
+                class: 'level-wrap'
+            }).appendTo(bx);
+
+            wrap.append($('<input />', {
+                name: 'level-building',
+                type: 'number',
+                class: 'settings-item input level level-building',
+                setting: 'level',
+                placeholder: 'Building No.',
+                value: K.type(value.unit) == 'number' ? value.unit : ''
+            }));
+
+            wrap.append($('<input />', {
+                name: 'level-button',
+                type: 'number',
+                class: 'settings-item input level level-button',
+                setting: 'level',
+                placeholder: 'Button No.',
+                value: K.type(value.btn) == 'number' ? value.btn : ''
+            }));
+
+            $('.switch label', choice).on('click', function() {
+                setTimeout(() => apply.call($('.level-building'), 50));
+            });
+
+
+        } else if (setting === 'list') {
 
             resetList();
 
@@ -973,7 +1018,19 @@ K.tool.layer = {
                     forMode: $mode.length && $mode.is(':checked')
                 };
 
-            if ($(this).hasClass('list')) {
+            if ($(this).hasClass('level')) {
+
+                o.setting = 'level';
+                o.value = {};
+
+                o.value.floor = +$('.settings-item.input.level:checked').val();
+
+                const unit = +$('.input.level-building').val(),
+                    btn = +$('.input.level-button').val();
+                K.type(unit) == 'number' && unit > 0 && (o.value.unit = unit);
+                K.type(btn) == 'number' && (o.value.btn = btn);
+
+            } else if ($(this).hasClass('list')) {
 
                 o.setting = 'list';
                 o.value = {};
@@ -1602,7 +1659,7 @@ L.Layer.include({
         !o.forMode && mSp !== null && delete mSp[o.setting];
 
         // Add the settings to the correct locations
-        if (this.options.shape == 'marker' && K.has(o.setting, ['className', 'iconUrl', 'iconSize', 'html'])) {
+        if (this.options.shape == 'marker' && K.has(o.setting, ['level', 'className', 'iconUrl', 'iconSize', 'html'])) {
 
             let p = this.options;
 

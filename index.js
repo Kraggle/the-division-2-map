@@ -97,7 +97,7 @@ $(function() {
             main._image = this;
             this.id = 'svg-map';
 
-            const controls = L.imageOverlay(`images/map.svg?v=${K.mapVersion}`, [
+            const controls = L.imageOverlay(`images/blank-map.svg`, [
                 [15, -15],
                 [-15, 15]
             ], {
@@ -110,7 +110,7 @@ $(function() {
                 this.id = 'control-map';
                 $(this).addClass('level-control-layer');
 
-                $('>*', this).remove();
+                // $('>*', this).remove();
 
                 K.level.build();
                 K.done.start();

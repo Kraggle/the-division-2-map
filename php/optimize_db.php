@@ -51,6 +51,14 @@ foreach ($f as $key => $value) {
 	if (!$set) continue;
 	
 	if ($o) {
+		if (property_exists($o, 'className') && strpos($o->className, 'ground')) {
+			$obj = (object) ['floor' => 1];
+			if (strpos($o->className, 'under')) $obj->floor = -1;
+			$o->level = $obj;
+			
+			unset($value->o->className);
+		}
+		
 		foreach ($o as $k => $v) {
 			if (property_exists($set, $k) && $v === $set->o->$k) unset($o->$k);
 		}

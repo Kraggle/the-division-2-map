@@ -1,4 +1,4 @@
-@import './variables';
+@import "./variables";
 
 .settings-divider {
     position: absolute;
@@ -268,7 +268,7 @@
         position: relative;
         margin: 0;
 
-        >span {
+        > span {
             display: inline-block;
             width: 100%;
         }
@@ -449,7 +449,7 @@
         }
     }
 
-    input:checked+.slider {
+    input:checked + .slider {
         &::before {
             background-color: $gray;
             transform: translateX(8px);
@@ -518,7 +518,7 @@
             }
         }
 
-        input:checked+.slider {
+        input:checked + .slider {
             &::before {
                 background-color: $power-green;
                 transform: translateX(13px);
@@ -558,7 +558,7 @@
                 }
             }
 
-            input:checked+.slider {
+            input:checked + .slider {
                 &::before {
                     background-color: $power-green;
                     transform: translateX(16px);
@@ -587,7 +587,6 @@
                 background-position-x: 0;
 
                 @media (hover: hover) {
-
                     &:focus,
                     &:hover {
                         background-color: $background-hover;
@@ -622,7 +621,7 @@
                 right: 52px;
             }
 
-            input:checked+.slider::before {
+            input:checked + .slider::before {
                 transform: translateX(46px);
             }
         }
@@ -637,6 +636,84 @@
         background-color: transparent;
         border-right: 1px solid darken($background, 5%);
     }
+
+    .outer.inputs {
+        .switch {
+            position: relative;
+            width: calc(100% - 10px);
+            height: 30px;
+            margin: 5px;
+            border: 0;
+
+            &:before {
+                content: '';
+                position: absolute;
+                left: 0;
+                top: 0;
+                right: 0;
+                bottom: 0;
+                z-index: 0;
+                box-shadow: inset 0 0 15px 2px $box-shadow;
+                border-radius: 6px;
+            }
+
+            label {
+                display: inline-block;
+                width: calc((100% - 10px) / 3);
+                text-align: center;
+                cursor: pointer;
+                transition: color 200ms ease;
+                position: relative;
+                line-height: 30px;
+                z-index: 2;
+                top: 0;
+
+                @media (hover: hover) {
+                    &:hover {
+                        color: white;
+                    }
+                }
+            }
+
+            .indicator {
+                width: calc((100% - 14px) / 3);
+                height: 26px;
+                position: absolute;
+                top: 2px;
+                left: 2px;
+                opacity: 0.4;
+                border-radius: 4px;
+                z-index: 1;
+                transition: all .6s ease;
+                transform: translateX(0);
+            }
+
+            input#__2:checked ~ .indicator {
+                background: PaleGreen;
+                transform: translateX(0);
+            }
+
+            input#__1:checked ~ .indicator {
+                background: MediumTurquoise;
+                transform: translateX(calc(100% + 4px));
+            }
+
+            input#__3:checked ~ .indicator {
+                background: PaleVioletRed;
+                transform: translateX(calc(200% + 10px));
+            }
+
+            input {
+                display: none;
+            }
+        }
+    }
+    
+    .level-wrap {
+        input {
+            width: 50%;
+        }
+    }
 }
 
 [type='number']::-webkit-inner-spin-button,
@@ -648,6 +725,7 @@
 .slider-panel {
     position: absolute;
     display: block;
+
     // background-color: $background;
     // border: 1px solid $border;
 
@@ -855,17 +933,17 @@
             transform: translateX(0);
         }
 
-        input#_2:checked~.indicator {
+        input#_2:checked ~ .indicator {
             background: PaleGreen;
             transform: translateX(0);
         }
 
-        input#_1:checked~.indicator {
+        input#_1:checked ~ .indicator {
             background: MediumTurquoise;
             transform: translateX(66.66px);
         }
 
-        input#_3:checked~.indicator {
+        input#_3:checked ~ .indicator {
             background: PaleVioletRed;
             transform: translateX(133.33px);
         }

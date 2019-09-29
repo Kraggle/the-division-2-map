@@ -274,25 +274,25 @@ K.map = {
     property: { // these are used to clear unwanted settings before saving
         polygon: [
             'category', 'color', 'weight', 'opacity', 'fillColor',
-            'fill', 'fillOpacity', 'stroke', 'group',
+            'fill', 'fillOpacity', 'stroke', 'group', 'level',
             'type', 'className', 'mode', 'complete', 'prerequisites', 'onComplete'
         ],
         circle: [
             'category', 'color', 'weight', 'opacity', 'fillColor',
-            'fill', 'fillOpacity', 'stroke', 'group', 'type',
+            'fill', 'fillOpacity', 'stroke', 'group', 'type', 'level',
             'className', 'mode', 'complete', 'prerequisites', 'onComplete'
         ],
         rectangle: [
             'category', 'color', 'weight', 'opacity', 'fillColor',
-            'fill', 'fillOpacity', 'stroke', 'group', 'type',
+            'fill', 'fillOpacity', 'stroke', 'group', 'type', 'level',
             'className', 'mode', 'complete', 'prerequisites', 'onComplete'
         ],
         polyline: [
-            'category', 'color', 'weight', 'opacity', 'stroke',
+            'category', 'color', 'weight', 'opacity', 'stroke', 'level',
             'complete', 'group', 'type', 'className', 'mode', 'prerequisites', 'onComplete'
         ],
         marker: [
-            'category', 'group', 'type', 'time', 'iconSize', 'html', 'cycle',
+            'category', 'group', 'type', 'time', 'iconSize', 'html', 'cycle', 'level',
             'mode', 'complete', 'link', 'iconUrl', 'className', 'prerequisites', 'onComplete'
         ],
         popup: ['className']
@@ -347,10 +347,15 @@ K.settings = { // these are for the layer tools, so it knows which settings to s
             type: 'string'
         },
         className: {
-            values: {},
+            values: {}, // TODO: change this description to remove the unused classnames
             description: 'Class Name is the element class added to the layer, this is used for the marker level (overground/underground) and the hover effect.',
             for: ['marker', 'polygon', 'polyline', 'circle', 'rectangle'],
             type: 'string'
+        },
+        level: {
+            description: 'Used to show the icon as above or below ground level. Can also be set to work with the level of specified building interiors and change the icons when the level of the map is changed.',
+            for: ['marker', 'polygon', 'polyline', 'circle', 'rectangle'],
+            type: 'object'
         },
         fill: {
             values: {

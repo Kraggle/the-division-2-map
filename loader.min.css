@@ -1,2 +1,2 @@
-.loader-back{width:100vw;height:100vh;position:fixed;left:0;top:0;z-index:1000;background-image:linear-gradient(72deg,#4b4845,#675e56)}.loader-back .support{display:none;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center}.loader-back .support .sorry{font-size:20pt;color:#c7cbd7}
-/*# sourceMappingURL=loader.css.map */
+.loader-back{width:100vw;height:100vh;position:fixed;left:0;top:0;z-index:1000;background:repeating-linear-gradient(45deg,#474747,#474747 5px,#4a4a4a 5px,#4a4a4a 15px)}.loader-back .support{display:none;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center}.loader-back .support .sorry{font-size:20pt;color:#c7cbd7}
+/*# sourceMappingURL=loader.min.css.map */

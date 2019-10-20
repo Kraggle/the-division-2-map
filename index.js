@@ -39,6 +39,7 @@ import './js/functions/shortcut.js';
 import './js/functions/uri-tasks.js';
 import './js/functions/level.js';
 import './js/functions/done.js';
+import './js/functions/map-loader.js';
 import pageLoad from './js/functions/page-load.js';
 
 // Import Stylesheets 
@@ -78,46 +79,7 @@ $(function() {
 
     // $('#survival-logo').show(1000);
 
-    $.ajax({
-        url: 'php/map_date.php',
-    }).done(function(a) {
-        K.mapVersion = a;
-
-        // Map Image Overlay
-        const main = L.imageOverlay(`images/map.svg?v=${K.mapVersion}`, [
-            [15, -15],
-            [-15, 15]
-        ], {
-            attribution: `<a title="Tom Clancy's The Division 2" href="https://tomclancy-thedivision.ubisoft.com/">The Division 2</a>`,
-            pane: 'mapPane'
-        }).addTo(K.myMap);
-
-        $('.leaflet-map-pane > .leaflet-image-layer').addClass('svg-me');
-        K.imgToSvg('svg-me', function() {
-            main._image = this;
-            this.id = 'svg-map';
-
-            const controls = L.imageOverlay(`images/blank-map.svg`, [
-                [15, -15],
-                [-15, 15]
-            ], {
-                pane: 'controlPane'
-            }).addTo(K.myMap);
-
-            $('.leaflet-control-pane > .leaflet-image-layer').addClass('svg-me');
-            K.imgToSvg('svg-me', function() {
-                controls._image = this;
-                this.id = 'control-map';
-                $(this).addClass('level-control-layer');
-
-                // $('>*', this).remove();
-
-                K.level.build();
-                K.done.start();
-            });
-        });
-
-    });
+    K.mapLoader();
 
     // Add the main groups to the map
     K.myMap.addLayer(K.group.mode.groupAll);

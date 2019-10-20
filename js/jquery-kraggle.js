@@ -62,3 +62,29 @@ $.expr[':'].regex = function(elem, index, match) {
         regex = new RegExp(matchParams.join('').replace(/^\s+|\s+$/g, ''), regexFlags);
     return regex.test($(elem)[attr.method](attr.property));
 }
+
+$.extend({
+    replaceTag: function(currentElem, newTagObj, keepProps) {
+        var $currentElem = $(currentElem);
+        var i, $newTag = $(newTagObj).clone();
+        if (keepProps) { //{{{
+            newTag = $newTag[0];
+            newTag.className = currentElem.className;
+            $.extend(newTag.classList, currentElem.classList);
+            $.extend(newTag.attributes, currentElem.attributes);
+        } //}}}
+        $currentElem.wrapAll($newTag);
+        $currentElem.contents().unwrap();
+        // return node; (Error spotted by Frank van Luijn)
+        return this; // Suggested by ColeLawrence
+    }
+});
+
+$.fn.extend({
+    replaceTag: function(newTagObj, keepProps) {
+        // "return" suggested by ColeLawrence
+        return this.each(function() {
+            $.replaceTag(this, newTagObj, keepProps);
+        });
+    }
+});

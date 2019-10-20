@@ -26,7 +26,7 @@ K.extend({
     pane: {},
     tool: {},
     expires: { expires: 28 },
-    classRemoval: ''
+    classRemoval: 'overground underground'
 });
 
 // MARK: [K] CheckLogin

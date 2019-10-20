@@ -352,8 +352,8 @@ export default function pageLoad() {
             K.bar.edit.Remove = K.drawControl._toolbars.edit._modes.remove.handler;
 
             // Setup hotkeys for drawing shapes
-            $(document).off('keypress');
-            $(document).on('keypress', keypressEvent);
+            $(document).off('keydown');
+            $(document).on('keydown', keypressEvent);
 
             // drawButtons = $('.leaflet-draw-section');
 

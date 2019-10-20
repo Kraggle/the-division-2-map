@@ -4,8 +4,6 @@ import { L } from '../Leaflet/leaflet1.5.1.js';
 
 // MARK: [K] Level
 K.level = {
-    MAP: null,
-    CONTROL: null,
     layers: {},
 
     _click: function() {
@@ -34,8 +32,8 @@ K.level = {
     },
 
     build: function() {
-        !this.MAP && (this.MAP = $('#svg-map'));
-        !this.CONTROL && (this.CONTROL = $('#control-map'));
+        this.MAP = $('#svg-map');
+        this.CONTROL = $('#control-map');
 
         $('g:regex(id,^l-\\d+$)', this.MAP).each(function() {
 

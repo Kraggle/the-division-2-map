@@ -30,7 +30,11 @@
 
 .leaflet-container {
     font-family: $font-0;
-    background: $map-back;
+    background: repeating-linear-gradient(45deg,
+            #474747,
+            #474747 5px,
+            #4a4a4a 5px,
+            #4a4a4a 15px);
     position: fixed !important;
     top: 0;
     left: 0;

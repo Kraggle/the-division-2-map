@@ -78,13 +78,18 @@ K.tool.marker = {
         tools.append(
             `<div class="outer inputs">
                 <div class="switch ripple-me">
-                    <input name="switch" id="_2" type="radio" name="radio" value="underground">
+                    <input name="switch" id="_2" type="radio" name="radio" value=-1>
                     <label for="_2" class="label down" title="Underground">Below</label>
-                    <input name="switch" id="_1" type="radio" name="radio" value="" checked>
+                    <input name="switch" id="_1" type="radio" name="radio" value=0 checked>
                     <label for="_1" class="label level" title="Ground Level">Ground</label>
-                    <input name="switch" id="_3" type="radio" name="radio" value="overground">
+                    <input name="switch" id="_3" type="radio" name="radio" value=1>
                     <label for="_3" class="label up" title="Overground">Above</label>
                     <div class="indicator"></div>
+                </div>
+                
+                <div class="floor-inputs">
+                    <input type="number" class="build" placeholder="Building No." id="build-no"/>
+                    <input type="number" class="btn-no" placeholder="Button No." id="button-no"/>
                 </div>
 			</div>
             <div class="outer scroller">

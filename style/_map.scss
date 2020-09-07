@@ -30,11 +30,7 @@
 
 .leaflet-container {
     font-family: $font-0;
-    background: repeating-linear-gradient(45deg,
-            #474747,
-            #474747 5px,
-            #4a4a4a 5px,
-            #4a4a4a 15px);
+    background: repeating-linear-gradient(45deg, #474747, #474747 5px, #4a4a4a 5px, #4a4a4a 15px);
     position: fixed !important;
     top: 0;
     left: 0;
@@ -127,7 +123,7 @@
         &.power,
         &.map {
             a {
-                background-clip: padding-box;
+                background-clip: none;
                 background-position: 3px 2px;
                 background-repeat: no-repeat;
                 background-size: 48px 24px;
@@ -389,7 +385,6 @@
 }
 
 %anim-icon {
-
     span,
     img {
         transform: scale(0);
@@ -510,10 +505,9 @@
 
         .hover-icon,
         .anim-icon {
-
-            &:hover>,
-            &:focus>,
-            &:active> {
+            &:hover >,
+            &:focus >,
+            &:active > {
                 .icon {
                     transform: scale(1.4);
                 }

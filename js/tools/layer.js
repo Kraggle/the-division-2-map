@@ -706,13 +706,13 @@ K.tool.layer = {
 
             K.type(value) != 'object' && (value = {});
 
-            const choice = $(`<div class="outer inputs">
+            const choice = $(`<div class="level-inputs">
                 <div class="switch ripple-me">
-                    <input class="settings-item input level" name="switch" id="__2" type="radio" name="radio" value=-1>
+                    <input class="settings-item input level" name="level-switch" id="__2" type="radio" name="radio" value=-1>
                     <label for="__2" class="label down" title="Underground">Below</label>
-                    <input class="settings-item input level" name="switch" id="__1" type="radio" name="radio" value=0 checked>
+                    <input class="settings-item input level" name="level-switch" id="__1" type="radio" name="radio" value=0 checked>
                     <label for="__1" class="label level" title="Ground Level">Ground</label>
-                    <input class="settings-item input level" name="switch" id="__3" type="radio" name="radio" value=1>
+                    <input class="settings-item input level" name="level-switch" id="__3" type="radio" name="radio" value=1>
                     <label for="__3" class="label up" title="Overground">Above</label>
                     <div class="indicator"></div>
                 </div>

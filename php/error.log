@@ -1,0 +1,43 @@
+[27-Oct-2019 18:33:43 UTC] PHP Notice:  Undefined index: usertype in D:\Dropbox\laragon\www\the-division-2-map\php\login.php on line 7
+[01-Apr-2020 14:05:01 UTC] PHP Notice:  Undefined index: usertype in D:\Dropbox\laragon\www\the-division-2-map\php\login.php on line 7
+[07-Sep-2020 18:13:50 UTC] PHP Warning:  mysqli::__construct(): The server requested authentication method unknown to the client [caching_sha2_password] in D:\Dropbox\laragon\www\the-division-2-map\php\db_connect.php on line 3
+[07-Sep-2020 18:13:50 UTC] PHP Warning:  mysqli::__construct(): The server requested authentication method unknown to the client [caching_sha2_password] in D:\Dropbox\laragon\www\the-division-2-map\php\db_connect.php on line 3
+[07-Sep-2020 18:13:50 UTC] PHP Warning:  mysqli::__construct(): (HY000/2054): The server requested authentication method unknown to the client in D:\Dropbox\laragon\www\the-division-2-map\php\db_connect.php on line 3
+[07-Sep-2020 18:13:50 UTC] PHP Warning:  mysqli::__construct(): (HY000/2054): The server requested authentication method unknown to the client in D:\Dropbox\laragon\www\the-division-2-map\php\db_connect.php on line 3
+[07-Sep-2020 18:13:50 UTC] PHP Notice:  Undefined index: usertype in D:\Dropbox\laragon\www\the-division-2-map\php\login.php on line 7
+[07-Sep-2020 18:15:22 UTC] PHP Warning:  mysqli::__construct(): The server requested authentication method unknown to the client [caching_sha2_password] in D:\Dropbox\laragon\www\the-division-2-map\php\db_connect.php on line 3
+[07-Sep-2020 18:15:22 UTC] PHP Warning:  mysqli::__construct(): (HY000/2054): The server requested authentication method unknown to the client in D:\Dropbox\laragon\www\the-division-2-map\php\db_connect.php on line 3
+[07-Sep-2020 18:15:22 UTC] PHP Notice:  Undefined index: usertype in D:\Dropbox\laragon\www\the-division-2-map\php\login.php on line 7
+[07-Sep-2020 18:15:22 UTC] PHP Warning:  mysqli::__construct(): The server requested authentication method unknown to the client [caching_sha2_password] in D:\Dropbox\laragon\www\the-division-2-map\php\db_connect.php on line 3
+[07-Sep-2020 18:15:22 UTC] PHP Warning:  mysqli::__construct(): (HY000/2054): The server requested authentication method unknown to the client in D:\Dropbox\laragon\www\the-division-2-map\php\db_connect.php on line 3
+[07-Sep-2020 18:17:37 UTC] PHP Warning:  mysqli::__construct(): The server requested authentication method unknown to the client [caching_sha2_password] in D:\Dropbox\laragon\www\the-division-2-map\php\db_connect.php on line 3
+[07-Sep-2020 18:17:37 UTC] PHP Warning:  mysqli::__construct(): (HY000/2054): The server requested authentication method unknown to the client in D:\Dropbox\laragon\www\the-division-2-map\php\db_connect.php on line 3
+[07-Sep-2020 18:17:37 UTC] PHP Notice:  Undefined index: usertype in D:\Dropbox\laragon\www\the-division-2-map\php\login.php on line 7
+[07-Sep-2020 18:17:37 UTC] PHP Warning:  mysqli::__construct(): The server requested authentication method unknown to the client [caching_sha2_password] in D:\Dropbox\laragon\www\the-division-2-map\php\db_connect.php on line 3
+[07-Sep-2020 18:17:37 UTC] PHP Warning:  mysqli::__construct(): (HY000/2054): The server requested authentication method unknown to the client in D:\Dropbox\laragon\www\the-division-2-map\php\db_connect.php on line 3
+[07-Sep-2020 18:19:39 UTC] PHP Warning:  mysqli::__construct(): The server requested authentication method unknown to the client [caching_sha2_password] in D:\Dropbox\laragon\www\the-division-2-map\php\db_connect.php on line 3
+[07-Sep-2020 18:19:39 UTC] PHP Warning:  mysqli::__construct(): (HY000/2054): The server requested authentication method unknown to the client in D:\Dropbox\laragon\www\the-division-2-map\php\db_connect.php on line 3
+[07-Sep-2020 18:19:39 UTC] PHP Notice:  Undefined index: usertype in D:\Dropbox\laragon\www\the-division-2-map\php\login.php on line 7
+[07-Sep-2020 18:19:39 UTC] PHP Warning:  mysqli::__construct(): The server requested authentication method unknown to the client [caching_sha2_password] in D:\Dropbox\laragon\www\the-division-2-map\php\db_connect.php on line 3
+[07-Sep-2020 18:19:39 UTC] PHP Warning:  mysqli::__construct(): (HY000/2054): The server requested authentication method unknown to the client in D:\Dropbox\laragon\www\the-division-2-map\php\db_connect.php on line 3
+[07-Sep-2020 18:20:09 UTC] PHP Warning:  mysqli::__construct(): The server requested authentication method unknown to the client [caching_sha2_password] in D:\Dropbox\laragon\www\the-division-2-map\php\db_connect.php on line 3
+[07-Sep-2020 18:20:09 UTC] PHP Warning:  mysqli::__construct(): (HY000/2054): The server requested authentication method unknown to the client in D:\Dropbox\laragon\www\the-division-2-map\php\db_connect.php on line 3
+[07-Sep-2020 18:20:09 UTC] PHP Notice:  Undefined index: usertype in D:\Dropbox\laragon\www\the-division-2-map\php\login.php on line 7
+[07-Sep-2020 18:20:09 UTC] PHP Warning:  mysqli::__construct(): The server requested authentication method unknown to the client [caching_sha2_password] in D:\Dropbox\laragon\www\the-division-2-map\php\db_connect.php on line 3
+[07-Sep-2020 18:20:09 UTC] PHP Warning:  mysqli::__construct(): (HY000/2054): The server requested authentication method unknown to the client in D:\Dropbox\laragon\www\the-division-2-map\php\db_connect.php on line 3
+[07-Sep-2020 19:32:28 UTC] PHP Warning:  mysqli::__construct(): The server requested authentication method unknown to the client [caching_sha2_password] in D:\Dropbox\laragon\www\the-division-2-map\php\db_connect.php on line 3
+[07-Sep-2020 19:32:28 UTC] PHP Warning:  mysqli::__construct(): The server requested authentication method unknown to the client [caching_sha2_password] in D:\Dropbox\laragon\www\the-division-2-map\php\db_connect.php on line 3
+[07-Sep-2020 19:32:28 UTC] PHP Warning:  mysqli::__construct(): (HY000/2054): The server requested authentication method unknown to the client in D:\Dropbox\laragon\www\the-division-2-map\php\db_connect.php on line 3
+[07-Sep-2020 19:32:28 UTC] PHP Warning:  mysqli::__construct(): (HY000/2054): The server requested authentication method unknown to the client in D:\Dropbox\laragon\www\the-division-2-map\php\db_connect.php on line 3
+[07-Sep-2020 19:32:28 UTC] PHP Notice:  Undefined index: usertype in D:\Dropbox\laragon\www\the-division-2-map\php\login.php on line 7
+[07-Sep-2020 19:33:32 UTC] PHP Warning:  mysqli::__construct(): The server requested authentication method unknown to the client [caching_sha2_password] in D:\Dropbox\laragon\www\the-division-2-map\php\db_connect.php on line 3
+[07-Sep-2020 19:33:32 UTC] PHP Warning:  mysqli::__construct(): (HY000/2054): The server requested authentication method unknown to the client in D:\Dropbox\laragon\www\the-division-2-map\php\db_connect.php on line 3
+[07-Sep-2020 19:33:32 UTC] PHP Notice:  Undefined index: usertype in D:\Dropbox\laragon\www\the-division-2-map\php\login.php on line 7
+[07-Sep-2020 19:33:32 UTC] PHP Warning:  mysqli::__construct(): The server requested authentication method unknown to the client [caching_sha2_password] in D:\Dropbox\laragon\www\the-division-2-map\php\db_connect.php on line 3
+[07-Sep-2020 19:33:32 UTC] PHP Warning:  mysqli::__construct(): (HY000/2054): The server requested authentication method unknown to the client in D:\Dropbox\laragon\www\the-division-2-map\php\db_connect.php on line 3
+[07-Sep-2020 19:43:41 UTC] PHP Warning:  mysqli::__construct(): The server requested authentication method unknown to the client [caching_sha2_password] in D:\Dropbox\laragon\www\the-division-2-map\php\db_connect.php on line 3
+[07-Sep-2020 19:43:41 UTC] PHP Warning:  mysqli::__construct(): (HY000/2054): The server requested authentication method unknown to the client in D:\Dropbox\laragon\www\the-division-2-map\php\db_connect.php on line 3
+[07-Sep-2020 19:43:41 UTC] PHP Notice:  Undefined index: usertype in D:\Dropbox\laragon\www\the-division-2-map\php\login.php on line 7
+[07-Sep-2020 19:43:41 UTC] PHP Warning:  mysqli::__construct(): The server requested authentication method unknown to the client [caching_sha2_password] in D:\Dropbox\laragon\www\the-division-2-map\php\db_connect.php on line 3
+[07-Sep-2020 19:43:41 UTC] PHP Warning:  mysqli::__construct(): (HY000/2054): The server requested authentication method unknown to the client in D:\Dropbox\laragon\www\the-division-2-map\php\db_connect.php on line 3
+[07-Sep-2020 19:46:12 UTC] PHP Notice:  Undefined index: usertype in D:\Dropbox\laragon\www\the-division-2-map\php\login.php on line 7

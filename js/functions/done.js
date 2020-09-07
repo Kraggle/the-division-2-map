@@ -19,8 +19,11 @@ K.done = {
             title: 'The total completion of the map.<br><span style="color:#808080; font-size:9px;">Click to toggle the completed areas.</span>'
         }).append($('<div />', {
             class: 'percent',
-            text: Math.round(percent) + '%'
-        }).css('width', percent + '%')).appendTo('body').on('click', () => {
+            text: `${Math.round(percent)}%`
+        }).css('width', percent + '%')).append($('<div />', {
+            class: 'total',
+            text: `[${done}/${todo}]`
+        })).appendTo('body').on('click', () => {
             this.showing && this.elements.fadeOut(800);
             !this.showing && this.elements.fadeIn(800);
             this.showing = !this.showing;

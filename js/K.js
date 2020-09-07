@@ -664,6 +664,17 @@ K.loadStyles = function(stylesheets) {
     });
 }
 
+K.supportsPassive = false;
+
+try {
+    var opts = Object.defineProperty({}, 'passive', {
+        get: () => K.supportsPassive = true
+    });
+    window.addEventListener("testPassive", null, opts);
+    window.removeEventListener("testPassive", null, opts);
+} catch (e) {}
+
+
 // @class Class
 // @aka K.Class
 

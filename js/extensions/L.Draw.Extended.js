@@ -219,19 +219,24 @@ export function drawEventCreated(e) {
 
         if (K.tool.marker.enabled() && selected.length) {
 
-            let lvl = $('.outer.inputs input:checked').val(),
-                cat = selected.attr('category'),
+            let cat = selected.attr('category'),
                 typ = selected.attr('type'),
                 j = K.tool.marker.layers[K.mode][cat][typ],
-                p = j.o;
+                p = j.o,
+                uNo = $('#build-no').val(),
+                bNo = $('#button-no').val();
 
-            lvl = (lvl ? ' ' + lvl : '');
+            p.level = {
+                floor: +$('.outer.inputs input:checked').val()
+            };
+            uNo && (p.level.unit = +uNo);
+            bNo && (p.level.btn = +bNo);
+
             popup = j.p;
 
             layer = createMarker(K.extend({}, p, {
                 id: ID(),
-                latlng: layer._latlng,
-                className: `${p.className}${lvl}`,
+                latlng: layer._latlng
             }));
 
         } else {
